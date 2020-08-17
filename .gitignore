@@ -1,0 +1,11 @@
+# Gradle wrapper and build
+.gradle/
+build/
+
+# Assorted other IDE build, settings, etc
+.project
+.classpath
+bin/
+.settings/
+.idea/
+.vscode/
