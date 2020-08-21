@@ -6,7 +6,8 @@ version: 2
 jobs:
   build_and_test:
     machine:
-       - image: ubuntu-1604:201903-01
+       image: ubuntu-1604:201903-01
+
     #docker:
     #  - image: circleci/openjdk:16-ea-11-jdk-buster
 
