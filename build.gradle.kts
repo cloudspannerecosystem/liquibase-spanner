@@ -77,7 +77,7 @@ tasks {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    // Output to build/libs/shadow.jar
+    // Output to build/libs/liquibase-shadow.jar
     //
     // This jar can be used directly as a library in the liquibase
     // dependency. It includes everything needed to run with Cloud Spanner
@@ -85,8 +85,7 @@ tasks {
     //
     shadowJar {
         dependsOn("test")
-        baseName = "shadow"
-        //mergeServiceFiles()
+        baseName = "liquibase-shadow"
         dependencies {
             exclude(dependency("org.liquibase:liquibase-core"))
         }
