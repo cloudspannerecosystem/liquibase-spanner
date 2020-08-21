@@ -5,36 +5,15 @@
 version: 2
 jobs:
   build_and_test:
+
+    # Machine is required due to using Java testcontainers
     machine:
        image: ubuntu-1604:201903-01
-
-    #docker:
-    #  - image: circleci/openjdk:16-ea-11-jdk-buster
-
-    # Need to disable RYUK with Java testcontainers --
-    # RYUK requires privileged containers.
-    #environment:
-    #  TESTCONTAINERS_RYUK_DISABLED: true
 
     working_directory: ~/repo
 
     steps:
       - checkout
-
-      # there are no credentials yet.
-      #- run:
-      #  name: Set credentials
-      #  command: |
-      #    echo $GCLOUD_SERVICE_KEY > $HOME/gcloud-service-key.json
-      #    echo 'export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json' >> $BASH_ENV
-
-      #- setup_remote_docker
-
-      - run:
-          name: get docker version
-          command: |
-            docker version
-            docker run hello-world
 
       - run:
           name: Build and run tests
@@ -43,9 +22,6 @@ jobs:
 
       - store_test_results:
           path: build/test-results/test
-
-      - store_artifacts:
-          path: build/reports
 
 workflows:
   version: 2
