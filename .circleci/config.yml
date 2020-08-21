@@ -3,10 +3,10 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2
-machine: true
-image: ubuntu-1604:201903-01
 jobs:
   build_and_test:
+    machine:
+       - image: ubuntu-1604:201903-01
     #docker:
     #  - image: circleci/openjdk:16-ea-11-jdk-buster
 
