@@ -22,7 +22,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            pytest
+            ./gradlew build
 
 workflows:
   version: 2
