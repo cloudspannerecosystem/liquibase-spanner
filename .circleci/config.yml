@@ -8,6 +8,11 @@ jobs:
     docker:
       - image: circleci/openjdk:16-ea-11-jdk-buster
 
+    # Need to disable RYUK with Java testcontainers --
+    # RYUK requires privileged containers.
+    environment:
+      TESTCONTAINERS_RYUK_DISABLED: true
+
     working_directory: ~/repo
 
     steps:
@@ -25,6 +30,7 @@ jobs:
           name: get docker version
           command: |
             docker version
+            docker run hello-world
 
       - run:
           name: run tests
