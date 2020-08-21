@@ -24,7 +24,7 @@ jobs:
           command: |
             ./gradlew build
 
-       - store_test_results:
+      - store_test_results:
           path: build/reports/tests
 
 workflows:
