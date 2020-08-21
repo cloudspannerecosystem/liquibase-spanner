@@ -3,15 +3,16 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2
+machine: true
 jobs:
   build_and_test:
-    docker:
-      - image: circleci/openjdk:16-ea-11-jdk-buster
+    #docker:
+    #  - image: circleci/openjdk:16-ea-11-jdk-buster
 
     # Need to disable RYUK with Java testcontainers --
     # RYUK requires privileged containers.
-    environment:
-      TESTCONTAINERS_RYUK_DISABLED: true
+    #environment:
+    #  TESTCONTAINERS_RYUK_DISABLED: true
 
     working_directory: ~/repo
 
@@ -19,21 +20,15 @@ jobs:
       - checkout
 
       - run:
-          name: set credentials
+          name: Set credentials
           command: |
             echo $GCLOUD_SERVICE_KEY > $HOME/gcloud-service-key.json
             echo 'export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json' >> $BASH_ENV
 
-      - setup_remote_docker
+      #- setup_remote_docker
 
       - run:
-          name: get docker version
-          command: |
-            docker version
-            docker run hello-world
-
-      - run:
-          name: run tests
+          name: Build and run tests
           command: |
             ./gradlew build
 
