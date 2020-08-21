@@ -25,7 +25,10 @@ jobs:
             ./gradlew build
 
       - store_test_results:
-          path: build/reports/tests
+          path: build/test-results/test
+
+      - store_artifacts:
+          path: build/reports
 
 workflows:
   version: 2
