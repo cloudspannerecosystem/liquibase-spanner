@@ -6,7 +6,7 @@ version: 2
 jobs:
   build_and_test:
     docker:
-      - image: circleci/openjdk:openjdk:16-ea-11-jdk-buster
+      - image: circleci/openjdk:16-ea-11-jdk-buster
 
     working_directory: ~/repo
 
