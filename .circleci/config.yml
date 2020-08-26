@@ -5,8 +5,10 @@
 version: 2
 jobs:
   build_and_test:
-    docker:
-      - image: circleci/openjdk:16-ea-11-jdk-buster
+
+    # Machine is required due to using Java testcontainers
+    machine:
+       image: ubuntu-1604:201903-01
 
     working_directory: ~/repo
 
@@ -14,15 +16,15 @@ jobs:
       - checkout
 
       - run:
-          name: set credentials
+          name: Build and run tests
           command: |
-            echo $GCLOUD_SERVICE_KEY > $HOME/gcloud-service-key.json
-            echo 'export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json' >> $BASH_ENV
+            ./gradlew --no-daemon build test shadowJar
 
-      - run:
-          name: run tests
-          command: |
-            pytest
+      - store_test_results:
+          path: build/test-results/test
+
+      - store_artifacts:
+          path: build/libs
 
 workflows:
   version: 2
