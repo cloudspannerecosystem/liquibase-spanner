@@ -26,8 +26,10 @@ import liquibase.ext.spanner.CloudSpanner;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.*;
 
 // As these are forms of integration tests -- against an external emulator or a real Spanner instance --
@@ -92,13 +95,17 @@ public class LiquibaseTests {
 
     @Test
     void doSpannerEmulatorSanityCheckTest() throws SQLException, LiquibaseException {
-        doSanityCheckTest(getSpannerEmulator());
+        Assertions.assertTimeout(
+                Duration.ofMinutes(1),
+                () -> doSanityCheckTest(getSpannerEmulator()));
     }
 
     @Test
     @Tag("integration")
     void doSpannerRealSanityCheckTest() throws SQLException, LiquibaseException {
-        doSanityCheckTest(getSpannerReal());
+        Assertions.assertTimeout(
+                Duration.ofMinutes(1),
+                () -> doSanityCheckTest(getSpannerReal()));
     }
 
     void doSanityCheckTest(TestHarness.Connection liquibaseTestHarness) throws SQLException {

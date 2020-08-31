@@ -18,10 +18,27 @@ plugins {
     id "java"
     id "com.google.cloud.tools.jib" version "2.4.0"
     id "com.github.johnrengelman.shadow" version "6.0.0"
+    id 'org.ajoberstar.grgit' version '1.7.2'
+    id 'org.ajoberstar.release-opinion' version '1.7.2'
 }
 
 group = "com.google.spanner"
-version = "0.1-SNAPSHOT"
+
+if (project.hasProperty('tagVersion')) {
+    project.version = project.tagVersion
+} else {
+   project.version = "SNAPSHOT"
+}
+
+import org.ajoberstar.gradle.git.release.opinion.Strategies
+
+release {
+    versionStrategy Strategies.FINAL
+    defaultVersionStrategy Strategies.SNAPSHOT
+    tagStrategy {
+        generateMessage = { version -> "Version $project.version" }
+    }
+}
 
 repositories {
     mavenCentral()
