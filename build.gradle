@@ -18,11 +18,11 @@ plugins {
     id "java"
     id "com.google.cloud.tools.jib" version "2.4.0"
     id "com.github.johnrengelman.shadow" version "6.0.0"
-    id 'org.ajoberstar.grgit' version '1.7.2'
-    id 'org.ajoberstar.release-opinion' version '1.7.2'
 }
 
+
 group = "com.google.spanner"
+
 
 if (project.hasProperty('tagVersion')) {
     project.version = project.tagVersion
@@ -30,20 +30,12 @@ if (project.hasProperty('tagVersion')) {
    project.version = "SNAPSHOT"
 }
 
-import org.ajoberstar.gradle.git.release.opinion.Strategies
-
-release {
-    versionStrategy Strategies.FINAL
-    defaultVersionStrategy Strategies.SNAPSHOT
-    tagStrategy {
-        generateMessage = { version -> "Version $project.version" }
-    }
-}
 
 repositories {
     mavenCentral()
     jcenter()
 }
+
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -63,7 +55,6 @@ dependencies {
     implementation("org.yaml:snakeyaml:1.26")
 
     // Testing
-    //testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
     testImplementation("org.testcontainers:testcontainers:1.13.0")
 

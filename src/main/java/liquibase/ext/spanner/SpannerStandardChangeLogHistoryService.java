@@ -25,17 +25,6 @@ public class SpannerStandardChangeLogHistoryService extends StandardChangeLogHis
     public SpannerStandardChangeLogHistoryService() {
     }
 
-    /*
-     * Overriding init() to prevent the automatic creation of ChangeLogHistory table. This must be created
-     * outside of Liquibase.
-     *
-     * The syntax of SQL for Spanner's CREATE TABLE() differs from the syntax used by Liquibase.
-     * (For example, PRIMARY KEY)
-     */
-//    @Override
-//    public void init() {
-//    }
-
     @Override
     public boolean supports(Database database) {
         return database instanceof CloudSpanner;
