@@ -30,6 +30,8 @@ jobs:
       - run:
           name: Integration tests
           command: |
+            ls -ld $HOME/gcloud-service-key.json
+            echo ENV: ${GOOGLE_APPLICATION_CREDENTIALS}
             ./gradlew --no-daemon integrationTest
 
       - store_test_results:
