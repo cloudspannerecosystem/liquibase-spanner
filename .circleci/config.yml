@@ -25,7 +25,7 @@ jobs:
   # Integration tests
   integration_test:
     docker:
-      - image: circleci/openjdk:16-ea-11-jdk-buster
+      - image: circleci/openjdk:11.0
     working_directory: ~/repo
     steps:
       - checkout
