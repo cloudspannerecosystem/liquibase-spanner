@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     https://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,27 +14,14 @@
  * limitations under the License.
  */
 
+
 package liquibase.ext.spanner;
 
-import liquibase.changelog.StandardChangeLogHistoryService;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
+import liquibase.datatype.core.BooleanType;
 
-public class SpannerStandardChangeLogHistoryService extends StandardChangeLogHistoryService {
-
-    public SpannerStandardChangeLogHistoryService() {
-    }
-
-    /*
-     * Overriding init() to prevent the automatic creation of ChangeLogHistory table. This must be created
-     * outside of Liquibase.
-     *
-     * The syntax of SQL for Spanner's CREATE TABLE() differs from the syntax used by Liquibase.
-     * (For example, PRIMARY KEY)
-     */
-//    @Override
-//    public void init() {
-//    }
+public class BoolTypeSpanner extends BooleanType {
 
     @Override
     public boolean supports(Database database) {
@@ -42,12 +29,17 @@ public class SpannerStandardChangeLogHistoryService extends StandardChangeLogHis
     }
 
     @Override
+    public DatabaseDataType toDatabaseDataType(Database database) {
+        if (database instanceof CloudSpanner) {
+            return new DatabaseDataType("BOOL");
+        } else {
+            return super.toDatabaseDataType(database);
+        }
+    }
+
+    @Override
     public int getPriority() {
         return 2;
     }
 
-    @Override
-    public boolean canCreateChangeLogTable() {
-        return false;
-    }
 }

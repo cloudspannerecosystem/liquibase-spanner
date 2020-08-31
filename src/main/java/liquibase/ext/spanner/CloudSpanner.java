@@ -22,8 +22,12 @@ import liquibase.sqlgenerator.SqlGeneratorFactory;
 import liquibase.sqlgenerator.core.CreateDatabaseChangeLogTableGenerator;
 import liquibase.sqlgenerator.core.LockDatabaseChangeLogGenerator;
 import liquibase.sqlgenerator.core.UnlockDatabaseChangeLogGenerator;
+import liquibase.servicelocator.ServiceLocator;
 
 public class CloudSpanner extends AbstractJdbcDatabase {
+    static {
+        ServiceLocator.getInstance().addPackageToScan("liquibase.ext.spanner");
+    }
 
     public CloudSpanner() {
         SqlGeneratorFactory sqlGeneratorFactory = SqlGeneratorFactory.getInstance();
@@ -121,6 +125,16 @@ public class CloudSpanner extends AbstractJdbcDatabase {
 
     @Override
     public boolean canCreateChangeLogTable() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsDDLInTransaction() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsPrimaryKeyNames() {
         return false;
     }
 }

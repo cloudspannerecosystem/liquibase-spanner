@@ -18,27 +18,14 @@
 --
 --ignoreLines:end
 
---changeset test.user:1 labels:base,feature1 runInTransaction:FALSE
+--changeset test.user:100 labels:rollback_stuff runInTransaction:FALSE
 --preconditions onFail:HALT onError:HALT
 START BATCH DDL;
-create table table1
+create table rollback_table
 (
     id   int64,
     name string(MAX),
 ) PRIMARY KEY (id);
 RUN BATCH;
-INSERT INTO table1(id, name) VALUES (1, 'test');
---rollback DROP TABLE table1;
+--rollback DROP TABLE rollback_table;
 
---changeset test.user:2 labels:base,feature2 runInTransaction:FALSE
---preconditions onFail:HALT onError:HALT
-START BATCH DDL;
-ALTER TABLE table1
-    ADD COLUMN extra string(20);
-RUN BATCH;
---rollback DROP COLUMN table1;
-
---changeset test.user:3 labels:base,feature3 runInTransaction:FALSE
---preconditions onFail:HALT onError:HALT
-UPDATE table1
-SET extra = 'abc' WHERE true;

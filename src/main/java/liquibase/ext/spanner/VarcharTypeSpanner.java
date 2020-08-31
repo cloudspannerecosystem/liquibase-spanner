@@ -31,7 +31,7 @@ public class VarcharTypeSpanner extends VarcharType {
     @Override
     public DatabaseDataType toDatabaseDataType(Database database) {
         if (database instanceof CloudSpanner) {
-            return new DatabaseDataType("STRING");
+            return new DatabaseDataType("STRING(MAX)");
         } else {
             return super.toDatabaseDataType(database);
         }
