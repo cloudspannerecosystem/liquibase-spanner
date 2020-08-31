@@ -14,32 +14,26 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Build and run tests"
-          command: |
-            ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} build test shadowJar
-      - store_test_results:
-          path: build/test-results/test
-      - store_artifacts:
-          path: build/libs
-
-  # Integration tests
-  integration_test:
-    docker:
-      - image: circleci/openjdk:11.0
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - run:
           name: "Set credentials"
           command: |
             echo $GCLOUD_SERVICE_KEY > $HOME/gcloud-service-key.json
             echo 'export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json' >> $BASH_ENV
       - run:
-          name: "Integration tests"
+          name: "Build and run tests"
           command: |
-            ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} integrationTest
+            ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} build test shadowJar
+      - run:
+          name: "Run integration tests"
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "extension_improvements" ]; then
+              ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} integrationTest
+            else
+              echo "Skipped."
+            fi
       - store_test_results:
           path: build/test-results/test
+      - store_artifacts:
+          path: build/libs
 
   # Publish on a tag
   publish_github_release:
@@ -62,16 +56,9 @@ workflows:
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
-      - integration_test:
-          requires:
-            - build_and_test
-          # TODO: This should only run on master branch.
-          filters:
-            tags:
-              only: /^\d+\.\d+\.\d+$/
       - publish_github_release:
           requires:
-            - integration_test
+            - build_and_test
           filters:
             branches:
               ignore: /.*/
