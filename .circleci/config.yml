@@ -22,10 +22,12 @@ jobs:
           name: "Build and run tests"
           command: |
             ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} build test shadowJar
+      - store_test_results:
+          path: build/test-results/test
       - run:
           name: "Run integration tests"
           command: |
-            if [ "${CIRCLE_BRANCH}" == "extension_improvements" ]; then
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
               ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} integrationTest
             else
               echo "Skipped."
