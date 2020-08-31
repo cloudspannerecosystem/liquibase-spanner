@@ -27,11 +27,7 @@ jobs:
       - run:
           name: "Run integration tests"
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} integrationTest
-            else
-              echo "Skipped."
-            fi
+            ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} integrationTest
       - store_test_results:
           path: build/test-results/test
       - store_artifacts:
