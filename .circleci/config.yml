@@ -11,6 +11,8 @@ jobs:
        image: ubuntu-1604:201903-01
 
     working_directory: ~/repo
+
+    steps:
       - checkout
       - run:
           name: Build and run tests
