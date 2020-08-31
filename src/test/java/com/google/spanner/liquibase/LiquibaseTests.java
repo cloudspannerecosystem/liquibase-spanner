@@ -80,9 +80,6 @@ public class LiquibaseTests {
     // Get the Liquibase changeset for the given log file and JDBC
     Liquibase getLiquibase(TestHarness.Connection testHarness,
                            String changeLogFile) throws DatabaseException {
-
-        //  DatabaseFactory.getInstance().register(new CloudSpanner());
-
         Liquibase liquibase = new Liquibase(
                 changeLogFile,
                 new ClassLoaderResourceAccessor(),
@@ -95,17 +92,13 @@ public class LiquibaseTests {
 
     @Test
     void doSpannerEmulatorSanityCheckTest() throws SQLException, LiquibaseException {
-        Assertions.assertTimeout(
-                Duration.ofMinutes(1),
-                () -> doSanityCheckTest(getSpannerEmulator()));
+        doSanityCheckTest(getSpannerEmulator());
     }
 
     @Test
     @Tag("integration")
     void doSpannerRealSanityCheckTest() throws SQLException, LiquibaseException {
-        Assertions.assertTimeout(
-                Duration.ofMinutes(1),
-                () -> doSanityCheckTest(getSpannerReal()));
+        doSanityCheckTest(getSpannerReal());
     }
 
     void doSanityCheckTest(TestHarness.Connection liquibaseTestHarness) throws SQLException {
