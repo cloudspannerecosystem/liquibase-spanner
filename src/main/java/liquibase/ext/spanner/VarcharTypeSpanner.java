@@ -31,7 +31,7 @@ public class VarcharTypeSpanner extends VarcharType {
     @Override
     public DatabaseDataType toDatabaseDataType(Database database) {
         if (database instanceof CloudSpanner) {
-            return new DatabaseDataType("STRING");
+            return new DatabaseDataType("STRING("+getParameters()[0]+")");
         } else {
             return super.toDatabaseDataType(database);
         }
@@ -39,7 +39,7 @@ public class VarcharTypeSpanner extends VarcharType {
 
     @Override
     public int getPriority() {
-        return 2;
+        return PRIORITY_DATABASE;
     }
 
 }

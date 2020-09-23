@@ -43,7 +43,7 @@ public class SpannerCreateDatabaseChangeLogTableGenerator extends CreateDatabase
 
     @Override
     public int getPriority() {
-        return 2;
+        return PRIORITY_DATABASE;
     }
 }
 

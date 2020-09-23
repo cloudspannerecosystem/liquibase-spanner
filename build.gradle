@@ -1,0 +1,114 @@
+/**
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+    id "java"
+    id "com.google.cloud.tools.jib" version "2.4.0"
+    id "com.github.johnrengelman.shadow" version "6.0.0"
+}
+
+
+group = "com.google.spanner"
+
+
+if (project.hasProperty('tagVersion') && project.tagVersion.trim()) {
+    project.version = project.tagVersion.trim()
+} else {
+   project.version = "SNAPSHOT"
+}
+
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+
+dependencies {
+
+    // Cloud Spanner related
+    implementation("com.google.cloud:google-cloud-spanner-jdbc:1.16.0")
+    implementation("com.google.cloud:google-cloud-spanner")
+    implementation("com.google.cloud:google-cloud-logging-logback:0.116.0-alpha")
+
+    // Liquibase Core - needed for testing and docker container
+    implementation("org.liquibase:liquibase-core:3.8.9")
+    implementation("org.yaml:snakeyaml:1.26")
+
+    // Testing
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
+    testImplementation("org.testcontainers:testcontainers:1.13.0")
+
+    // For testing runtime
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+}
+
+
+// Run unit tests (Spanner emulator)
+test {
+  useJUnitPlatform {
+    excludeTags "integration"
+  }
+}
+
+
+// Run integration tests (against live Spanner)
+//
+// Requires SPANNER_PROJECT and SPANNER_INSTANCE environment variables.
+// Also requires GOOGLE_APPLICATION_CREDENTIALS environment variable
+// if using a JSON key for authentication.
+task integrationTest(type: Test) {
+    useJUnitPlatform {
+        includeTags "integration"
+    }
+    shouldRunAfter test
+}
+
+// Output shadowJar that can be used directly by Liquibase
+//
+// This contains all Cloud Spanner dependencies.
+shadowJar {
+    dependsOn("test")
+    archiveBaseName.set("liquibase-extension")
+    mergeServiceFiles()
+    dependencies {
+        exclude([
+          dependency("org.liquibase:liquibase-core")
+        ])
+    }
+}
+
+// Output runnable docker container.
+//
+// The docker container has everything you need to run Liquibase with Spanner.
+jib {
+    from {
+        image = "gcr.io/distroless/java:8"
+    }
+    to {
+        image = "spanner-liquibase"
+    }
+    container {
+        mainClass = 'liquibase.integration.commandline.Main'
+    }
+}
+

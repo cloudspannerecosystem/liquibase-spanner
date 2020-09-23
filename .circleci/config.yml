@@ -4,36 +4,65 @@
 #
 version: 2
 jobs:
+
+  # Build and unit tests
   build_and_test:
-
-    # Machine is required due to using Java testcontainers
     machine:
+       # Due to test containers
        image: ubuntu-1604:201903-01
-
-    working_directory: ~/repo
-
     steps:
       - checkout
-
       - run:
-          name: Build and run tests
+          name: "Set credentials"
           command: |
-            ./gradlew --no-daemon build test shadowJar
-
+            echo $GCLOUD_SERVICE_KEY > $HOME/gcloud-service-key.json
+            echo 'export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json' >> $BASH_ENV
+      - run:
+          name: "Build and run tests"
+          command: |
+            ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} build test shadowJar
       - store_test_results:
           path: build/test-results/test
-
+      - run:
+          name: "Run integration tests"
+          command: |
+            ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} integrationTest
+      - store_test_results:
+          path: build/test-results/test
       - store_artifacts:
           path: build/libs
+
+  # Publish on a tag
+  publish_github_release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: ./build/libs
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./artifacts/
 
 workflows:
   version: 2
 
-  commit:  # Run on every commit.
+  commit:
     jobs:
-      - build_and_test
+      - build_and_test:
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - publish_github_release:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
 
-  nightly:  # Run every night.
+  nightly:
     triggers:
       - schedule:
           cron: "0 0 * * *"

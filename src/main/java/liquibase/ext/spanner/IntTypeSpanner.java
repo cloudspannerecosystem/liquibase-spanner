@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     https://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,14 +16,12 @@
 
 package liquibase.ext.spanner;
 
-import liquibase.changelog.StandardChangeLogHistoryService;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
+import liquibase.datatype.core.BigIntType;
+import liquibase.datatype.core.IntType;
 
-public class SpannerStandardChangeLogHistoryService extends StandardChangeLogHistoryService {
-
-    public SpannerStandardChangeLogHistoryService() {
-    }
+public class IntTypeSpanner extends     IntType {
 
     @Override
     public boolean supports(Database database) {
@@ -31,12 +29,16 @@ public class SpannerStandardChangeLogHistoryService extends StandardChangeLogHis
     }
 
     @Override
-    public int getPriority() {
-        return PRIORITY_DATABASE;
+    public DatabaseDataType toDatabaseDataType(Database database) {
+        if (database instanceof CloudSpanner) {
+            return new DatabaseDataType("INT64");
+        } else {
+            return super.toDatabaseDataType(database);
+        }
     }
 
     @Override
-    public boolean canCreateChangeLogTable() {
-        return false;
+    public int getPriority() {
+        return PRIORITY_DATABASE;
     }
 }
