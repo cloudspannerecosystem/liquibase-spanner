@@ -37,6 +37,6 @@ public class SpannerStandardChangeLogHistoryService extends StandardChangeLogHis
 
     @Override
     public boolean canCreateChangeLogTable() {
-        return false;
+        return true;
     }
 }

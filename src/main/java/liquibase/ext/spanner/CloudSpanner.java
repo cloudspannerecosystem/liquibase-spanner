@@ -32,6 +32,9 @@ public class CloudSpanner extends AbstractJdbcDatabase {
 
         // Add classpath for extensions
         ServiceLocator.getInstance().addPackageToScan("liquibase.ext.spanner");
+
+        // Register SQL Generators
+        SqlGeneratorFactory.getInstance().register(new SpannerCreateTableGenerator());
     }
 
     public CloudSpanner() {

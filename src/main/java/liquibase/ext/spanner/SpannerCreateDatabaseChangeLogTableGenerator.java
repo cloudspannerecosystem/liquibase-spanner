@@ -25,6 +25,24 @@ import liquibase.sqlgenerator.core.CreateDatabaseChangeLogTableGenerator;
 import liquibase.statement.core.CreateDatabaseChangeLogTableStatement;
 
 public class SpannerCreateDatabaseChangeLogTableGenerator extends CreateDatabaseChangeLogTableGenerator {
+final String createTableSql = "" +
+        "CREATE TABLE DATABASECHANGELOG\n" +
+        "(\n" +
+        "    id            string(MAX) not null,\n" +
+        "    author        string(MAX) not null,\n" +
+        "    filename      string(MAX) not null,\n" +
+        "    dateExecuted  timestamp   not null,\n" +
+        "    orderExecuted int64       not null,\n" +
+        "    execType      string(MAX),\n" +
+        "    md5sum        string(MAX),\n" +
+        "    description   string(MAX),\n" +
+        "    comments      string(MAX),\n" +
+        "    tag           string(MAX),\n" +
+        "    liquibase     string(MAX),\n" +
+        "    contexts      string(MAX),\n" +
+        "    labels        string(MAX),\n" +
+        "    deployment_id string(MAX),\n" +
+        ") primary key (id, author, filename);";
 
     @Override
     public boolean supports(CreateDatabaseChangeLogTableStatement statement, Database database) {
@@ -38,7 +56,7 @@ public class SpannerCreateDatabaseChangeLogTableGenerator extends CreateDatabase
 
     @Override
     public Sql[] generateSql(CreateDatabaseChangeLogTableStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-        return new Sql[]{ new UnparsedSql("SELECT 1") };
+        return new Sql[]{ new UnparsedSql(createTableSql) };
     }
 
     @Override

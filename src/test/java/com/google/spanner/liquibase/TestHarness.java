@@ -19,21 +19,16 @@ package com.google.spanner.liquibase;
 import com.google.cloud.spanner.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -63,14 +58,6 @@ public class TestHarness {
                 .collect(
                         Collectors.joining("\n")
                 );
-    }
-
-    final private static String INITIAL_SPANNER_SQL = "initial.spanner.sql";
-    private static List<String> InitialSQL() {
-        return Arrays.asList(
-                readResource(INITIAL_SPANNER_SQL)
-                        .replaceAll("--.*", "")
-                        .split(";"));
     }
 
     private static void createInstance(Spanner service, String instanceId) throws SQLException {
@@ -124,7 +111,7 @@ public class TestHarness {
             service.getDatabaseAdminClient().createDatabase(
                 instanceId,
                 databaseId,
-                InitialSQL()
+                Arrays.asList()
                 ).get();
 
         } catch (ExecutionException | InterruptedException e) {
