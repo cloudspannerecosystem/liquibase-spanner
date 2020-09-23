@@ -66,7 +66,7 @@ public class TestHarness {
     }
 
     final private static String INITIAL_SPANNER_SQL = "initial.spanner.sql";
-    private static List<String> InitialSQL() throws URISyntaxException, IOException {
+    private static List<String> InitialSQL() {
         return Arrays.asList(
                 readResource(INITIAL_SPANNER_SQL)
                         .replaceAll("--.*", "")
@@ -92,7 +92,7 @@ public class TestHarness {
                             .setNodeCount(1)
                             .build()
             ).get();
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new SQLException("Failed creating instance", e);
         }
     }
@@ -127,7 +127,7 @@ public class TestHarness {
                 InitialSQL()
                 ).get();
 
-        } catch (Exception e) {
+        } catch (ExecutionException | InterruptedException e) {
             throw new SQLException("Unable to create database", e);
         }
 
@@ -139,15 +139,10 @@ public class TestHarness {
     }
 
     private static void dropDatabase(Spanner service, String instanceId, String databaseId) throws SQLException {
-        try {
             service.getDatabaseAdminClient().dropDatabase(
                     instanceId,
                     databaseId
             );
-        }
-        catch (Exception e) {
-            throw new SQLException("Unable to drop database", e);
-        }
     }
 
 

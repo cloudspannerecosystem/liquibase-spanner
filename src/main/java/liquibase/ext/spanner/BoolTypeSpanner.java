@@ -39,7 +39,7 @@ public class BoolTypeSpanner extends BooleanType {
 
     @Override
     public int getPriority() {
-        return 2;
+        return PRIORITY_DATABASE;
     }
 
 }

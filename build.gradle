@@ -24,8 +24,8 @@ plugins {
 group = "com.google.spanner"
 
 
-if (project.hasProperty('tagVersion')) {
-    project.version = project.tagVersion
+if (project.hasProperty('tagVersion') && project.tagVersion.trim()) {
+    project.version = project.tagVersion.trim()
 } else {
    project.version = "SNAPSHOT"
 }
@@ -47,7 +47,7 @@ dependencies {
 
     // Cloud Spanner related
     implementation("com.google.cloud:google-cloud-spanner-jdbc:1.16.0")
-    implementation("com.google.cloud:google-cloud-spanner:1.52.0")
+    implementation("com.google.cloud:google-cloud-spanner")
     implementation("com.google.cloud:google-cloud-logging-logback:0.116.0-alpha")
 
     // Liquibase Core - needed for testing and docker container

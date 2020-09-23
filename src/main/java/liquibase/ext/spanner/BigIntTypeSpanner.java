@@ -19,9 +19,8 @@ package liquibase.ext.spanner;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.BigIntType;
-import liquibase.datatype.core.IntType;
 
-public class IntTypeSpanner extends     IntType {
+public class BigIntTypeSpanner extends BigIntType {
 
     @Override
     public boolean supports(Database database) {

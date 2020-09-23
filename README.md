@@ -47,7 +47,7 @@ Please feel free to report issues and send pull requests, but note that this app
 # NOTES:
 
  * We strongly recommend to use [Liquibase SQL format](https://docs.liquibase.com/concepts/basic/sql-format.html). This allows
-   you to explicitly write Spanner SQL. Liquibase SQL generation for Spanner is incomplete.
+   you to explicitly write Spanner SQL. Liquibase SQL generation for Spanner is incomplete. This is required for rollbacks as well.
  * You need to initialise Liquibase change log tables manually. The SQL used is in [sql/test/resources/initial.spanner.sql](sql/test/resources/initial.spanner.sql).
  * This is *alpha*.
 

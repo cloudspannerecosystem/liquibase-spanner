@@ -32,7 +32,7 @@ public class SpannerStandardChangeLogHistoryService extends StandardChangeLogHis
 
     @Override
     public int getPriority() {
-        return 2;
+        return PRIORITY_DATABASE;
     }
 
     @Override
