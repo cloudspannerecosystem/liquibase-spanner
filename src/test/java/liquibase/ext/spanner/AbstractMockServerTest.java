@@ -2,6 +2,7 @@ package liquibase.ext.spanner;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.connection.ConnectionOptions;
@@ -66,7 +67,11 @@ public abstract class AbstractMockServerTest {
   @AfterAll
   static void stopServer() throws Exception {
     // Make sure to close all connections before we stop the mock server.
-    ConnectionOptions.closeSpanner();
+    try {
+      ConnectionOptions.closeSpanner();
+    } catch (SpannerException e) {
+      // ignore
+    }
     server.shutdown();
     server.awaitTermination();
   }
