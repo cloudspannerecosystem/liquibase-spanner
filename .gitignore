@@ -9,3 +9,4 @@ bin/
 .settings/
 .idea/
 .vscode/
+/target/
