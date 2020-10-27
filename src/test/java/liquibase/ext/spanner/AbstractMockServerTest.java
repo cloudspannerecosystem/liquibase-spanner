@@ -16,27 +16,29 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
-import com.google.spanner.v1.StructType.Field;
+import io.grpc.Server;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import io.grpc.Server;
-import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import liquibase.Liquibase;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 public abstract class AbstractMockServerTest {
-  static final Statement SELECT_FROM_DATABASECHANGELOG = Statement.of("SELECT * FROM DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC");
-  static final Statement SELECT_COUNT_FROM_DATABASECHANGELOG = Statement.of("SELECT COUNT(*) FROM DATABASECHANGELOG");
+  static final Statement SELECT_FROM_DATABASECHANGELOG =
+      Statement.of("SELECT * FROM DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC");
+  static final Statement SELECT_COUNT_FROM_DATABASECHANGELOG =
+      Statement.of("SELECT COUNT(*) FROM DATABASECHANGELOG");
   private static final ResultSetMetadata COUNT_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -48,7 +50,7 @@ public abstract class AbstractMockServerTest {
                           .build())
                   .build())
           .build();
-  
+
   protected static final String DB_ID = "projects/p/instances/i/databases/d";
   protected static MockSpannerServiceImpl mockSpanner;
   protected static MockDatabaseAdminImpl mockAdmin;
@@ -60,7 +62,12 @@ public abstract class AbstractMockServerTest {
     mockSpanner = new MockSpannerServiceImpl();
     mockAdmin = new MockDatabaseAdminImpl();
     address = new InetSocketAddress("localhost", 0);
-    server = NettyServerBuilder.forAddress(address).addService(mockSpanner).addService(mockAdmin).build().start();
+    server =
+        NettyServerBuilder.forAddress(address)
+            .addService(mockSpanner)
+            .addService(mockAdmin)
+            .build()
+            .start();
   }
 
   @AfterAll
@@ -70,57 +77,57 @@ public abstract class AbstractMockServerTest {
     server.shutdown();
     server.awaitTermination();
   }
-  
+
   static ResultSet createCountResultSet(long count) {
-    return
-        com.google.spanner.v1.ResultSet.newBuilder()
-            .addRows(
-                ListValue.newBuilder()
-                    .addValues(
-                        Value.newBuilder()
-                            .setStringValue(String.valueOf(count))
-                            .build())
-                    .build())
-            .setMetadata(COUNT_METADATA)
-            .build();
+    return com.google.spanner.v1.ResultSet.newBuilder()
+        .addRows(
+            ListValue.newBuilder()
+                .addValues(Value.newBuilder().setStringValue(String.valueOf(count)).build())
+                .build())
+        .setMetadata(COUNT_METADATA)
+        .build();
   }
-  
-  static Liquibase getLiquibase(Connection connection, String changeLogFile) throws DatabaseException {
-    Liquibase liquibase = new Liquibase(
-        changeLogFile,
-        new ClassLoaderResourceAccessor(),
-    DatabaseFactory.getInstance().findCorrectDatabaseImplementation(
-       new JdbcConnection(connection)
-    ));
+
+  static Liquibase getLiquibase(Connection connection, String changeLogFile)
+      throws DatabaseException {
+    Liquibase liquibase =
+        new Liquibase(
+            changeLogFile,
+            new ClassLoaderResourceAccessor(),
+            DatabaseFactory.getInstance()
+                .findCorrectDatabaseImplementation(new JdbcConnection(connection)));
     return liquibase;
   }
-  
+
   static void addUpdateDdlStatementsResponse(String statement) {
     addUpdateDdlStatementsResponse(ImmutableList.of(statement));
   }
-  
+
   static void addUpdateDdlStatementsResponse(Iterable<String> statements) {
-    mockAdmin.addResponse(Operation.newBuilder()
-        .setDone(true)
-        .setMetadata(Any.pack(UpdateDatabaseDdlMetadata.newBuilder()
-            .addAllCommitTimestamps(ImmutableList.of(Timestamp.now().toProto()))
-            .setDatabase(DB_ID)
-            .addAllStatements(statements)
-            .build()))
-        .setName(String.format("%s/operations/o", DB_ID))
-        .setResponse(Any.pack(Empty.getDefaultInstance()))
-        .build()
-        );
+    mockAdmin.addResponse(
+        Operation.newBuilder()
+            .setDone(true)
+            .setMetadata(
+                Any.pack(
+                    UpdateDatabaseDdlMetadata.newBuilder()
+                        .addAllCommitTimestamps(ImmutableList.of(Timestamp.now().toProto()))
+                        .setDatabase(DB_ID)
+                        .addAllStatements(statements)
+                        .build()))
+            .setName(String.format("%s/operations/o", DB_ID))
+            .setResponse(Any.pack(Empty.getDefaultInstance()))
+            .build());
   }
-  
+
   static Iterable<String> getUpdateDdlStatementsList(int index) {
     return ((UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(index)).getStatementsList();
   }
-  
+
   static Connection createConnection() throws SQLException {
-    StringBuilder url = new StringBuilder("jdbc:cloudspanner://localhost:")
-        .append(server.getPort())
-        .append("/projects/p/instances/i/databases/d;usePlainText=true");
+    StringBuilder url =
+        new StringBuilder("jdbc:cloudspanner://localhost:")
+            .append(server.getPort())
+            .append("/projects/p/instances/i/databases/d;usePlainText=true");
     return DriverManager.getConnection(url.toString());
   }
 }
