@@ -7,9 +7,9 @@ import com.google.protobuf.Value;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
-import com.google.spanner.v1.StructType.Field;
 
 class DatabaseChangeLog {
   String id;
@@ -26,7 +26,7 @@ class DatabaseChangeLog {
   String contexts;
   String labels;
   String deploymentId;
-  
+
   static final ResultSetMetadata DATABASECHANGELOG_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -107,26 +107,26 @@ class DatabaseChangeLog {
   static ResultSet createChangeSetResultSet(Iterable<DatabaseChangeLog> rows) {
     ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(DATABASECHANGELOG_METADATA);
     for (DatabaseChangeLog row : rows) {
-      builder.addRows(ListValue.newBuilder()
-          .addValues(createStringOrNullValue(row.id))
-          .addValues(createStringOrNullValue(row.author))
-          .addValues(createStringOrNullValue(row.filename))
-          .addValues(createStringOrNullValue(row.dateExecuted.toString()))
-          .addValues(createStringOrNullValue(String.valueOf(row.orderExecuted)))
-          .addValues(createStringOrNullValue(row.execType))
-          .addValues(createStringOrNullValue(row.md5))
-          .addValues(createStringOrNullValue(row.description))
-          .addValues(createStringOrNullValue(row.comments))
-          .addValues(createStringOrNullValue(row.tag))
-          .addValues(createStringOrNullValue(row.liquibase))
-          .addValues(createStringOrNullValue(row.contexts))
-          .addValues(createStringOrNullValue(row.labels))
-          .addValues(createStringOrNullValue(row.deploymentId))
-          );
+      builder.addRows(
+          ListValue.newBuilder()
+              .addValues(createStringOrNullValue(row.id))
+              .addValues(createStringOrNullValue(row.author))
+              .addValues(createStringOrNullValue(row.filename))
+              .addValues(createStringOrNullValue(row.dateExecuted.toString()))
+              .addValues(createStringOrNullValue(String.valueOf(row.orderExecuted)))
+              .addValues(createStringOrNullValue(row.execType))
+              .addValues(createStringOrNullValue(row.md5))
+              .addValues(createStringOrNullValue(row.description))
+              .addValues(createStringOrNullValue(row.comments))
+              .addValues(createStringOrNullValue(row.tag))
+              .addValues(createStringOrNullValue(row.liquibase))
+              .addValues(createStringOrNullValue(row.contexts))
+              .addValues(createStringOrNullValue(row.labels))
+              .addValues(createStringOrNullValue(row.deploymentId)));
     }
     return builder.build();
   }
-  
+
   static Value createStringOrNullValue(String val) {
     Value.Builder builder = Value.newBuilder();
     if (val == null) {

@@ -1,19 +1,16 @@
 /**
  * Copyright 2020 Google LLC
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     https://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ *
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
+ *
+ * <p>https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package liquibase.ext.spanner;
 
 import liquibase.database.Database;
@@ -27,41 +24,42 @@ import liquibase.statement.core.DeleteStatement;
 import liquibase.statement.core.InitializeDatabaseChangeLogLockTableStatement;
 import liquibase.statement.core.InsertStatement;
 
-public class SpannerInitializeChangeLogLockTableGenerator extends AbstractSqlGenerator<InitializeDatabaseChangeLogLockTableStatement> {
+public class SpannerInitializeChangeLogLockTableGenerator
+    extends AbstractSqlGenerator<InitializeDatabaseChangeLogLockTableStatement> {
 
-    @Override
-    public int getPriority() {
-        return PRIORITY_DATABASE;
-    }
+  @Override
+  public int getPriority() {
+    return PRIORITY_DATABASE;
+  }
 
-    @Override
-    public ValidationErrors validate(
-            InitializeDatabaseChangeLogLockTableStatement statement,
-            Database database,
-            SqlGeneratorChain<InitializeDatabaseChangeLogLockTableStatement> sqlGenerator) {
-        return new ValidationErrors();
-    }
+  @Override
+  public ValidationErrors validate(
+      InitializeDatabaseChangeLogLockTableStatement statement,
+      Database database,
+      SqlGeneratorChain<InitializeDatabaseChangeLogLockTableStatement> sqlGenerator) {
+    return new ValidationErrors();
+  }
 
-    @Override
-    public Sql[] generateSql(
-            InitializeDatabaseChangeLogLockTableStatement statement,
-            Database database,
-            SqlGeneratorChain<InitializeDatabaseChangeLogLockTableStatement> sqlGenerator) {
-        return SqlGeneratorFactory.getInstance().generateSql(
-                new SqlStatement[]{
-                        new DeleteStatement(
-                            database.getLiquibaseCatalogName(),
-                            database.getLiquibaseSchemaName(),
-                            database.getDatabaseChangeLogLockTableName())
-                            .setWhere("true"),
-                        new InsertStatement(
-                            database.getLiquibaseCatalogName(),
-                            database.getLiquibaseSchemaName(),
-                            database.getDatabaseChangeLogLockTableName())
-                            .addColumnValue("ID", 1)
-                            .addColumnValue("LOCKED", Boolean.FALSE)
-                },
-                database
-        );
-    }
+  @Override
+  public Sql[] generateSql(
+      InitializeDatabaseChangeLogLockTableStatement statement,
+      Database database,
+      SqlGeneratorChain<InitializeDatabaseChangeLogLockTableStatement> sqlGenerator) {
+    return SqlGeneratorFactory.getInstance()
+        .generateSql(
+            new SqlStatement[] {
+              new DeleteStatement(
+                      database.getLiquibaseCatalogName(),
+                      database.getLiquibaseSchemaName(),
+                      database.getDatabaseChangeLogLockTableName())
+                  .setWhere("true"),
+              new InsertStatement(
+                      database.getLiquibaseCatalogName(),
+                      database.getLiquibaseSchemaName(),
+                      database.getDatabaseChangeLogLockTableName())
+                  .addColumnValue("ID", 1)
+                  .addColumnValue("LOCKED", Boolean.FALSE)
+            },
+            database);
+  }
 }
