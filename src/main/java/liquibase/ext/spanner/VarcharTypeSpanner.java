@@ -17,6 +17,7 @@ import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.VarcharType;
 
+/** VARCHAR(n) is translated to STRING(n). */
 public class VarcharTypeSpanner extends VarcharType {
 
   @Override

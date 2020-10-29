@@ -9,16 +9,16 @@
  * <p>Unless required by applicable law or agreed to in writing, software distributed under the
  * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
+ * limitations under the License. package liquibase.ext.spanner;
  */
 package liquibase.ext.spanner;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
-import liquibase.datatype.core.BooleanType;
+import liquibase.datatype.core.NVarcharType;
 
-public class BoolTypeSpanner extends BooleanType {
-  private static final DatabaseDataType BOOL = new DatabaseDataType("BOOL");
+/** NVARCHAR(n) is translated to STRING(n). */
+public class NVarcharTypeSpanner extends NVarcharType {
 
   @Override
   public boolean supports(Database database) {
@@ -28,7 +28,7 @@ public class BoolTypeSpanner extends BooleanType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof CloudSpanner) {
-      return BOOL;
+      return new DatabaseDataType("STRING(" + getParameters()[0] + ")");
     } else {
       return super.toDatabaseDataType(database);
     }

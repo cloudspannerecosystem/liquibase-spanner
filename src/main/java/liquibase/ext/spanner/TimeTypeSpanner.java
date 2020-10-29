@@ -15,10 +15,14 @@ package liquibase.ext.spanner;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
-import liquibase.datatype.core.BooleanType;
+import liquibase.datatype.core.TimeType;
 
-public class BoolTypeSpanner extends BooleanType {
-  private static final DatabaseDataType BOOL = new DatabaseDataType("BOOL");
+/**
+ * Cloud Spanner does not have a data type that only stores time information. The best possible
+ * translation is therefore a TIMESTAMP column.
+ */
+public class TimeTypeSpanner extends TimeType {
+  private static final DatabaseDataType TIME = new DatabaseDataType("TIMESTAMP");
 
   @Override
   public boolean supports(Database database) {
@@ -28,7 +32,7 @@ public class BoolTypeSpanner extends BooleanType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof CloudSpanner) {
-      return BOOL;
+      return TIME;
     } else {
       return super.toDatabaseDataType(database);
     }

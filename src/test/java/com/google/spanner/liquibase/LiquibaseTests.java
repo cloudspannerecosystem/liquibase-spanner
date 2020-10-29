@@ -149,23 +149,25 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorSpannerCreateAndRollbackTest() throws SQLException, LiquibaseException {
-    doLiquibaseCreateAndRollbackTest(getSpannerEmulator());
+    doLiquibaseCreateAndRollbackTest("create_table.spanner.sql", getSpannerEmulator());
+    doLiquibaseCreateAndRollbackTest("create_table.spanner.yaml", getSpannerEmulator());
   }
 
   @Test
   @Tag("integration")
   void doRealSpannerCreateAndRollbackTest() throws SQLException, LiquibaseException {
-    doLiquibaseCreateAndRollbackTest(getSpannerReal());
+    doLiquibaseCreateAndRollbackTest("create_table.spanner.sql", getSpannerReal());
+    doLiquibaseCreateAndRollbackTest("create_table.spanner.yaml", getSpannerReal());
   }
 
-  void doLiquibaseCreateAndRollbackTest(TestHarness.Connection testHarness)
+  void doLiquibaseCreateAndRollbackTest(String changeLogFile, TestHarness.Connection testHarness)
       throws SQLException, LiquibaseException {
 
     List<Map<String, Object>> rows =
         tableColumns(testHarness.getJDBCConnection(), "rollback_table");
     Assert.assertTrue(rows.size() == 0);
 
-    Liquibase liquibase = getLiquibase(testHarness, "create_table.spanner.sql");
+    Liquibase liquibase = getLiquibase(testHarness, changeLogFile);
     liquibase.update(null, new LabelExpression("rollback_stuff"));
     liquibase.tag("tag-at-rollback");
 

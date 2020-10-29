@@ -18,6 +18,7 @@ import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.BigIntType;
 
 public class BigIntTypeSpanner extends BigIntType {
+  private static final DatabaseDataType INT64 = new DatabaseDataType("INT64");
 
   @Override
   public boolean supports(Database database) {
@@ -27,7 +28,7 @@ public class BigIntTypeSpanner extends BigIntType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof CloudSpanner) {
-      return new DatabaseDataType("INT64");
+      return INT64;
     } else {
       return super.toDatabaseDataType(database);
     }
