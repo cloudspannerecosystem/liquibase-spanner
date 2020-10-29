@@ -34,6 +34,7 @@ public class CloudSpanner extends AbstractJdbcDatabase {
   public CloudSpanner() {
     SqlGeneratorFactory sqlGeneratorFactory = SqlGeneratorFactory.getInstance();
     sqlGeneratorFactory.register(new CreateDatabaseChangeLogTableGenerator());
+    sqlGeneratorFactory.register(new SpannerAddForeignKeyConstraintGenerator());
     sqlGeneratorFactory.register(new SpannerInitializeChangeLogLockTableGenerator());
     sqlGeneratorFactory.register(new SpannerCreateDatabaseChangeLogTableGenerator());
     sqlGeneratorFactory.register(new UnlockDatabaseChangeLogGenerator());
