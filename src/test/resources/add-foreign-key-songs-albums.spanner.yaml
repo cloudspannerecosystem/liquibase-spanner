@@ -22,8 +22,6 @@ databaseChangeLog:
      author: spanner-liquibase-tests
      changes:
        - addForeignKeyConstraint:
-          # constraintName is required by Liquibase, but not accepted by Cloud Spanner.
-          # So it must be specified here, but will be stripped away from the generated SQL.
           constraintName: FK_Songs_Albums
           baseTableName:  Songs
           baseColumnNames: SingerId, AlbumId

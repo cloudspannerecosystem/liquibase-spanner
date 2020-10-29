@@ -1,3 +1,16 @@
+/**
+ * Copyright 2020 Google LLC
+ *
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
+ *
+ * <p>https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -22,11 +35,8 @@ public class AddForeignKeyTest extends AbstractMockServerTest {
 
   @Test
   void testAddFKAlbumsSingersFromYaml() throws Exception {
-    // There's an extra space in the expected SQL as Liquibase will always try to add a constraint
-    // name. Cloud Spanner does not support adding a constraint name to a foreign key, so an empty
-    // string is rendered, but with a trailing space.
     String expectedSql =
-        "ALTER TABLE Albums ADD CONSTRAINT  FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)";
+        "ALTER TABLE Albums ADD CONSTRAINT FK_Albums_Singers FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"add-foreign-key-albums-singers.spanner.yaml"}) {
@@ -46,7 +56,7 @@ public class AddForeignKeyTest extends AbstractMockServerTest {
   @Test
   void testAddFKSongsAlbumsFromYaml() throws Exception {
     String expectedSql =
-        "ALTER TABLE Songs ADD CONSTRAINT  FOREIGN KEY (SingerId, AlbumId) REFERENCES Albums (SingerId, AlbumId)";
+        "ALTER TABLE Songs ADD CONSTRAINT FK_Songs_Albums FOREIGN KEY (SingerId, AlbumId) REFERENCES Albums (SingerId, AlbumId)";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"add-foreign-key-songs-albums.spanner.yaml"}) {
