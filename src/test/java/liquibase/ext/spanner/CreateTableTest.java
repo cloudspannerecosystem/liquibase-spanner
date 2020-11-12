@@ -1,6 +1,7 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TempMockSpannerServiceImpl.StatementResult;
@@ -9,6 +10,7 @@ import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
+import liquibase.exception.ValidationFailedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -90,5 +92,18 @@ public class CreateTableTest extends AbstractMockServerTest {
     UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
     assertThat(request.getStatementsList()).hasSize(1);
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
+  }
+
+  @Test
+  void testTableWithoutPrimaryKeyFromYaml() throws Exception {
+    for (String file : new String[] {"create-table-without-pk.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"));
+        fail("missing expected validation exception");
+      } catch (ValidationFailedException e) {
+        assertThat(e.getMessage()).contains("primary key is required");
+      }
+    }
   }
 }

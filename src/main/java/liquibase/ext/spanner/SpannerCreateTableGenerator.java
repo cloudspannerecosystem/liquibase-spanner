@@ -14,6 +14,7 @@
 package liquibase.ext.spanner;
 
 import liquibase.database.Database;
+import liquibase.exception.ValidationErrors;
 import liquibase.sql.Sql;
 import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
@@ -25,6 +26,20 @@ import liquibase.util.StringUtils;
 public class SpannerCreateTableGenerator extends CreateTableGenerator {
 
   public SpannerCreateTableGenerator() {}
+
+  @Override
+  public ValidationErrors validate(
+      CreateTableStatement createTableStatement,
+      Database database,
+      SqlGeneratorChain sqlGeneratorChain) {
+    ValidationErrors errors = super.validate(createTableStatement, database, sqlGeneratorChain);
+    // Cloud Spanner requires a primary key to be defined. Cloud Spanner allows the list of columns
+    // of the primary key constraint to be empty, but that cannot be defined in the metamodel of
+    // Liquibase.
+    errors.checkRequiredField("primary key", createTableStatement.getPrimaryKeyConstraint());
+
+    return errors;
+  }
 
   @Override
   public Sql[] generateSql(
