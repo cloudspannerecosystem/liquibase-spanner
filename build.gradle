@@ -66,7 +66,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.6.2")
     
     // For Spanner mock server testing
-    testCompile(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
+    testImplementation(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
     testImplementation("com.google.api.grpc:grpc-google-cloud-spanner-v1")
     testImplementation("com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1")
     testImplementation("com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1")
