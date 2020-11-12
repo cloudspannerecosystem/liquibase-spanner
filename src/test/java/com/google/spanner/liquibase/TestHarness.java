@@ -17,6 +17,7 @@
 package com.google.spanner.liquibase;
 
 import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.connection.ConnectionOptions;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -125,6 +126,8 @@ public class TestHarness {
     service.getDatabaseAdminClient().dropDatabase(instanceId, databaseId);
   }
 
+  static GenericContainer<?> testContainer;
+
   //
   // Create a Spanner emulator instance
   //
@@ -143,7 +146,7 @@ public class TestHarness {
 
       // Create the container
       final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:latest";
-      final GenericContainer<?> testContainer =
+      testContainer =
           new GenericContainer<>(SPANNER_EMULATOR_IMAGE)
               .withCommand()
               .withExposedPorts(9010, 9020)
@@ -186,7 +189,18 @@ public class TestHarness {
       }
 
       @Override
-      public void stop() {}
+      public void stop() throws SQLException {
+        service.close();
+        conn.close();
+        try {
+          ConnectionOptions.closeSpanner();
+        } catch (SpannerException e) {
+          // ignore
+        }
+        if (testContainer != null) {
+          testContainer.stop();
+        }
+      }
     };
   }
 
@@ -227,7 +241,13 @@ public class TestHarness {
       @Override
       public void stop() throws SQLException {
         dropDatabase(service, instanceId, databaseId);
+        conn.close();
         service.close();
+        try {
+          ConnectionOptions.closeSpanner();
+        } catch (SpannerException e) {
+          // ignore
+        }
       }
     };
   }
