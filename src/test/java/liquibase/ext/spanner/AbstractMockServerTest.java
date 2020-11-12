@@ -31,17 +31,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
 import liquibase.Liquibase;
-import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
-import liquibase.sql.CallableSql;
-import liquibase.sql.Sql;
-import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.SqlGeneratorFactory;
-import liquibase.sqlgenerator.core.LockDatabaseChangeLogGenerator;
-import liquibase.statement.core.LockDatabaseChangeLogStatement;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -59,8 +52,7 @@ public abstract class AbstractMockServerTest {
   static final Statement SELECT_LOCKED =
       Statement.of("SELECT LOCKED FROM DATABASECHANGELOGLOCK WHERE ID=1");
   static final Statement ACQUIRE_LOCK =
-      Statement.of(
-          "UPDATE DATABASECHANGELOGLOCK SET LOCKED = TRUE, LOCKEDBY = 'some-host', LOCKGRANTED = '2020-10-27 19:13:41.732' WHERE ID = 1 AND LOCKED = FALSE");
+      Statement.of("UPDATE DATABASECHANGELOGLOCK SET LOCKED = TRUE, LOCKEDBY = ");
   static final Statement RELEASE_LOCK =
       Statement.of(
           "UPDATE DATABASECHANGELOGLOCK SET LOCKED = FALSE, LOCKEDBY = NULL, LOCKGRANTED = NULL WHERE ID = 1");
@@ -258,23 +250,6 @@ public abstract class AbstractMockServerTest {
                         0,
                         DatabaseMetaData.columnNoNulls)))));
 
-    // Register results for Liquibase locking.
-    SqlGeneratorFactory.getInstance()
-        .register(
-            new LockDatabaseChangeLogGenerator() {
-              @Override
-              public Sql[] generateSql(
-                  LockDatabaseChangeLogStatement statement,
-                  Database database,
-                  @SuppressWarnings("rawtypes") SqlGeneratorChain sqlGeneratorChain) {
-                return new Sql[] {new CallableSql(ACQUIRE_LOCK.getSql(), "")};
-              }
-
-              @Override
-              public int getPriority() {
-                return Integer.MAX_VALUE;
-              }
-            });
     // Register results for an empty Liquibase database.
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_COUNT_FROM_DATABASECHANGELOG, createInt64ResultSet(0L)));
@@ -288,7 +263,7 @@ public abstract class AbstractMockServerTest {
     mockSpanner.putStatementResult(StatementResult.update(INSERT_DATABASECHANGELOGLOCK, 1L));
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_LOCKED, createLockedResultSet(false)));
-    mockSpanner.putStatementResult(StatementResult.update(ACQUIRE_LOCK, 1L));
+    mockSpanner.putPartialStatementResult(StatementResult.update(ACQUIRE_LOCK, 1L));
     mockSpanner.putStatementResult(StatementResult.update(RELEASE_LOCK, 1L));
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_MD5SUM, createMd5SumResultSet(ImmutableList.of())));
