@@ -70,7 +70,7 @@ dependencies {
     testImplementation("com.google.api.grpc:grpc-google-cloud-spanner-v1")
     testImplementation("com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1")
     testImplementation("com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1")
-    testCompile(group: 'com.google.api', name: 'gax-grpc', version: '1.60.0', classifier: 'testlib')
+    testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '1.60.0', classifier: 'testlib')
 }
 
 
