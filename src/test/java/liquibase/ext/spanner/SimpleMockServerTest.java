@@ -2,7 +2,8 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.TempMockSpannerServiceImpl.StatementResult;
+import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,7 +11,6 @@ import liquibase.Liquibase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class SimpleMockServerTest extends AbstractMockServerTest {
@@ -31,7 +31,7 @@ public class SimpleMockServerTest extends AbstractMockServerTest {
   @Test
   void testInitLiquibase() throws Exception {
     mockSpanner.putStatementResult(
-        StatementResult.query(SELECT_COUNT_FROM_DATABASECHANGELOG, createCountResultSet(0L)));
+        StatementResult.query(SELECT_COUNT_FROM_DATABASECHANGELOG, createInt64ResultSet(0L)));
     mockSpanner.putStatementResult(
         StatementResult.query(
             SELECT_FROM_DATABASECHANGELOG,

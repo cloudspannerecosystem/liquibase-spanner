@@ -15,10 +15,10 @@ package liquibase.ext.spanner;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
-import liquibase.datatype.core.BooleanType;
+import liquibase.datatype.core.SmallIntType;
 
-public class BoolTypeSpanner extends BooleanType {
-  private static final DatabaseDataType BOOL = new DatabaseDataType("BOOL");
+public class SmallIntTypeSpanner extends SmallIntType {
+  private static final DatabaseDataType INT64 = new DatabaseDataType("INT64");
 
   @Override
   public boolean supports(Database database) {
@@ -28,7 +28,7 @@ public class BoolTypeSpanner extends BooleanType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof CloudSpanner) {
-      return BOOL;
+      return INT64;
     } else {
       return super.toDatabaseDataType(database);
     }

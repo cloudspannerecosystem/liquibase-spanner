@@ -1,9 +1,10 @@
 package liquibase.ext.spanner;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TempMockSpannerServiceImpl;
+import com.google.cloud.spanner.TempMockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.common.collect.ImmutableList;
@@ -25,13 +26,22 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Types;
 import liquibase.Liquibase;
+import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import liquibase.sql.CallableSql;
+import liquibase.sql.Sql;
+import liquibase.sqlgenerator.SqlGeneratorChain;
+import liquibase.sqlgenerator.SqlGeneratorFactory;
+import liquibase.sqlgenerator.core.LockDatabaseChangeLogGenerator;
+import liquibase.statement.core.LockDatabaseChangeLogStatement;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -40,7 +50,29 @@ public abstract class AbstractMockServerTest {
       Statement.of("SELECT * FROM DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC");
   static final Statement SELECT_COUNT_FROM_DATABASECHANGELOG =
       Statement.of("SELECT COUNT(*) FROM DATABASECHANGELOG");
-  private static final ResultSetMetadata COUNT_METADATA =
+  static final Statement SELECT_COUNT_FROM_DATABASECHANGELOGLOCK =
+      Statement.of("SELECT COUNT(*) FROM DATABASECHANGELOGLOCK");
+  static final Statement DELETE_FROM_DATABASECHANGELOGLOCK =
+      Statement.of("DELETE FROM DATABASECHANGELOGLOCK WHERE true");
+  static final Statement INSERT_DATABASECHANGELOGLOCK =
+      Statement.of("INSERT INTO DATABASECHANGELOGLOCK (ID, LOCKED) VALUES (1, FALSE)");
+  static final Statement SELECT_LOCKED =
+      Statement.of("SELECT LOCKED FROM DATABASECHANGELOGLOCK WHERE ID=1");
+  static final Statement ACQUIRE_LOCK =
+      Statement.of(
+          "UPDATE DATABASECHANGELOGLOCK SET LOCKED = TRUE, LOCKEDBY = 'some-host', LOCKGRANTED = '2020-10-27 19:13:41.732' WHERE ID = 1 AND LOCKED = FALSE");
+  static final Statement RELEASE_LOCK =
+      Statement.of(
+          "UPDATE DATABASECHANGELOGLOCK SET LOCKED = FALSE, LOCKEDBY = NULL, LOCKGRANTED = NULL WHERE ID = 1");
+  static final Statement SELECT_MD5SUM =
+      Statement.of("SELECT MD5SUM FROM DATABASECHANGELOG WHERE MD5SUM IS NOT NULL");
+  static final Statement SELECT_MAX_ORDER_EXEC =
+      Statement.of("SELECT MAX(ORDEREXECUTED) FROM DATABASECHANGELOG");
+  static final Statement INSERT_DATABASECHANGELOG =
+      Statement.of(
+          "INSERT INTO DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID)");
+
+  private static final ResultSetMetadata SINGLE_COL_INT64_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
               StructType.newBuilder()
@@ -51,16 +83,39 @@ public abstract class AbstractMockServerTest {
                           .build())
                   .build())
           .build();
+  private static final ResultSetMetadata LOCKED_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("LOCKED")
+                          .setType(Type.newBuilder().setCode(TypeCode.BOOL).build())
+                          .build())
+                  .build())
+          .build();
+  private static final ResultSetMetadata MD5SUM_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("MD5SUM")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                          .build())
+                  .build())
+          .build();
 
   protected static final String DB_ID = "projects/p/instances/i/databases/d";
-  protected static MockSpannerServiceImpl mockSpanner;
+  protected static TempMockSpannerServiceImpl mockSpanner;
   protected static MockDatabaseAdminImpl mockAdmin;
   private static Server server;
   private static InetSocketAddress address;
 
   @BeforeAll
   static void startStaticServer() throws IOException {
-    mockSpanner = new MockSpannerServiceImpl();
+    mockSpanner = new TempMockSpannerServiceImpl();
+    mockSpanner.setAbortProbability(0.0D);
     mockAdmin = new MockDatabaseAdminImpl();
     address = new InetSocketAddress("localhost", 0);
     server =
@@ -69,6 +124,177 @@ public abstract class AbstractMockServerTest {
             .addService(mockAdmin)
             .build()
             .start();
+
+    registerDefaultResults();
+  }
+
+  private static void registerDefaultResults() {
+    // Register metadata results for Liquibase tables.
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
+                .bind("p1")
+                .to("") // Catalog
+                .bind("p2")
+                .to("") // Schema
+                .bind("p3")
+                .to("DATABASECHANGELOG")
+                .bind("p4")
+                .to("TABLE") // Liquibase searches for tables
+                .bind("p5")
+                .to("NON_EXISTENT_TYPE") // This is a trick in the JDBC driver to simplify the query
+                .build(),
+            JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of("DATABASECHANGELOG"))));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(JdbcMetadataQueries.GET_COLUMNS)
+                .bind("p1")
+                .to("") // Catalog
+                .bind("p2")
+                .to("") // Schema
+                .bind("p3")
+                .to("DATABASECHANGELOG")
+                .bind("p4")
+                .to("%") // All column names
+                .build(),
+            JdbcMetadataQueries.createGetColumnsResultSet(
+                ImmutableList.of(
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "ID",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "AUTHOR",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "FILENAME",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "DATEEXECUTED",
+                        Types.TIMESTAMP,
+                        "TIMESTAMP",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "ORDEREXECUTED",
+                        Types.BIGINT,
+                        "INT64",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "EXECTYPE",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "MD5SUM",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "DESCRIPTION",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "COMMENTS",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "TAG",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "LIQUIBASE",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "CONTEXTS",
+                        Types.NVARCHAR,
+                        "STRING",
+                        255,
+                        DatabaseMetaData.columnNullable),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "LABELS",
+                        Types.NVARCHAR,
+                        "STRING",
+                        255,
+                        DatabaseMetaData.columnNullable),
+                    new JdbcMetadataQueries.ColumnMetaData(
+                        "DATABASECHANGELOG",
+                        "DEPLOYMENT_ID",
+                        Types.NVARCHAR,
+                        "STRING",
+                        0,
+                        DatabaseMetaData.columnNoNulls)))));
+
+    // Register results for Liquibase locking.
+    SqlGeneratorFactory.getInstance()
+        .register(
+            new LockDatabaseChangeLogGenerator() {
+              @Override
+              public Sql[] generateSql(
+                  LockDatabaseChangeLogStatement statement,
+                  Database database,
+                  @SuppressWarnings("rawtypes") SqlGeneratorChain sqlGeneratorChain) {
+                return new Sql[] {new CallableSql(ACQUIRE_LOCK.getSql(), "")};
+              }
+
+              @Override
+              public int getPriority() {
+                return Integer.MAX_VALUE;
+              }
+            });
+    // Register results for an empty Liquibase database.
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_COUNT_FROM_DATABASECHANGELOG, createInt64ResultSet(0L)));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            SELECT_FROM_DATABASECHANGELOG,
+            DatabaseChangeLog.createChangeSetResultSet(ImmutableList.of())));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_COUNT_FROM_DATABASECHANGELOGLOCK, createInt64ResultSet(0L)));
+    mockSpanner.putStatementResult(StatementResult.update(DELETE_FROM_DATABASECHANGELOGLOCK, 0L));
+    mockSpanner.putStatementResult(StatementResult.update(INSERT_DATABASECHANGELOGLOCK, 1L));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_LOCKED, createLockedResultSet(false)));
+    mockSpanner.putStatementResult(StatementResult.update(ACQUIRE_LOCK, 1L));
+    mockSpanner.putStatementResult(StatementResult.update(RELEASE_LOCK, 1L));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_MD5SUM, createMd5SumResultSet(ImmutableList.of())));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_MAX_ORDER_EXEC, createInt64ResultSet(0L)));
+    mockSpanner.putPartialStatementResult(StatementResult.update(INSERT_DATABASECHANGELOG, 1L));
   }
 
   @AfterAll
@@ -83,14 +309,33 @@ public abstract class AbstractMockServerTest {
     server.awaitTermination();
   }
 
-  static ResultSet createCountResultSet(long count) {
+  static ResultSet createInt64ResultSet(long value) {
     return com.google.spanner.v1.ResultSet.newBuilder()
         .addRows(
             ListValue.newBuilder()
-                .addValues(Value.newBuilder().setStringValue(String.valueOf(count)).build())
+                .addValues(Value.newBuilder().setStringValue(String.valueOf(value)).build())
                 .build())
-        .setMetadata(COUNT_METADATA)
+        .setMetadata(SINGLE_COL_INT64_METADATA)
         .build();
+  }
+
+  static ResultSet createLockedResultSet(boolean locked) {
+    return com.google.spanner.v1.ResultSet.newBuilder()
+        .addRows(
+            ListValue.newBuilder()
+                .addValues(Value.newBuilder().setBoolValue(locked).build())
+                .build())
+        .setMetadata(LOCKED_METADATA)
+        .build();
+  }
+
+  static ResultSet createMd5SumResultSet(Iterable<String> sums) {
+    ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(MD5SUM_METADATA);
+    for (String sum : sums) {
+      builder.addRows(
+          ListValue.newBuilder().addValues(Value.newBuilder().setStringValue(sum).build()).build());
+    }
+    return builder.build();
   }
 
   static Liquibase getLiquibase(Connection connection, String changeLogFile)

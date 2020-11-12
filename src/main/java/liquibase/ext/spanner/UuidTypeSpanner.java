@@ -9,16 +9,17 @@
  * <p>Unless required by applicable law or agreed to in writing, software distributed under the
  * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
+ * limitations under the License. package liquibase.ext.spanner;
  */
 package liquibase.ext.spanner;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
-import liquibase.datatype.core.BooleanType;
+import liquibase.datatype.core.UUIDType;
 
-public class BoolTypeSpanner extends BooleanType {
-  private static final DatabaseDataType BOOL = new DatabaseDataType("BOOL");
+/** UUID is translated to STRING(36) as Cloud Spanner does not have a built-in type for UUID's. */
+public class UuidTypeSpanner extends UUIDType {
+  private static final DatabaseDataType UUID = new DatabaseDataType("STRING(36)");
 
   @Override
   public boolean supports(Database database) {
@@ -28,7 +29,7 @@ public class BoolTypeSpanner extends BooleanType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof CloudSpanner) {
-      return BOOL;
+      return UUID;
     } else {
       return super.toDatabaseDataType(database);
     }
