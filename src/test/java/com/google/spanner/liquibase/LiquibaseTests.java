@@ -184,6 +184,58 @@ public class LiquibaseTests {
     Assert.assertTrue(rows.size() == 0);
   }
 
+  @Test
+  void doEmulatorSpannerCreateAllDataTypesTest() throws SQLException, LiquibaseException {
+    doLiquibaseCreateAllDataTypesTest("create-table-with-all-liquibase-types-except-decimal.spanner.yaml",
+                                      getSpannerEmulator());
+  }
+
+  void doLiquibaseCreateAllDataTypesTest(String changeLogFile, TestHarness.Connection testHarness)
+      throws SQLException, LiquibaseException {
+
+    List<Map<String, Object>> rows =
+        tableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+    Assert.assertTrue(rows.size() == 0);
+
+    logger.info("Launching getLiquibase for " + changeLogFile);
+    Liquibase liquibase = getLiquibase(testHarness, changeLogFile);
+    liquibase.update(null, new LabelExpression("version 0.3"));
+    liquibase.tag("tag-at-rollback_all_types");
+
+    // Check table is created properly
+    rows = tableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+    logger.info("Rows size: " + rows.size());
+    logger.info("First row: " + rows.get(0).toString());
+    Assert.assertTrue(rows.size() == 20);
+    String[] columns = new String[]{
+        "ColBigInt", "ColBlob", "ColBoolean", "ColChar", "ColNChar", "ColNVarchar", "ColVarchar",
+        "ColClob", "ColDateTime", "ColTimestamp", "ColDate", "ColDouble", "ColFloat", "ColInt",
+        "ColMediumInt", "ColSmallInt", "ColTime", "ColTinyInt", "ColUUID", "ColXml"
+    };
+    String[] types = new String[]{
+        "INT64", "BYTES(MAX)", "BOOL", "STRING(100)", "STRING(50)", "STRING(100)", "STRING(200)",
+        "STRING(MAX)", "TIMESTAMP", "TIMESTAMP", "DATE", "FLOAT64", "FLOAT64", "INT64", "INT64",
+        "INT64", "TIMESTAMP", "INT64", "STRING(36)", "STRING(MAX)",
+    };
+
+    for (int i = 0; i < columns.length; i++) {
+      Assert.assertTrue(rows.get(i).get("COLUMN_NAME").equals(columns[i]));
+    }
+    for (int i = 0; i < types.length; i++) {
+      logger.info("Comparing " + rows.get(i).get("TYPE_NAME") + " and " + types[i]);
+      Assert.assertEquals(
+          rows.get(i).get("TYPE_NAME").toString().compareToIgnoreCase(types[i]),
+          0);
+    }
+
+    // Do rollback
+    liquibase.rollback(1, null);
+
+    // Ensure nothing is there!
+    rows = tableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+    Assert.assertTrue(rows.size() == 0);
+  }
+
   static List<Map<String, Object>> tableColumns(java.sql.Connection conn, String table)
       throws SQLException {
     boolean readOnlyStatus = conn.isReadOnly();

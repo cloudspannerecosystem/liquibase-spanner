@@ -77,7 +77,7 @@ public class CreateTableTest extends AbstractMockServerTest {
   @Test
   void testCreateTableWithAllLiquibaseTypesFromYaml() throws Exception {
     String expectedSql =
-        "CREATE TABLE TableWithAllLiquibaseTypes (ColBigInt INT64 NOT NULL, ColBlob BYTES(MAX), ColBoolean BOOL, ColChar STRING(100), ColNChar STRING(50), ColNVarchar STRING(100), ColVarchar STRING(200), ColClob STRING(MAX), ColDateTime TIMESTAMP, ColTimestamp timestamp, ColDate date, ColDecimal DECIMAL, ColDouble FLOAT64, ColFloat FLOAT64, ColInt INT64, ColMediumInt INT64, ColNumber NUMERIC, ColSmallInt INT64, ColTime TIMESTAMP, ColTinyInt INT64, ColUUID STRING(36), ColXml STRING(MAX)) PRIMARY KEY (ColBigInt)";
+        "CREATE TABLE TableWithAllLiquibaseTypes (ColBigInt INT64 NOT NULL, ColBlob BYTES(MAX), ColBoolean BOOL, ColChar STRING(100), ColNChar STRING(50), ColNVarchar STRING(100), ColVarchar STRING(200), ColClob STRING(MAX), ColDateTime TIMESTAMP, ColTimestamp timestamp, ColDate date, ColDecimal NUMERIC, ColDouble FLOAT64, ColFloat FLOAT64, ColInt INT64, ColMediumInt INT64, ColNumber NUMERIC, ColSmallInt INT64, ColTime TIMESTAMP, ColTinyInt INT64, ColUUID STRING(36), ColXml STRING(MAX)) PRIMARY KEY (ColBigInt)";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"create-table-with-all-liquibase-types.spanner.yaml"}) {
