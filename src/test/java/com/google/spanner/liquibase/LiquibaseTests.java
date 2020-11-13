@@ -185,55 +185,123 @@ public class LiquibaseTests {
   }
 
   @Test
-  void doEmulatorSpannerCreateAllDataTypesTest() throws SQLException, LiquibaseException {
-    doLiquibaseCreateAllDataTypesTest("create-table-with-all-liquibase-types-except-decimal.spanner.yaml",
-                                      getSpannerEmulator());
-  }
-
-  void doLiquibaseCreateAllDataTypesTest(String changeLogFile, TestHarness.Connection testHarness)
+  void doEmulatorSpannerCreateAllDataTypesTest()
       throws SQLException, LiquibaseException {
 
-    List<Map<String, Object>> rows =
-        tableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
-    Assert.assertTrue(rows.size() == 0);
+    // Emulator only -- we need an exception here to skip the NUMERIC type as this is not
+    // yet supported by the emulator.
+    TestHarness.Connection testHarness = getSpannerEmulator();
 
-    logger.info("Launching getLiquibase for " + changeLogFile);
-    Liquibase liquibase = getLiquibase(testHarness, changeLogFile);
+    // No columns yet in the table -- it doesn't exist
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+
+    // Run the Liquibase
+    Liquibase liquibase = getLiquibase(testHarness,
+        "create-table-with-all-liquibase-types-except-decimal.spanner.yaml");
     liquibase.update(null, new LabelExpression("version 0.3"));
     liquibase.tag("tag-at-rollback_all_types");
 
-    // Check table is created properly
-    rows = tableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
-    logger.info("Rows size: " + rows.size());
-    logger.info("First row: " + rows.get(0).toString());
-    Assert.assertTrue(rows.size() == 20);
-    String[] columns = new String[]{
-        "ColBigInt", "ColBlob", "ColBoolean", "ColChar", "ColNChar", "ColNVarchar", "ColVarchar",
-        "ColClob", "ColDateTime", "ColTimestamp", "ColDate", "ColDouble", "ColFloat", "ColInt",
-        "ColMediumInt", "ColSmallInt", "ColTime", "ColTinyInt", "ColUUID", "ColXml"
-    };
-    String[] types = new String[]{
-        "INT64", "BYTES(MAX)", "BOOL", "STRING(100)", "STRING(50)", "STRING(100)", "STRING(200)",
-        "STRING(MAX)", "TIMESTAMP", "TIMESTAMP", "DATE", "FLOAT64", "FLOAT64", "INT64", "INT64",
-        "INT64", "TIMESTAMP", "INT64", "STRING(36)", "STRING(MAX)",
-    };
-
-    for (int i = 0; i < columns.length; i++) {
-      Assert.assertTrue(rows.get(i).get("COLUMN_NAME").equals(columns[i]));
-    }
-    for (int i = 0; i < types.length; i++) {
-      logger.info("Comparing " + rows.get(i).get("TYPE_NAME") + " and " + types[i]);
-      Assert.assertEquals(
-          rows.get(i).get("TYPE_NAME").toString().compareToIgnoreCase(types[i]),
-          0);
-    }
+    // Expect all of the columns and types
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
+        new ColDesc("ColBigInt", "INT64"),
+        new ColDesc("ColBlob", "BYTES(MAX)"),
+        new ColDesc("ColBoolean", "BOOL"),
+        new ColDesc("ColChar", "STRING(100)"),
+        new ColDesc("ColNChar", "STRING(50)"),
+        new ColDesc("ColNVarchar", "STRING(100)"),
+        new ColDesc("ColVarchar", "STRING(200)"),
+        new ColDesc("ColClob", "STRING(MAX)"),
+        new ColDesc("ColDateTime", "TIMESTAMP"),
+        new ColDesc("ColTimestamp", "TIMESTAMP"),
+        new ColDesc("ColDate", "DATE"),
+        new ColDesc("ColDouble", "FLOAT64"),
+        new ColDesc("ColFloat", "FLOAT64"),
+        new ColDesc("ColInt", "INT64"),
+        new ColDesc("ColMediumInt", "INT64"),
+        new ColDesc("ColSmallInt", "INT64"),
+        new ColDesc("ColTime", "TIMESTAMP"),
+        new ColDesc("ColTinyInt", "INT64"),
+        new ColDesc("ColUUID", "STRING(36)"),
+        new ColDesc("ColXml", "STRING(MAX)")
+        );
 
     // Do rollback
     liquibase.rollback(1, null);
 
     // Ensure nothing is there!
-    rows = tableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
-    Assert.assertTrue(rows.size() == 0);
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerCreateAllDataTypesTest()
+      throws SQLException, LiquibaseException {
+
+    // Real Spanner -- test all supported tests
+    TestHarness.Connection testHarness = getSpannerReal();
+
+    // No columns yet in the table -- it doesn't exist
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+
+    // Run the Liquibase with all types
+    Liquibase liquibase = getLiquibase(testHarness,
+        "create-table-with-all-liquibase-types.spanner.yaml");
+    liquibase.update(null, new LabelExpression("version 0.3"));
+    liquibase.tag("tag-at-rollback_all_types");
+
+    // Expect all of the columns and types
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
+        new ColDesc("ColBigInt", "INT64"),
+        new ColDesc("ColBlob", "BYTES(MAX)"),
+        new ColDesc("ColBoolean", "BOOL"),
+        new ColDesc("ColChar", "STRING(100)"),
+        new ColDesc("ColNChar", "STRING(50)"),
+        new ColDesc("ColNVarchar", "STRING(100)"),
+        new ColDesc("ColVarchar", "STRING(200)"),
+        new ColDesc("ColClob", "STRING(MAX)"),
+        new ColDesc("ColDateTime", "TIMESTAMP"),
+        new ColDesc("ColTimestamp", "TIMESTAMP"),
+        new ColDesc("ColDate", "DATE"),
+        new ColDesc("ColDecimal", "NUMERIC"),
+        new ColDesc("ColDouble", "FLOAT64"),
+        new ColDesc("ColFloat", "FLOAT64"),
+        new ColDesc("ColInt", "INT64"),
+        new ColDesc("ColMediumInt", "INT64"),
+        new ColDesc("ColNumber", "NUMERIC"),
+        new ColDesc("ColSmallInt", "INT64"),
+        new ColDesc("ColTime", "TIMESTAMP"),
+        new ColDesc("ColTinyInt", "INT64"),
+        new ColDesc("ColUUID", "STRING(36)"),
+        new ColDesc("ColXml", "STRING(MAX)")
+    );
+
+    // Do rollback
+    liquibase.rollback(1, null);
+
+    // Ensure nothing is there!
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+  }
+
+  public static class ColDesc {
+    public final String name;
+    public final String type;
+    public ColDesc(String name, String type) {
+      this.name = name;
+      this.type = type;
+    }
+  }
+
+  static void testTableColumns(java.sql.Connection conn, String table, ColDesc... cols)
+      throws SQLException {
+    List<Map<String, Object>> rows = tableColumns(conn, table);
+    for (int i = 0; i < cols.length; i++) {
+      Assert.assertEquals(
+          rows.get(i).get("COLUMN_NAME").toString().compareTo(cols[i].name),
+          0);
+      Assert.assertEquals(
+          rows.get(i).get("TYPE_NAME").toString().compareToIgnoreCase(cols[i].type),
+          0);
+    }
   }
 
   static List<Map<String, Object>> tableColumns(java.sql.Connection conn, String table)
