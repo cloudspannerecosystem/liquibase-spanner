@@ -34,7 +34,7 @@ jobs:
       - persist_to_workspace:
           root: build/libs
           paths:
-            - *.jar
+            - "*.jar"
 
   # Publish on a tag
   publish_github_release:
