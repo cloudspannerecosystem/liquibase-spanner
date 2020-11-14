@@ -34,58 +34,60 @@ this.
 
 # Supported Features
 
-Check: &check;
-Cross: &cross;
+Status meaning -
+ * Checked means it is a supported and tested feature
+ * Cross means it is not supported and will throw an error
+ * No status means it is untested
 
-| Change Type                      | Status        |
-| -------------------------------- |:-------------:|
-| addAutoIncrement                 | Not supported |                          
-| addColumn                        | Supported     |                   
-| addDefaultValue                  | Not supported |                         
-| addForeignKeyConstraint          | Supported     |                                 
-| addLookupTable                   | Supported     |                        
-| addNotNullConstraint             |               |                              
-| addPrimaryKey                    | Not supported |                       
-| addUniqueConstraint              | Not supported |                             
-| createIndex                      | Supported     |                     
-| createProcedure                  |               |                         
-| createSequence                   |               |                        
-| createTable                      | Supported     |                     
-| createView                       |               |                    
-| dropAllForeignKeyConstraints     |               |                                      
-| dropColumn                       | Supported     |                    
-| dropDefaultValue                 | Not supported |                          
-| dropForeignKeyConstraint         |               |                                  
-| dropIndex                        | Supported     |                   
-| dropNotNullConstraint            | Not supported |                               
-| dropPrimaryKey                   | Not supported |                        
-| dropProcedure                    |               |                       
-| dropSequence                     |               |                      
-| dropTable                        | Supported     |                   
-| dropUniqueConstraint             | Not supported |                              
-| dropView                         |               |                  
-| renameColumn                     | Not supported |                      
-| renameSequence                   |               |                        
-| renameTable                      |               |                     
-| renameView                       |               |                    
-| sql                              |               |             
-| sqlFile                          |               |                 
-| alterSequence                    |               |                       
-| customChange                     |               |                      
-| delete                           |               |                
-| empty                            |               |               
-| executeCommand                   |               |                        
-| insert                           |               |                
-| loadData                         |               |                  
-| loadUpdateData                   |               |                        
-| mergeColumns                     |               |                      
-| modifyDataType                   |               |                        
-| output                           |               |                
-| setColumnRemarks                 |               |                          
-| setTableRemarks                  |               |                         
-| stop                             |               |              
-| tagDatabase                      |               |                     
-| update                           |               |                
+| Change Type                      | Status  |
+| -------------------------------- |:-------:|
+| addAutoIncrement                 | &cross; |                          
+| addColumn                        | &check; |                   
+| addDefaultValue                  | &cross; |                         
+| addForeignKeyConstraint          | &check; |                                 
+| addLookupTable                   | &check; |                        
+| addNotNullConstraint             |         |                              
+| addPrimaryKey                    | &cross; |                       
+| addUniqueConstraint              | &cross; |                             
+| createIndex                      | &check; |                     
+| createProcedure                  |         |                         
+| createSequence                   |         |                        
+| createTable                      | &check; |                     
+| createView                       |         |                    
+| dropAllForeignKeyConstraints     |         |                                      
+| dropColumn                       | &check; |                    
+| dropDefaultValue                 | &cross; |                          
+| dropForeignKeyConstraint         |         |                                  
+| dropIndex                        | &check; |                   
+| dropNotNullConstraint            | &cross; |                               
+| dropPrimaryKey                   | &cross; |                        
+| dropProcedure                    |         |                       
+| dropSequence                     |         |                      
+| dropTable                        | &check; |                   
+| dropUniqueConstraint             | &cross; |                              
+| dropView                         |         |                  
+| renameColumn                     | &cross; |                      
+| renameSequence                   |         |                        
+| renameTable                      |         |                     
+| renameView                       |         |                    
+| sql                              |         |             
+| sqlFile                          |         |                 
+| alterSequence                    |         |                       
+| customChange                     |         |                      
+| delete                           |         |                
+| empty                            |         |               
+| executeCommand                   |         |                        
+| insert                           |         |                
+| loadData                         |         |                  
+| loadUpdateData                   |         |                        
+| mergeColumns                     |         |                      
+| modifyDataType                   |         |                        
+| output                           |         |                
+| setColumnRemarks                 |         |                          
+| setTableRemarks                  |         |                         
+| stop                             |         |              
+| tagDatabase                      |         |                     
+| update                           |         |                
 
 
 # Additional References
