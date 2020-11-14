@@ -23,8 +23,8 @@
 START BATCH DDL;
 create table rollback_table
 (
-    id   int64,
-    name string(MAX),
+    id   int64 NOT NULL,
+    name string(255),
 ) PRIMARY KEY (id);
 RUN BATCH;
 --rollback DROP TABLE rollback_table;
