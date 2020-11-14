@@ -31,6 +31,10 @@ jobs:
           path: build/test-results/test
       - store_artifacts:
           path: build/libs
+      - persist_to_workspace
+          root: build/libs
+          paths:
+            - *.jar
 
   # Publish on a tag
   publish_github_release:
@@ -38,11 +42,17 @@ jobs:
       - image: cibuilds/github:0.10
     steps:
       - attach_workspace:
-          at: ./build/libs
+          at: ./workspace
       - run:
           name: "Publish Release on GitHub"
           command: |
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./
+            ghr -n "Release v${CIRCLE_TAG}"  \
+                -t ${GITHUB_TOKEN} \
+                -u ${CIRCLE_PROJECT_USERNAME} \
+                -r ${CIRCLE_PROJECT_REPONAME} \
+                -c ${CIRCLE_SHA1} \
+                -delete ${CIRCLE_TAG} \
+                ./workspace
 
 workflows:
   version: 2
