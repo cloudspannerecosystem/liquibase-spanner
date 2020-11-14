@@ -32,6 +32,62 @@ The docker container contains the contents of the ShadowJar and Liquibase itself
 container that embeds everything you need to run Liquibase. See run.sh for an example of using
 this.
 
+# Supported Features
+
+Check: &check;
+Cross: &cross;
+
+| Change Type                      | Status        |
+| -------------------------------- |:-------------:|
+| addAutoIncrement                 | Not supported |                          
+| addColumn                        | Supported     |                   
+| addDefaultValue                  | Not supported |                         
+| addForeignKeyConstraint          | Supported     |                                 
+| addLookupTable                   | Supported     |                        
+| addNotNullConstraint             |               |                              
+| addPrimaryKey                    | Not supported |                       
+| addUniqueConstraint              | Not supported |                             
+| createIndex                      | Supported     |                     
+| createProcedure                  |               |                         
+| createSequence                   |               |                        
+| createTable                      | Supported     |                     
+| createView                       |               |                    
+| dropAllForeignKeyConstraints     |               |                                      
+| dropColumn                       | Supported     |                    
+| dropDefaultValue                 | Not supported |                          
+| dropForeignKeyConstraint         |               |                                  
+| dropIndex                        | Supported     |                   
+| dropNotNullConstraint            | Not supported |                               
+| dropPrimaryKey                   | Not supported |                        
+| dropProcedure                    |               |                       
+| dropSequence                     |               |                      
+| dropTable                        | Supported     |                   
+| dropUniqueConstraint             | Not supported |                              
+| dropView                         |               |                  
+| renameColumn                     | Not supported |                      
+| renameSequence                   |               |                        
+| renameTable                      |               |                     
+| renameView                       |               |                    
+| sql                              |               |             
+| sqlFile                          |               |                 
+| alterSequence                    |               |                       
+| customChange                     |               |                      
+| delete                           |               |                
+| empty                            |               |               
+| executeCommand                   |               |                        
+| insert                           |               |                
+| loadData                         |               |                  
+| loadUpdateData                   |               |                        
+| mergeColumns                     |               |                      
+| modifyDataType                   |               |                        
+| output                           |               |                
+| setColumnRemarks                 |               |                          
+| setTableRemarks                  |               |                         
+| stop                             |               |              
+| tagDatabase                      |               |                     
+| update                           |               |                
+
+
 # Additional References
 * https://www.baeldung.com/liquibase-refactor-schema-of-java-app
 * https://forum.liquibase.org/topic/rollback-feature-using-sql-formatted-output-does-not-work-as-expected-in-liquibase-3-3-0-oracle-db
