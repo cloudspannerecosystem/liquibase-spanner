@@ -32,10 +32,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Build shadowJar
 gradle build shadowJar
 
+# Copy locally -- liquibase will automatically pick it up and scan it.
+cp "${DIR}/build/libs/liquibase-extension-SNAPSHOT-all.jar" .
+
 # Run with Liquibase with the shadow jar
 liquibase \
   --changeLogFile="${DIR}/src/test/resources/changelog.spanner.sql" \
-  --classpath="${DIR}/build/libs/shadow-0.1-SNAPSHOT-all.jar" \
   --url="${JDBC_URL}" \
   --driver=com.google.cloud.spanner.jdbc.JdbcDriver \
   --databaseClass=liquibase.ext.spanner.CloudSpanner \
