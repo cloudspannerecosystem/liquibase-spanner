@@ -37,6 +37,7 @@ public class SpannerCreateTableGenerator extends CreateTableGenerator {
     // of the primary key constraint to be empty, but that cannot be defined in the metamodel of
     // Liquibase.
     errors.checkRequiredField("primary key", createTableStatement.getPrimaryKeyConstraint());
+
     return errors;
   }
 
