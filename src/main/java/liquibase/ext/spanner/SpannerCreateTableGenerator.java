@@ -48,7 +48,7 @@ public class SpannerCreateTableGenerator extends CreateTableGenerator {
     StringBuilder buffer = new StringBuilder(", PRIMARY KEY (");
     buffer.append(
         database.escapeColumnNameList(
-            StringUtil.join(statement.getPrimaryKeyConstraint().getColumns(), ", ")));
+            StringUtils.join(statement.getPrimaryKeyConstraint().getColumns(), ", ")));
     buffer.append(")");
 
     String pk = buffer.toString();
