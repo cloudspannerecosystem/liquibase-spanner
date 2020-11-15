@@ -46,48 +46,47 @@ Status meaning -
 | addDefaultValue                  | &cross; |                         
 | addForeignKeyConstraint          | &check; |                                 
 | addLookupTable                   | &check; |                        
-| addNotNullConstraint             |         |                              
+| addNotNullConstraint             | ??      |                              
 | addPrimaryKey                    | &cross; |                       
 | addUniqueConstraint              | &cross; |                             
 | createIndex                      | &check; |                     
-| createProcedure                  |         |                         
-| createSequence                   |         |                        
+| createProcedure                  | To Stop |                         
+| createSequence                   | To Stop |                        
 | createTable                      | &check; |                     
-| createView                       |         |                    
-| dropAllForeignKeyConstraints     |         |                                      
+| createView                       | To Stop |                    
+| dropAllForeignKeyConstraints     | ??      |                                      
 | dropColumn                       | &check; |                    
 | dropDefaultValue                 | &cross; |                          
-| dropForeignKeyConstraint         |         |                                  
+| dropForeignKeyConstraint         | To Test |                                  
 | dropIndex                        | &check; |                   
 | dropNotNullConstraint            | &cross; |                               
 | dropPrimaryKey                   | &cross; |                        
-| dropProcedure                    |         |                       
-| dropSequence                     |         |                      
+| dropProcedure                    | To Stop |                       
+| dropSequence                     | To Stop |                      
 | dropTable                        | &check; |                   
 | dropUniqueConstraint             | &cross; |                              
-| dropView                         |         |                  
+| dropView                         | To Stop |                  
 | renameColumn                     | &cross; |                      
-| renameSequence                   |         |                        
-| renameTable                      |         |                     
-| renameView                       |         |                    
-| sql                              |         |             
-| sqlFile                          |         |                 
-| alterSequence                    |         |                       
-| customChange                     |         |                      
-| delete                           |         |                
-| empty                            |         |               
-| executeCommand                   |         |                        
-| insert                           |         |                
-| loadData                         |         |                  
-| loadUpdateData                   |         |                        
-| mergeColumns                     |         |                      
-| modifyDataType                   |         |                        
-| output                           |         |                
-| setColumnRemarks                 |         |                          
-| setTableRemarks                  |         |                         
-| stop                             |         |              
-| tagDatabase                      |         |                     
-| update                           |         |                
+| renameSequence                   | To Stop |                        
+| renameTable                      | ??      |                     
+| renameView                       | To Stop |                    
+| sql                              | N/A     |             
+| sqlFile                          | N/A     |                 
+| alterSequence                    | To Stop |                       
+| customChange                     | N/A     |                      
+| delete                           | To Test |                
+| executeCommand                   | N/A     |                        
+| insert                           | To Test |                
+| loadData                         | To Test |                  
+| loadUpdateData                   | To Test |                        
+| mergeColumns                     | To Test |                      
+| modifyDataType                   | To Stop |                        
+| output                           | N/A     |                
+| setColumnRemarks                 | ??      |                          
+| setTableRemarks                  | ??      |                         
+| stop                             | N/A     |              
+| tagDatabase                      | N/A     |                     
+| update                           | To Test |                
 
 
 # Additional References
