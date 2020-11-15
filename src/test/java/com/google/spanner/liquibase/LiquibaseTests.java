@@ -163,34 +163,194 @@ public class LiquibaseTests {
   void doLiquibaseCreateAndRollbackTest(String changeLogFile, TestHarness.Connection testHarness)
       throws SQLException, LiquibaseException {
 
-    List<Map<String, Object>> rows =
-        tableColumns(testHarness.getJDBCConnection(), "rollback_table");
-    Assert.assertTrue(rows.size() == 0);
+    testTableColumns(testHarness.getJDBCConnection(), "rollback_table");
+
 
     Liquibase liquibase = getLiquibase(testHarness, changeLogFile);
     liquibase.update(null, new LabelExpression("rollback_stuff"));
     liquibase.tag("tag-at-rollback");
 
-    rows = tableColumns(testHarness.getJDBCConnection(), "rollback_table");
-    Assert.assertTrue(rows.size() == 2);
-    Assert.assertTrue(rows.get(0).get("COLUMN_NAME").equals("id"));
-    Assert.assertTrue(rows.get(1).get("COLUMN_NAME").equals("name"));
+    testTableColumns(testHarness.getJDBCConnection(), "rollback_table",
+        new ColDesc("id", "INT64", Boolean.FALSE),
+        new ColDesc("name", "STRING(255)")
+    );
+
+    testTablePrimaryKeys(testHarness.getJDBCConnection(), "rollback_table",
+        new ColDesc("id"));
 
     // Do rollback
     liquibase.rollback(1, null);
 
     // Ensure nothing is there!
-    rows = tableColumns(testHarness.getJDBCConnection(), "rollback_table");
-    Assert.assertTrue(rows.size() == 0);
+    testTableColumns(testHarness.getJDBCConnection(), "rollback_table");
   }
 
-  static List<Map<String, Object>> tableColumns(java.sql.Connection conn, String table)
+  @Test
+  void doEmulatorSpannerCreateAllDataTypesTest()
+      throws SQLException, LiquibaseException {
+
+    // Emulator only -- we need an exception here to skip the NUMERIC type as this is not
+    // yet supported by the emulator.
+    TestHarness.Connection testHarness = getSpannerEmulator();
+
+    // No columns yet in the table -- it doesn't exist
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+
+    // Run the Liquibase
+    Liquibase liquibase = getLiquibase(testHarness,
+        "create-table-with-all-liquibase-types-except-decimal.spanner.yaml");
+    liquibase.update(null, new LabelExpression("version 0.3"));
+    liquibase.tag("tag-at-rollback_all_types");
+
+    // Expect all of the columns and types
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
+        new ColDesc("ColBigInt", "INT64", Boolean.FALSE),
+        new ColDesc("ColBlob", "BYTES(MAX)"),
+        new ColDesc("ColBoolean", "BOOL"),
+        new ColDesc("ColChar", "STRING(100)"),
+        new ColDesc("ColNChar", "STRING(50)"),
+        new ColDesc("ColNVarchar", "STRING(100)"),
+        new ColDesc("ColVarchar", "STRING(200)"),
+        new ColDesc("ColClob", "STRING(MAX)"),
+        new ColDesc("ColDateTime", "TIMESTAMP"),
+        new ColDesc("ColTimestamp", "TIMESTAMP"),
+        new ColDesc("ColDate", "DATE"),
+        new ColDesc("ColDouble", "FLOAT64"),
+        new ColDesc("ColFloat", "FLOAT64"),
+        new ColDesc("ColInt", "INT64"),
+        new ColDesc("ColMediumInt", "INT64"),
+        new ColDesc("ColSmallInt", "INT64"),
+        new ColDesc("ColTime", "TIMESTAMP"),
+        new ColDesc("ColTinyInt", "INT64"),
+        new ColDesc("ColUUID", "STRING(36)"),
+        new ColDesc("ColXml", "STRING(MAX)")
+        );
+
+    testTablePrimaryKeys(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
+        new ColDesc("ColBigInt"));
+
+    // Do rollback
+    liquibase.rollback(1, null);
+
+    // Ensure nothing is there!
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerCreateAllDataTypesTest()
+      throws SQLException, LiquibaseException {
+
+    // Real Spanner -- test all supported tests
+    TestHarness.Connection testHarness = getSpannerReal();
+
+    // No columns yet in the table -- it doesn't exist
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+
+    // Run the Liquibase with all types
+    Liquibase liquibase = getLiquibase(testHarness,
+        "create-table-with-all-liquibase-types.spanner.yaml");
+    liquibase.update(null, new LabelExpression("version 0.3"));
+    liquibase.tag("tag-at-rollback_all_types");
+
+    // Expect all of the columns and types
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
+        new ColDesc("ColBigInt", "INT64", Boolean.FALSE),
+        new ColDesc("ColBlob", "BYTES(MAX)"),
+        new ColDesc("ColBoolean", "BOOL"),
+        new ColDesc("ColChar", "STRING(100)"),
+        new ColDesc("ColNChar", "STRING(50)"),
+        new ColDesc("ColNVarchar", "STRING(100)"),
+        new ColDesc("ColVarchar", "STRING(200)"),
+        new ColDesc("ColClob", "STRING(MAX)"),
+        new ColDesc("ColDateTime", "TIMESTAMP"),
+        new ColDesc("ColTimestamp", "TIMESTAMP"),
+        new ColDesc("ColDate", "DATE"),
+        new ColDesc("ColDecimal", "NUMERIC"),
+        new ColDesc("ColDouble", "FLOAT64"),
+        new ColDesc("ColFloat", "FLOAT64"),
+        new ColDesc("ColInt", "INT64"),
+        new ColDesc("ColMediumInt", "INT64"),
+        new ColDesc("ColNumber", "NUMERIC"),
+        new ColDesc("ColSmallInt", "INT64"),
+        new ColDesc("ColTime", "TIMESTAMP"),
+        new ColDesc("ColTinyInt", "INT64"),
+        new ColDesc("ColUUID", "STRING(36)"),
+        new ColDesc("ColXml", "STRING(MAX)")
+    );
+
+    testTablePrimaryKeys(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
+        new ColDesc("ColBigInt"));
+
+    // Do rollback
+    liquibase.rollback(1, null);
+
+    // Ensure nothing is there!
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+  }
+
+  public static class ColDesc {
+    public final String name;
+    public final String type;
+    public final Boolean isNullable;
+    public ColDesc(String name) {
+      this(name, null, Boolean.TRUE);
+    }
+    public ColDesc(String name, String type) {
+      this(name, type, Boolean.TRUE);
+    }
+    public ColDesc(String name, String type, Boolean isNullable) {
+      this.name = name;
+      this.type = type;
+      this.isNullable = isNullable;
+    }
+  }
+
+  static void testTableColumns(java.sql.Connection conn, String table, ColDesc... cols)
       throws SQLException {
+
     boolean readOnlyStatus = conn.isReadOnly();
     conn.setReadOnly(true);
     ResultSet rs = conn.getMetaData().getColumns(null, null, table, null);
     conn.setReadOnly(readOnlyStatus);
-    return getResults(rs);
+
+    List<Map<String, Object>> rows = getResults(rs);
+
+    Assert.assertEquals(rows.size(), cols.length);
+    for (int i = 0; i < cols.length; i++) {
+      Assert.assertEquals(
+          rows.get(i).get("COLUMN_NAME").toString().compareTo(cols[i].name),
+          0);
+      if (cols[i].type != null) {
+        Assert.assertEquals(
+            rows.get(i).get("TYPE_NAME").toString().compareToIgnoreCase(cols[i].type),
+            0);
+      }
+      if (cols[i].isNullable != null) {
+        String expectedValue = cols[i].isNullable ? "YES" : "NO";
+        Assert.assertEquals(
+            rows.get(i).get("IS_NULLABLE").toString().compareToIgnoreCase(expectedValue),
+            0);
+      }
+    }
+  }
+
+  static void testTablePrimaryKeys(java.sql.Connection conn, String table, ColDesc... cols)
+      throws SQLException {
+
+    boolean readOnlyStatus = conn.isReadOnly();
+    conn.setReadOnly(true);
+    ResultSet rs = conn.getMetaData().getPrimaryKeys(null, null, table);
+    conn.setReadOnly(readOnlyStatus);
+
+    List<Map<String, Object>> rows = getResults(rs);
+
+    Assert.assertEquals(rows.size(), cols.length);
+    for (int i = 0; i < cols.length; i++) {
+      Assert.assertEquals(
+          rows.get(i).get("COLUMN_NAME").toString().compareTo(cols[i].name),
+          0);
+    }
   }
 
   static List<Map<String, Object>> testQuery(java.sql.Connection conn, String query)

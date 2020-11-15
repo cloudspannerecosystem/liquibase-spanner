@@ -6,7 +6,7 @@ import liquibase.datatype.core.DecimalType;
 
 /** DECIMAL is translated to NUMERIC. */
 public class DecimalSpannerType extends DecimalType {
-  private static final DatabaseDataType DECIMAL = new DatabaseDataType("DECIMAL");
+  private static final DatabaseDataType DECIMAL = new DatabaseDataType("NUMERIC");
 
   @Override
   public boolean supports(Database database) {
