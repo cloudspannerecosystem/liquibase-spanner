@@ -43,6 +43,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+// Liquibase <4 uses Liquibase-Package to determine what to scan
+jar {
+  manifest {
+    attributes(
+      "Liquibase-Package": "liquibase.ext.spanner"
+    )
+  }
+}
+
+// Liquibase 4 uses ServiceLoader
 serviceLoader {
     serviceInterface 'liquibase.database.Database'
     serviceInterface 'liquibase.datatype.LiquibaseDataType'
@@ -62,6 +72,7 @@ dependencies {
     // Liquibase Core - needed for testing and docker container
     implementation("org.liquibase:liquibase-core:4.2.0")
     implementation("org.yaml:snakeyaml:1.26")
+    implementation("org.apache.commons:commons-lang3:3.11")
     
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")

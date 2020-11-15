@@ -21,7 +21,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateTableGenerator;
 import liquibase.statement.core.CreateTableStatement;
 import liquibase.structure.DatabaseObject;
-import liquibase.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 
 public class SpannerCreateTableGenerator extends CreateTableGenerator {
 
@@ -37,7 +37,6 @@ public class SpannerCreateTableGenerator extends CreateTableGenerator {
     // of the primary key constraint to be empty, but that cannot be defined in the metamodel of
     // Liquibase.
     errors.checkRequiredField("primary key", createTableStatement.getPrimaryKeyConstraint());
-
     return errors;
   }
 
@@ -49,7 +48,7 @@ public class SpannerCreateTableGenerator extends CreateTableGenerator {
     StringBuilder buffer = new StringBuilder(", PRIMARY KEY (");
     buffer.append(
         database.escapeColumnNameList(
-            StringUtil.join(statement.getPrimaryKeyConstraint().getColumns(), ", ")));
+            StringUtils.join(statement.getPrimaryKeyConstraint().getColumns(), ", ")));
     buffer.append(")");
 
     String pk = buffer.toString();
