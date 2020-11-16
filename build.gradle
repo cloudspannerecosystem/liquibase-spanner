@@ -18,6 +18,7 @@ plugins {
     id "java"
     id "com.google.cloud.tools.jib" version "2.4.0"
     id "com.github.johnrengelman.shadow" version "6.0.0"
+    id "com.github.harbby.gradle.serviceloader" version "1.1.2"
 }
 
 
@@ -42,6 +43,23 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+// Liquibase <4 uses Liquibase-Package to determine what to scan
+jar {
+  manifest {
+    attributes(
+      "Liquibase-Package": "liquibase.ext.spanner"
+    )
+  }
+}
+
+// Liquibase 4 uses ServiceLoader
+serviceLoader {
+    serviceInterface 'liquibase.database.Database'
+    serviceInterface 'liquibase.datatype.LiquibaseDataType'
+    serviceInterface 'liquibase.sqlgenerator.SqlGenerator'
+    serviceInterface 'liquibase.change.Change'
+    serviceInterface 'liquibase.changelog.ChangeLogHistoryService'
+}
 
 dependencies {
 
@@ -52,8 +70,9 @@ dependencies {
     implementation("com.google.cloud:google-cloud-logging-logback")
 
     // Liquibase Core - needed for testing and docker container
-    implementation("org.liquibase:liquibase-core:3.8.9")
+    implementation("org.liquibase:liquibase-core:4.2.0")
     implementation("org.yaml:snakeyaml:1.26")
+    implementation("org.apache.commons:commons-lang3:3.11")
     
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
@@ -74,8 +93,12 @@ dependencies {
 }
 
 
-// Run unit tests (Spanner emulator)
+// Run unit tests (Spanner emulator and mock tests)
 test {
+
+  // serviceLoaderBuild is necessary for Liquibase to find the extensions
+  dependsOn "serviceLoaderBuild"
+
   useJUnitPlatform {
     excludeTags "integration"
   }
@@ -88,10 +111,14 @@ test {
 // Also requires GOOGLE_APPLICATION_CREDENTIALS environment variable
 // if using a JSON key for authentication.
 task integrationTest(type: Test) {
-    useJUnitPlatform {
-        includeTags "integration"
-    }
-    shouldRunAfter test
+  shouldRunAfter "test"
+
+  // serviceLoaderBuild is necessary for Liquibase to find the extensions
+  dependsOn "serviceLoaderBuild"
+
+  useJUnitPlatform {
+    includeTags "integration"
+  }
 }
 
 // Output shadowJar that can be used directly by Liquibase

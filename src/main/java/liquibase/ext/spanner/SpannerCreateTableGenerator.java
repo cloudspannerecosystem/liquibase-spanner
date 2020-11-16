@@ -21,7 +21,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateTableGenerator;
 import liquibase.statement.core.CreateTableStatement;
 import liquibase.structure.DatabaseObject;
-import liquibase.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class SpannerCreateTableGenerator extends CreateTableGenerator {
 

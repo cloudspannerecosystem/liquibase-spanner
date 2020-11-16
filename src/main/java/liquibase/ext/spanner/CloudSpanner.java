@@ -15,29 +15,10 @@ package liquibase.ext.spanner;
 
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
-import liquibase.servicelocator.ServiceLocator;
-import liquibase.sqlgenerator.SqlGeneratorFactory;
-import liquibase.sqlgenerator.core.CreateDatabaseChangeLogTableGenerator;
-import liquibase.sqlgenerator.core.LockDatabaseChangeLogGenerator;
-import liquibase.sqlgenerator.core.UnlockDatabaseChangeLogGenerator;
 
 public class CloudSpanner extends AbstractJdbcDatabase {
 
-  // Service Locator is used by Liquibase to find available extension classes.
-  // This is needed to register this package to be searched.
-  static {
-
-    // Add classpath for extensions
-    ServiceLocator.getInstance().addPackageToScan("liquibase.ext.spanner");
-  }
-
   public CloudSpanner() {
-    SqlGeneratorFactory sqlGeneratorFactory = SqlGeneratorFactory.getInstance();
-    sqlGeneratorFactory.register(new CreateDatabaseChangeLogTableGenerator());
-    sqlGeneratorFactory.register(new SpannerInitializeChangeLogLockTableGenerator());
-    sqlGeneratorFactory.register(new SpannerCreateDatabaseChangeLogTableGenerator());
-    sqlGeneratorFactory.register(new UnlockDatabaseChangeLogGenerator());
-    sqlGeneratorFactory.register(new LockDatabaseChangeLogGenerator());
   }
 
   @Override
