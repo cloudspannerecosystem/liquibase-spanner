@@ -14,64 +14,22 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-
-import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TempMockSpannerServiceImpl.StatementResult;
-import com.google.protobuf.ListValue;
-import com.google.protobuf.Value;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
-import com.google.spanner.v1.ResultSet;
-import com.google.spanner.v1.ResultSetMetadata;
-import com.google.spanner.v1.StructType;
-import com.google.spanner.v1.StructType.Field;
-import com.google.spanner.v1.Type;
-import com.google.spanner.v1.TypeCode;
 import java.sql.Connection;
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import liquibase.Contexts;
+import liquibase.Liquibase;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class SetNullableConstraintTest extends AbstractMockServerTest {
-
-  @BeforeAll
-  static void setupColumnQueryResults() {
-    // Add a result for the lookup of the LastName column.
-    mockSpanner.putPartialStatementResult(
-        StatementResult.query(
-            Statement.of(
-                "SELECT TABLE_CATALOG AS TABLE_CAT, TABLE_SCHEMA AS TABLE_SCHEM, TABLE_NAME, COLUMN_NAME,"),
-            createLastNameColumnResultSet()));
-  }
 
   @BeforeEach
   void resetServer() {
     mockSpanner.reset();
     mockAdmin.reset();
-  }
-
-  private static ResultSet createLastNameColumnResultSet() {
-    return ResultSet.newBuilder()
-        .setMetadata(
-            ResultSetMetadata.newBuilder()
-                .setRowType(
-                    StructType.newBuilder()
-                        .addFields(
-                            Field.newBuilder()
-                                .setName("TYPE_NAME")
-                                .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
-                                .build())
-                        .build())
-                .build())
-        .addRows(
-            ListValue.newBuilder()
-                .addValues(Value.newBuilder().setStringValue("STRING(100)").build())
-                .build())
-        .build();
   }
 
   @Test
