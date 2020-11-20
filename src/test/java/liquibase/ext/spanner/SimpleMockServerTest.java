@@ -1,8 +1,7 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-
-import com.google.cloud.spanner.TempMockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
