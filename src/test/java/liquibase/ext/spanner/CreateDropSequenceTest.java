@@ -63,4 +63,19 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
   }
+
+  @Test
+  void testRenameSequenceFromYaml() throws Exception {
+    for (String file : new String[] {"rename-sequence.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.update(new Contexts("test"));
+        fail("missing expected validation exception");
+      } catch (ValidationFailedException e) {
+        assertThat(e.getMessage())
+            .contains(SpannerRenameSequenceGenerator.RENAME_SEQUENCE_VALIDATION_ERROR);
+      }
+    }
+    assertThat(mockAdmin.getRequests()).isEmpty();
+  }
 }
