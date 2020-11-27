@@ -63,4 +63,19 @@ public class CreateDropViewTest extends AbstractMockServerTest {
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
   }
+
+  @Test
+  void testRenameViewFromYaml() throws Exception {
+    for (String file : new String[] {"rename-view.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.update(new Contexts("test"));
+        fail("missing expected validation exception");
+      } catch (ValidationFailedException e) {
+        assertThat(e.getMessage())
+            .contains(SpannerRenameViewGenerator.RENAME_VIEW_VALIDATION_ERROR);
+      }
+    }
+    assertThat(mockAdmin.getRequests()).isEmpty();
+  }
 }
