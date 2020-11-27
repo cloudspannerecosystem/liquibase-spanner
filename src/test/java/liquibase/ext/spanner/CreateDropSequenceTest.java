@@ -35,7 +35,7 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
   }
 
   @Test
-  void testAddDefaultValueSingersFromYaml() throws Exception {
+  void testCreateSequenceFromYaml() throws Exception {
     for (String file : new String[] {"create-sequence.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
@@ -50,7 +50,7 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
   }
 
   @Test
-  void testDropDefaultValueSingersFromYaml() throws Exception {
+  void testDropSequenceFromYaml() throws Exception {
     for (String file : new String[] {"drop-sequence.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
