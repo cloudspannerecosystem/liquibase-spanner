@@ -35,7 +35,7 @@ public class CreateDropViewTest extends AbstractMockServerTest {
   }
 
   @Test
-  void testAddDefaultValueSingersFromYaml() throws Exception {
+  void testCreateViewFromYaml() throws Exception {
     for (String file : new String[] {"create-view.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
@@ -50,7 +50,7 @@ public class CreateDropViewTest extends AbstractMockServerTest {
   }
 
   @Test
-  void testDropDefaultValueSingersFromYaml() throws Exception {
+  void testDropViewFromYaml() throws Exception {
     for (String file : new String[] {"drop-view.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
