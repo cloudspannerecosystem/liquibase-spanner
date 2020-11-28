@@ -51,10 +51,10 @@ Status meaning -
 | addUniqueConstraint              | &cross; |                             
 | createIndex                      | &check; |                     
 | createProcedure                  | To Stop |                         
-| createSequence                   | To Stop |                        
+| createSequence                   | &cross; |                        
 | createTable                      | &check; |                     
-| createView                       | To Stop |                    
-| dropAllForeignKeyConstraints     | ??      |                                      
+| createView                       | &cross; |                    
+| dropAllForeignKeyConstraints     | &check; |                                      
 | dropColumn                       | &check; |                    
 | dropDefaultValue                 | &cross; |                          
 | dropForeignKeyConstraint         | To Test |                                  
@@ -62,14 +62,14 @@ Status meaning -
 | dropNotNullConstraint            | &cross; |                               
 | dropPrimaryKey                   | &cross; |                        
 | dropProcedure                    | To Stop |                       
-| dropSequence                     | To Stop |                      
+| dropSequence                     | &cross; |
 | dropTable                        | &check; |                   
 | dropUniqueConstraint             | &cross; |                              
-| dropView                         | To Stop |                  
+| dropView                         | &cross; |
 | renameColumn                     | &cross; |                      
-| renameSequence                   | To Stop |                        
-| renameTable                      | ??      |                     
-| renameView                       | To Stop |                    
+| renameSequence                   | &cross; |                        
+| renameTable                      | &cross; |                     
+| renameView                       | &cross; |                    
 | sql                              | N/A     |             
 | sqlFile                          | N/A     |                 
 | alterSequence                    | To Stop |                       
