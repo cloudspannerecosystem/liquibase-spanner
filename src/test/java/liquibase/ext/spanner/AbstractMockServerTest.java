@@ -3,8 +3,8 @@ package liquibase.ext.spanner;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TempMockSpannerServiceImpl;
-import com.google.cloud.spanner.TempMockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
+import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.common.collect.ImmutableList;
@@ -99,14 +99,14 @@ public abstract class AbstractMockServerTest {
           .build();
 
   protected static final String DB_ID = "projects/p/instances/i/databases/d";
-  protected static TempMockSpannerServiceImpl mockSpanner;
+  protected static MockSpannerServiceImpl mockSpanner;
   protected static MockDatabaseAdminImpl mockAdmin;
   private static Server server;
   private static InetSocketAddress address;
 
   @BeforeAll
   static void startStaticServer() throws IOException {
-    mockSpanner = new TempMockSpannerServiceImpl();
+    mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D);
     mockAdmin = new MockDatabaseAdminImpl();
     address = new InetSocketAddress("localhost", 0);

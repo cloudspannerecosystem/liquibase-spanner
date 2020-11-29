@@ -4,7 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TempMockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;

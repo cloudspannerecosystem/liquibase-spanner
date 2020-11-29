@@ -16,7 +16,7 @@ package liquibase.ext.spanner;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TempMockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.common.base.Predicate;
 import com.google.protobuf.AbstractMessage;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
