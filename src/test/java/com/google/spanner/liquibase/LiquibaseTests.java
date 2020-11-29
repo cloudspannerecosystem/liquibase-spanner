@@ -178,6 +178,64 @@ public class LiquibaseTests {
     }
   }
 
+  @Test
+  void doEmulatorModifyDataTypeTest() throws Exception {
+    doModifyDataTypeTest(getSpannerEmulator());
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerModifyDataTypeTest() throws Exception {
+    doModifyDataTypeTest(getSpannerReal());
+  }
+
+  void doModifyDataTypeTest(TestHarness.Connection testHarness) throws Exception {
+    Connection con = testHarness.getJDBCConnection();
+    try (Statement statement = con.createStatement()) {
+      statement.execute("START BATCH DDL");
+      statement.execute("CREATE TABLE Singers (SingerId INT64, LastName STRING(100) NOT NULL, SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)");
+      statement.execute("RUN BATCH");
+      
+      try (ResultSet rs = statement.executeQuery("SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getString(1)).isEqualTo("STRING(100)");
+        assertThat(rs.getString(2)).isEqualTo("NO");
+        assertThat(rs.next()).isFalse();
+      }
+      try (ResultSet rs = statement.executeQuery("SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getString(1)).isEqualTo("BYTES(MAX)");
+        assertThat(rs.getString(2)).isEqualTo("YES");
+        assertThat(rs.next()).isFalse();
+      }
+      
+      try {
+        Liquibase liquibase = getLiquibase(testHarness, "modify-data-type-singers-lastname.spanner.yaml");
+        liquibase.update(new Contexts("test"));
+        
+        try (ResultSet rs = statement.executeQuery("SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
+          assertThat(rs.next()).isTrue();
+          assertThat(rs.getString(1)).isEqualTo("STRING(1000)");
+          assertThat(rs.getString(2)).isEqualTo("NO");
+          assertThat(rs.next()).isFalse();
+        }
+        
+        liquibase = getLiquibase(testHarness, "modify-data-type-singers-singerinfo.spanner.yaml");
+        liquibase.update(new Contexts("test"));
+        try (ResultSet rs = statement.executeQuery("SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
+          assertThat(rs.next()).isTrue();
+          assertThat(rs.getString(1)).isEqualTo("STRING(MAX)");
+          assertThat(rs.getString(2)).isEqualTo("YES");
+          assertThat(rs.next()).isFalse();
+        }
+      } finally {
+        statement.execute("START BATCH DDL");
+        statement.execute("DROP TABLE Singers");
+        statement.execute("RUN BATCH");
+      }
+    }
+  }
+
   void doLiquibaseUpdateTest(TestHarness.Connection testHarness)
       throws SQLException, LiquibaseException {
     Liquibase liquibase = getLiquibase(testHarness, "changelog.spanner.sql");
