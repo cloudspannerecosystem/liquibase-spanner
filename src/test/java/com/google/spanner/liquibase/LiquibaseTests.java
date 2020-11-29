@@ -16,9 +16,13 @@
 
 package com.google.spanner.liquibase;
 
+import static com.google.common.truth.Truth.assertThat;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
+import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.database.DatabaseFactory;
@@ -28,6 +32,7 @@ import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -126,6 +131,51 @@ public class LiquibaseTests {
   @Tag("integration")
   void doSpannerUpdateRealTest() throws SQLException, LiquibaseException {
     doLiquibaseUpdateTest(getSpannerReal());
+  }
+
+  @Disabled("The emulator seems to hang when a query is executed on the INFORMATION_SCHEMA after a table with a foreign key has been created")
+  @Test
+  void doEmulatorDropAllForeignKeysTest() throws Exception {
+    logger.warn("Starting emulator foreign key test");
+    doDropAllForeignKeysTest(getSpannerEmulator());
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerDropAllForeignKeysTest() throws Exception {
+    doDropAllForeignKeysTest(getSpannerReal());
+  }
+
+  void doDropAllForeignKeysTest(TestHarness.Connection testHarness) throws Exception {
+    Connection con = testHarness.getJDBCConnection();
+    try (Statement statement = con.createStatement()) {
+      statement.execute("START BATCH DDL");
+      statement.execute("CREATE TABLE Countries (Code STRING(10), Name STRING(100)) PRIMARY KEY (Code)");
+      statement.execute("CREATE TABLE Singers (SingerId INT64, Name STRING(100), Country STRING(100), CONSTRAINT FK_Singers_Countries FOREIGN KEY (Country) REFERENCES Countries (Code)) PRIMARY KEY (SingerId)");
+      statement.execute("RUN BATCH");
+      
+      try (ResultSet rs = statement.executeQuery("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getLong(1)).isEqualTo(1L);
+        assertThat(rs.next()).isFalse();
+      }
+      
+      try {
+        Liquibase liquibase = getLiquibase(testHarness, "drop-all-foreign-key-constraints-singers.spanner.yaml");
+        liquibase.update(new Contexts("test"));
+        
+        try (ResultSet rs = statement.executeQuery("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
+          assertThat(rs.next()).isTrue();
+          assertThat(rs.getLong(1)).isEqualTo(0L);
+          assertThat(rs.next()).isFalse();
+        }
+      } finally {
+        statement.execute("START BATCH DDL");
+        statement.execute("DROP TABLE Singers");
+        statement.execute("DROP TABLE Countries");
+        statement.execute("RUN BATCH");
+      }
+    }
   }
 
   void doLiquibaseUpdateTest(TestHarness.Connection testHarness)
