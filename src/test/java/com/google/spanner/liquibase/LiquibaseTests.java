@@ -496,16 +496,27 @@ public class LiquibaseTests {
   }
 
   @Test
-  void doEmulatorSpannerSetNullableTest()
-      throws SQLException, LiquibaseException {
+  void doEmulatorSetNullableTest() throws Exception {
+    doSetNullableTest(getSpannerEmulator());
+  }
 
-    TestHarness.Connection testHarness = getSpannerEmulator();
+  @Test
+  @Tag("integration")
+  void doRealSpannerSetNullableTest() throws Exception {
+    doSetNullableTest(getSpannerReal());
+  }
+
+  void doSetNullableTest(TestHarness.Connection testHarness)
+      throws SQLException, LiquibaseException {
     // Create a simple table.
-    testHarness.getJDBCConnection().createStatement().execute(
+    Statement statement = testHarness.getJDBCConnection().createStatement();
+    statement.execute("START BATCH DDL");
+    statement.execute(
           "CREATE TABLE Singers (\n"
         + "  SingerId INT64 NOT NULL,\n"
         + "  LastName STRING(100),\n"
         + ") PRIMARY KEY (SingerId)");
+    statement.execute("RUN BATCH");
     assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isTrue();
 
     // Run a Liquibase update to make the LastName column NOT NULL.
@@ -519,7 +530,9 @@ public class LiquibaseTests {
     assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isTrue();
     
     // Manually make the column NOT NULL.
-    testHarness.getJDBCConnection().createStatement().execute("ALTER TABLE Singers ALTER COLUMN LastName STRING(100) NOT NULL");
+    statement.execute("START BATCH DDL");
+    statement.execute("ALTER TABLE Singers ALTER COLUMN LastName STRING(100) NOT NULL");
+    statement.execute("RUN BATCH");
     assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isFalse();
     
     Liquibase makeNullable = getLiquibase(testHarness,
@@ -531,18 +544,16 @@ public class LiquibaseTests {
     makeNullable.rollback(1, "test");
     assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isFalse();
     
-    testHarness.getJDBCConnection().createStatement().execute("DROP TABLE Singers");
+    statement.execute("START BATCH DDL");
+    statement.execute("DROP TABLE Singers");
+    statement.execute("RUN BATCH");
   }
   
   static boolean isNullable(java.sql.Connection conn, String table, String column) throws SQLException {
-    boolean readOnlyStatus = conn.isReadOnly();
-    conn.setReadOnly(true);
     try (ResultSet rs = conn.getMetaData().getColumns(null, null, table, column)) {
       while (rs.next()) {
         return "YES".equalsIgnoreCase(rs.getString("IS_NULLABLE"));
       }
-    } finally {
-      conn.setReadOnly(readOnlyStatus);
     }
     return false;
   }
