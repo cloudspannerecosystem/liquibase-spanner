@@ -17,18 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.RenameSequenceGenerator;
-import liquibase.statement.core.RenameSequenceStatement;
+import liquibase.sqlgenerator.core.RenameColumnGenerator;
+import liquibase.statement.core.RenameColumnStatement;
 
-public class SpannerRenameSequenceGenerator extends RenameSequenceGenerator {
-  static final String RENAME_SEQUENCE_VALIDATION_ERROR =
-      "Cloud Spanner does not support renaming sequences";
+public class RenameColumnGeneratorSpanner extends RenameColumnGenerator {
+  static final String RENAME_COLUMN_VALIDATION_ERROR =
+      "Cloud Spanner does not support renaming a column";
 
   @Override
   public ValidationErrors validate(
-      RenameSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+      RenameColumnStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(RENAME_SEQUENCE_VALIDATION_ERROR);
+    errors.addError(RENAME_COLUMN_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +38,7 @@ public class SpannerRenameSequenceGenerator extends RenameSequenceGenerator {
   }
 
   @Override
-  public boolean supports(RenameSequenceStatement statement, Database database) {
+  public boolean supports(RenameColumnStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

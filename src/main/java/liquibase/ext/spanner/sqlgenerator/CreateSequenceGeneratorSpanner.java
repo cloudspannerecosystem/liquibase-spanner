@@ -17,18 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.AddDefaultValueGenerator;
-import liquibase.statement.core.AddDefaultValueStatement;
+import liquibase.sqlgenerator.core.CreateSequenceGenerator;
+import liquibase.statement.core.CreateSequenceStatement;
 
-public class SpannerAddDefaultValueGenerator extends AddDefaultValueGenerator {
-  static final String ADD_DEFAULT_VALUE_VALIDATION_ERROR =
-      "Cloud Spanner does not support adding a default value to a column";
+public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
+  static final String CREATE_SEQUENCE_VALIDATION_ERROR =
+      "Cloud Spanner does not support creating sequences";
 
   @Override
   public ValidationErrors validate(
-      AddDefaultValueStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+      CreateSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(ADD_DEFAULT_VALUE_VALIDATION_ERROR);
+    errors.addError(CREATE_SEQUENCE_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +38,7 @@ public class SpannerAddDefaultValueGenerator extends AddDefaultValueGenerator {
   }
 
   @Override
-  public boolean supports(AddDefaultValueStatement statement, Database database) {
+  public boolean supports(CreateSequenceStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

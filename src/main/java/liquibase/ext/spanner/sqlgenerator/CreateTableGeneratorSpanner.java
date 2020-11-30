@@ -23,9 +23,9 @@ import liquibase.statement.core.CreateTableStatement;
 import liquibase.structure.DatabaseObject;
 import org.apache.commons.lang3.StringUtils;
 
-public class SpannerCreateTableGenerator extends CreateTableGenerator {
+public class CreateTableGeneratorSpanner extends CreateTableGenerator {
 
-  public SpannerCreateTableGenerator() {}
+  public CreateTableGeneratorSpanner() {}
 
   @Override
   public ValidationErrors validate(

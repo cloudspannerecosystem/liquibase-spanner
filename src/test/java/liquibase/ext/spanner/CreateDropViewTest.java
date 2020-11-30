@@ -43,7 +43,7 @@ public class CreateDropViewTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerCreateViewGenerator.CREATE_VIEW_VALIDATION_ERROR);
+            .contains(CreateViewGeneratorSpanner.CREATE_VIEW_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -58,7 +58,7 @@ public class CreateDropViewTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerDropViewGenerator.DROP_VIEW_VALIDATION_ERROR);
+            .contains(DropViewGeneratorSpanner.DROP_VIEW_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -73,7 +73,7 @@ public class CreateDropViewTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerRenameViewGenerator.RENAME_VIEW_VALIDATION_ERROR);
+            .contains(RenameViewGeneratorSpanner.RENAME_VIEW_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

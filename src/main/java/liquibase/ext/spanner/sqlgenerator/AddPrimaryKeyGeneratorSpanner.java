@@ -17,18 +17,20 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.RenameColumnGenerator;
-import liquibase.statement.core.RenameColumnStatement;
+import liquibase.sqlgenerator.core.AddPrimaryKeyGenerator;
+import liquibase.statement.core.AddPrimaryKeyStatement;
 
-public class SpannerRenameColumnGenerator extends RenameColumnGenerator {
-  static final String RENAME_COLUMN_VALIDATION_ERROR =
-      "Cloud Spanner does not support renaming a column";
+public class AddPrimaryKeyGeneratorSpanner extends AddPrimaryKeyGenerator {
+  static final String ADD_PK_VALIDATION_ERROR =
+      "Cloud Spanner does not support adding a primary key to an existing table";
 
   @Override
   public ValidationErrors validate(
-      RenameColumnStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-    ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(RENAME_COLUMN_VALIDATION_ERROR);
+      AddPrimaryKeyStatement addPrimaryKeyStatement,
+      Database database,
+      SqlGeneratorChain sqlGeneratorChain) {
+    ValidationErrors errors = super.validate(addPrimaryKeyStatement, database, sqlGeneratorChain);
+    errors.addError(ADD_PK_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +40,7 @@ public class SpannerRenameColumnGenerator extends RenameColumnGenerator {
   }
 
   @Override
-  public boolean supports(RenameColumnStatement statement, Database database) {
+  public boolean supports(AddPrimaryKeyStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

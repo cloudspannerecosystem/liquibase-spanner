@@ -42,7 +42,7 @@ public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
-        assertThat(e.getMessage()).contains(SpannerAddPrimaryKeyGenerator.ADD_PK_VALIDATION_ERROR);
+        assertThat(e.getMessage()).contains(AddPrimaryKeyGeneratorSpanner.ADD_PK_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -57,7 +57,7 @@ public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerDropPrimaryKeyGenerator.DROP_PK_VALIDATION_ERROR);
+            .contains(DropPrimaryKeyGeneratorSpanner.DROP_PK_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

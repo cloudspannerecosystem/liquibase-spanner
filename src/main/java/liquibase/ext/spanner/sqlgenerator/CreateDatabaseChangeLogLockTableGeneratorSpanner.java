@@ -7,7 +7,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateDatabaseChangeLogLockTableGenerator;
 import liquibase.statement.core.CreateDatabaseChangeLogLockTableStatement;
 
-public class SpannerCreateDatabaseChangeLogLockTableGenerator
+public class CreateDatabaseChangeLogLockTableGeneratorSpanner
     extends CreateDatabaseChangeLogLockTableGenerator {
   final String createTableSQL =
       ""

@@ -17,18 +17,20 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.DropDefaultValueGenerator;
-import liquibase.statement.core.DropDefaultValueStatement;
+import liquibase.sqlgenerator.core.DropProcedureGenerator;
+import liquibase.statement.core.DropProcedureStatement;
 
-public class SpannerDropDefaultValueGenerator extends DropDefaultValueGenerator {
-  static final String DROP_DEFAULT_VALUE_VALIDATION_ERROR =
-      "Cloud Spanner does not support dropping a default value from a column";
+public class DropProcedureGeneratorSpanner extends DropProcedureGenerator {
+  static final String DROP_PROCEDURE_VALIDATION_ERROR =
+      "Cloud Spanner does not support dropping procedures";
 
   @Override
   public ValidationErrors validate(
-      DropDefaultValueStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+      DropProcedureStatement statement,
+      Database database,
+      SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(DROP_DEFAULT_VALUE_VALIDATION_ERROR);
+    errors.addError(DROP_PROCEDURE_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +40,7 @@ public class SpannerDropDefaultValueGenerator extends DropDefaultValueGenerator 
   }
 
   @Override
-  public boolean supports(DropDefaultValueStatement statement, Database database) {
+  public boolean supports(DropProcedureStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

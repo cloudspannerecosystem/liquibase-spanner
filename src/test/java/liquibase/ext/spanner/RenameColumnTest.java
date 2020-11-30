@@ -43,7 +43,7 @@ public class RenameColumnTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerRenameColumnGenerator.RENAME_COLUMN_VALIDATION_ERROR);
+            .contains(RenameColumnGeneratorSpanner.RENAME_COLUMN_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

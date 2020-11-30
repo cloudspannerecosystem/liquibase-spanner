@@ -2,10 +2,11 @@ package liquibase.ext.spanner;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
-import liquibase.datatype.core.FloatType;
+import liquibase.datatype.core.DecimalType;
 
-public class FloatSpannerType extends FloatType {
-  private static final DatabaseDataType FLOAT64 = new DatabaseDataType("FLOAT64");
+/** DECIMAL is translated to NUMERIC. */
+public class DecimalTypeSpanner extends DecimalType {
+  private static final DatabaseDataType DECIMAL = new DatabaseDataType("NUMERIC");
 
   @Override
   public boolean supports(Database database) {
@@ -15,7 +16,7 @@ public class FloatSpannerType extends FloatType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof CloudSpanner) {
-      return FLOAT64;
+      return DECIMAL;
     } else {
       return super.toDatabaseDataType(database);
     }

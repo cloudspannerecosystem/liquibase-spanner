@@ -43,7 +43,7 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerAddDefaultValueGenerator.ADD_DEFAULT_VALUE_VALIDATION_ERROR);
+            .contains(AddDefaultValueGeneratorSpanner.ADD_DEFAULT_VALUE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -58,7 +58,7 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerDropDefaultValueGenerator.DROP_DEFAULT_VALUE_VALIDATION_ERROR);
+            .contains(DropDefaultValueGeneratorSpanner.DROP_DEFAULT_VALUE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

@@ -31,7 +31,7 @@ import liquibase.structure.core.Column;
         "Creates a lookup table containing values stored in a column and creates a foreign key to the new table.",
     priority = ChangeMetaData.PRIORITY_DATABASE,
     appliesTo = "column")
-public class SpannerAddLookupTableChange extends AddLookupTableChange {
+public class AddLookupTableChangeSpanner extends AddLookupTableChange {
 
   @Override
   public boolean supports(Database database) {

@@ -17,18 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.RenameTableGenerator;
-import liquibase.statement.core.RenameTableStatement;
+import liquibase.sqlgenerator.core.DropDefaultValueGenerator;
+import liquibase.statement.core.DropDefaultValueStatement;
 
-public class SpannerRenameTableGenerator extends RenameTableGenerator {
-  static final String RENAME_TABLE_VALIDATION_ERROR =
-      "Cloud Spanner does not support renaming a table";
+public class DropDefaultValueGeneratorSpanner extends DropDefaultValueGenerator {
+  static final String DROP_DEFAULT_VALUE_VALIDATION_ERROR =
+      "Cloud Spanner does not support dropping a default value from a column";
 
   @Override
   public ValidationErrors validate(
-      RenameTableStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+      DropDefaultValueStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(RENAME_TABLE_VALIDATION_ERROR);
+    errors.addError(DROP_DEFAULT_VALUE_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +38,7 @@ public class SpannerRenameTableGenerator extends RenameTableGenerator {
   }
 
   @Override
-  public boolean supports(RenameTableStatement statement, Database database) {
+  public boolean supports(DropDefaultValueStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

@@ -25,7 +25,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.SetNullableGenerator;
 import liquibase.statement.core.SetNullableStatement;
 
-public class SpannerSetNullableGenerator extends SetNullableGenerator {
+public class SetNullableGeneratorSpanner extends SetNullableGenerator {
 
   @Override
   public boolean supports(SetNullableStatement statement, Database database) {

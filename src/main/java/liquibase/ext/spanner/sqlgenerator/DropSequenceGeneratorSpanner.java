@@ -17,18 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.DropViewGenerator;
-import liquibase.statement.core.DropViewStatement;
+import liquibase.sqlgenerator.core.DropSequenceGenerator;
+import liquibase.statement.core.DropSequenceStatement;
 
-public class SpannerDropViewGenerator extends DropViewGenerator {
-  static final String DROP_VIEW_VALIDATION_ERROR =
-      "Cloud Spanner does not support dropping views";
+public class DropSequenceGeneratorSpanner extends DropSequenceGenerator {
+  static final String DROP_SEQUENCE_VALIDATION_ERROR =
+      "Cloud Spanner does not support dropping sequences";
 
   @Override
   public ValidationErrors validate(
-      DropViewStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+      DropSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(DROP_VIEW_VALIDATION_ERROR);
+    errors.addError(DROP_SEQUENCE_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +38,7 @@ public class SpannerDropViewGenerator extends DropViewGenerator {
   }
 
   @Override
-  public boolean supports(DropViewStatement statement, Database database) {
+  public boolean supports(DropSequenceStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }
