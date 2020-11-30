@@ -34,61 +34,61 @@ this.
 
 # Supported Features
 
-| Supported by Spanner             |
-| -------------------------------- |
-| createTable                      |
-| dropTable                        |
-| addColumn                        |
-| modifyDataType                   |
-| addNotNullConstraint             |     
-| dropColumn                       |
-| createIndex                      |
-| dropIndex                        |
-| addForeignKeyConstraint          |        
-| dropForeignKeyConstraint         |         
-| dropAllForeignKeyConstraints     |             
-| addLookupTable                   |
+| Supported by Spanner             | Remark                                 |
+| -------------------------------- | -------------------------------------- |
+| createTable                      | Interleaved tales not supported.       |
+| dropTable                        |                                        |
+| addColumn                        |                                        |
+| modifyDataType                   |                                        |
+| addNotNullConstraint             |                                        |
+| dropColumn                       |                                        |
+| createIndex                      |                                        |
+| dropIndex                        |                                        |
+| addForeignKeyConstraint          |                                        |
+| dropForeignKeyConstraint         |                                        |
+| dropAllForeignKeyConstraints     |                                        |
+| addLookupTable                   |                                        |
 
 | Changes not supported by Spanner | Remark                              |
 | -------------------------------- | ----------------------------------- |
-| addAutoIncrement                 | Use spanner allow_commit_timestamp? |                          
-| addDefaultValue                  |                                     |                         
-| addPrimaryKey                    |                                     |                       
-| addUniqueConstraint              | Use unique indexes instead          |          
-| createProcedure                  |                                     |                         
-| createSequence                   |                                     |                        
-| createView                       |                                     |                    
-| dropDefaultValue                 |                                     |                          
-| dropNotNullConstraint            | Use unique indexes instead          |                               
-| dropPrimaryKey                   |                                     |                        
-| dropProcedure                    |                                     |                       
+| addAutoIncrement                 | Use spanner allow_commit_timestamp? |
+| addDefaultValue                  |                                     |
+| addPrimaryKey                    |                                     |
+| addUniqueConstraint              | Use unique indexes instead.         |
+| createProcedure                  |                                     |
+| createSequence                   |                                     |
+| createView                       |                                     |
+| dropDefaultValue                 |                                     |
+| dropNotNullConstraint            | Use unique indexes instead.         |
+| dropPrimaryKey                   |                                     |
+| dropProcedure                    |                                     |
 | dropSequence                     |                                     |
-| dropUniqueConstraint             |                                     |                              
+| dropUniqueConstraint             |                                     |
 | dropView                         |                                     |
-| renameColumn                     |                                     |                      
-| renameSequence                   |                                     |                        
-| renameTable                      |                                     |                     
-| renameView                       |                                     |                    
-| setColumnRemarks                 |                                     |                          
-| setTableRemarks                  |                                     |                         
+| renameColumn                     |                                     |
+| renameSequence                   |                                     |
+| renameTable                      |                                     |
+| renameView                       |                                     |
+| setColumnRemarks                 |                                     |
+| setTableRemarks                  |                                     |
 
 
-| Test? Likely agnostic.           | Remark  |
+| Test?                            | Remark  |
 | -------------------------------- |:-------:|
-| sql                              | N/A     |             
-| sqlFile                          | N/A     |                 
-| alterSequence                    | To Stop |                       
-| customChange                     | N/A     |                      
-| delete                           | To Test |                
-| executeCommand                   | N/A     |                        
-| insert                           | To Test |                
-| loadData                         | To Test |                  
-| loadUpdateData                   | To Test |                        
-| mergeColumns                     | To Test |                      
-| output                           | N/A     |                
-| stop                             | N/A     |              
-| tagDatabase                      | N/A     |                     
-| update                           | To Test |                
+| alterSequence                    | To Stop |
+| delete                           | To Test |
+| insert                           | To Test |
+| loadData                         | To Test |
+| loadUpdateData                   | To Test |
+| mergeColumns                     | To Test |
+| update                           | To Test |
+| sql                              | N/A     |
+| sqlFile                          | N/A     |
+| customChange                     | N/A     |
+| executeCommand                   | N/A     |
+| output                           | N/A     |
+| stop                             | N/A     |
+| tagDatabase                      | N/A     |
 
 
 # Additional References
