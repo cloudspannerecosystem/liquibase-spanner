@@ -494,4 +494,56 @@ public class LiquibaseTests {
 
     return results;
   }
+
+  @Test
+  void doEmulatorSpannerSetNullableTest()
+      throws SQLException, LiquibaseException {
+
+    TestHarness.Connection testHarness = getSpannerEmulator();
+    // Create a simple table.
+    testHarness.getJDBCConnection().createStatement().execute(
+          "CREATE TABLE Singers (\n"
+        + "  SingerId INT64 NOT NULL,\n"
+        + "  LastName STRING(100),\n"
+        + ") PRIMARY KEY (SingerId)");
+    assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isTrue();
+
+    // Run a Liquibase update to make the LastName column NOT NULL.
+    Liquibase makeNotNull = getLiquibase(testHarness,
+        "add-not-null-constraint-singers-lastname.spanner.yaml");
+    makeNotNull.update(new Contexts("test"));
+    assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isFalse();
+
+    // Do rollback.
+    makeNotNull.rollback(1, "test");
+    assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isTrue();
+    
+    // Manually make the column NOT NULL.
+    testHarness.getJDBCConnection().createStatement().execute("ALTER TABLE Singers ALTER COLUMN LastName STRING(100) NOT NULL");
+    assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isFalse();
+    
+    Liquibase makeNullable = getLiquibase(testHarness,
+        "drop-not-null-constraint-singers-lastname.spanner.yaml");
+    makeNullable.update(new Contexts("test"));
+    assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isTrue();
+
+    // Do rollback.
+    makeNullable.rollback(1, "test");
+    assertThat(isNullable(testHarness.getJDBCConnection(), "Singers", "LastName")).isFalse();
+    
+    testHarness.getJDBCConnection().createStatement().execute("DROP TABLE Singers");
+  }
+  
+  static boolean isNullable(java.sql.Connection conn, String table, String column) throws SQLException {
+    boolean readOnlyStatus = conn.isReadOnly();
+    conn.setReadOnly(true);
+    try (ResultSet rs = conn.getMetaData().getColumns(null, null, table, column)) {
+      while (rs.next()) {
+        return "YES".equalsIgnoreCase(rs.getString("IS_NULLABLE"));
+      }
+    } finally {
+      conn.setReadOnly(readOnlyStatus);
+    }
+    return false;
+  }
 }
