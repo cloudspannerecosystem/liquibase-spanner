@@ -17,18 +17,20 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.RenameViewGenerator;
-import liquibase.statement.core.RenameViewStatement;
+import liquibase.sqlgenerator.core.DropPrimaryKeyGenerator;
+import liquibase.statement.core.DropPrimaryKeyStatement;
 
-public class SpannerRenameViewGenerator extends RenameViewGenerator {
-  static final String RENAME_VIEW_VALIDATION_ERROR =
-      "Cloud Spanner does not support renaming views";
+public class DropPrimaryKeyGeneratorSpanner extends DropPrimaryKeyGenerator {
+  static final String DROP_PK_VALIDATION_ERROR =
+      "Cloud Spanner does not support dropping a primary key from a table";
 
   @Override
   public ValidationErrors validate(
-      RenameViewStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-    ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(RENAME_VIEW_VALIDATION_ERROR);
+      DropPrimaryKeyStatement dropPrimaryKeyStatement,
+      Database database,
+      SqlGeneratorChain sqlGeneratorChain) {
+    ValidationErrors errors = super.validate(dropPrimaryKeyStatement, database, sqlGeneratorChain);
+    errors.addError(DROP_PK_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +40,7 @@ public class SpannerRenameViewGenerator extends RenameViewGenerator {
   }
 
   @Override
-  public boolean supports(RenameViewStatement statement, Database database) {
+  public boolean supports(DropPrimaryKeyStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

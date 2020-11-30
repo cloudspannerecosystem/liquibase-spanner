@@ -43,7 +43,7 @@ public class AddDropUniqueConstraintTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerAddUniqueConstraintGenerator.ADD_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
+            .contains(AddUniqueConstraintGeneratorSpanner.ADD_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -58,7 +58,7 @@ public class AddDropUniqueConstraintTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerDropUniqueConstraintGenerator.DROP_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
+            .contains(DropUniqueConstraintGeneratorSpanner.DROP_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

@@ -23,7 +23,7 @@ import liquibase.statement.core.DropUniqueConstraintStatement;
  * Cloud Spanner does not support unique constraints. Applications should create a unique index
  * instead.
  */
-public class SpannerDropUniqueConstraintGenerator extends DropUniqueConstraintGenerator {
+public class DropUniqueConstraintGeneratorSpanner extends DropUniqueConstraintGenerator {
   static final String DROP_UNIQUE_CONSTRAINT_VALIDATION_ERROR =
       "Cloud Spanner does not support unique constraints. Use a unique index instead.";
 

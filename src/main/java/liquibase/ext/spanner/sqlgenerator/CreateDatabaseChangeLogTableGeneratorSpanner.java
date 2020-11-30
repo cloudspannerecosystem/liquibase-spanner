@@ -21,7 +21,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateDatabaseChangeLogTableGenerator;
 import liquibase.statement.core.CreateDatabaseChangeLogTableStatement;
 
-public class SpannerCreateDatabaseChangeLogTableGenerator
+public class CreateDatabaseChangeLogTableGeneratorSpanner
     extends CreateDatabaseChangeLogTableGenerator {
   final String createTableSql =
       ""

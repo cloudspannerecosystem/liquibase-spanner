@@ -17,18 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.DropSequenceGenerator;
-import liquibase.statement.core.DropSequenceStatement;
+import liquibase.sqlgenerator.core.RenameSequenceGenerator;
+import liquibase.statement.core.RenameSequenceStatement;
 
-public class SpannerDropSequenceGenerator extends DropSequenceGenerator {
-  static final String DROP_SEQUENCE_VALIDATION_ERROR =
-      "Cloud Spanner does not support dropping sequences";
+public class RenameSequenceGeneratorSpanner extends RenameSequenceGenerator {
+  static final String RENAME_SEQUENCE_VALIDATION_ERROR =
+      "Cloud Spanner does not support renaming sequences";
 
   @Override
   public ValidationErrors validate(
-      DropSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+      RenameSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(DROP_SEQUENCE_VALIDATION_ERROR);
+    errors.addError(RENAME_SEQUENCE_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +38,7 @@ public class SpannerDropSequenceGenerator extends DropSequenceGenerator {
   }
 
   @Override
-  public boolean supports(DropSequenceStatement statement, Database database) {
+  public boolean supports(RenameSequenceStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

@@ -17,20 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.DropProcedureGenerator;
-import liquibase.statement.core.DropProcedureStatement;
+import liquibase.sqlgenerator.core.RenameTableGenerator;
+import liquibase.statement.core.RenameTableStatement;
 
-public class SpannerDropProcedureGenerator extends DropProcedureGenerator {
-  static final String DROP_PROCEDURE_VALIDATION_ERROR =
-      "Cloud Spanner does not support dropping procedures";
+public class RenameTableGeneratorSpanner extends RenameTableGenerator {
+  static final String RENAME_TABLE_VALIDATION_ERROR =
+      "Cloud Spanner does not support renaming a table";
 
   @Override
   public ValidationErrors validate(
-      DropProcedureStatement statement,
-      Database database,
-      SqlGeneratorChain sqlGeneratorChain) {
+      RenameTableStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(DROP_PROCEDURE_VALIDATION_ERROR);
+    errors.addError(RENAME_TABLE_VALIDATION_ERROR);
     return errors;
   }
 
@@ -40,7 +38,7 @@ public class SpannerDropProcedureGenerator extends DropProcedureGenerator {
   }
 
   @Override
-  public boolean supports(DropProcedureStatement statement, Database database) {
+  public boolean supports(RenameTableStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

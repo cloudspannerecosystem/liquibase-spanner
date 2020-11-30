@@ -43,7 +43,7 @@ public class CreateDropProcedureTest extends AbstractMockServerTest {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
       } catch (LiquibaseException e) {
-        assertThat(e.getMessage()).contains(SpannerCreateProcedureGenerator.CREATE_PROCEDURE_VALIDATION_ERROR);
+        assertThat(e.getMessage()).contains(CreateProcedureGeneratorSpanner.CREATE_PROCEDURE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -58,7 +58,7 @@ public class CreateDropProcedureTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerDropProcedureGenerator.DROP_PROCEDURE_VALIDATION_ERROR);
+            .contains(DropProcedureGeneratorSpanner.DROP_PROCEDURE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

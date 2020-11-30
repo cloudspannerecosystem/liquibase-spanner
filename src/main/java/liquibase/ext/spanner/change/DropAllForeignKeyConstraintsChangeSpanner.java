@@ -18,7 +18,7 @@ import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.statement.SqlStatement;
 
 @DatabaseChange(name="dropAllForeignKeyConstraints", description = "Drops all foreign key constraints for a table", priority = ChangeMetaData.PRIORITY_DATABASE, appliesTo = "table")
-public class SpannerDropAllForeignKeyConstraintsChange extends DropAllForeignKeyConstraintsChange {
+public class DropAllForeignKeyConstraintsChangeSpanner extends DropAllForeignKeyConstraintsChange {
 
   @Override
   public boolean supports(Database database) {

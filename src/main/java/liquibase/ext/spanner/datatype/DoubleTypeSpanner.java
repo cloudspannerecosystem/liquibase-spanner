@@ -4,7 +4,7 @@ import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.DoubleType;
 
-public class DoubleSpannerType extends DoubleType {
+public class DoubleTypeSpanner extends DoubleType {
   private static final DatabaseDataType FLOAT64 = new DatabaseDataType("FLOAT64");
 
   @Override

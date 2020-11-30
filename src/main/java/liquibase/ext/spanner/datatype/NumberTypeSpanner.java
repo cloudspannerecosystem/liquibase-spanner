@@ -4,7 +4,7 @@ import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.NumberType;
 
-public class NumberSpannerType extends NumberType {
+public class NumberTypeSpanner extends NumberType {
   private static final DatabaseDataType NUMERIC = new DatabaseDataType("NUMERIC");
 
   @Override

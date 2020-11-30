@@ -17,20 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.DropPrimaryKeyGenerator;
-import liquibase.statement.core.DropPrimaryKeyStatement;
+import liquibase.sqlgenerator.core.DropViewGenerator;
+import liquibase.statement.core.DropViewStatement;
 
-public class SpannerDropPrimaryKeyGenerator extends DropPrimaryKeyGenerator {
-  static final String DROP_PK_VALIDATION_ERROR =
-      "Cloud Spanner does not support dropping a primary key from a table";
+public class DropViewGeneratorSpanner extends DropViewGenerator {
+  static final String DROP_VIEW_VALIDATION_ERROR =
+      "Cloud Spanner does not support dropping views";
 
   @Override
   public ValidationErrors validate(
-      DropPrimaryKeyStatement dropPrimaryKeyStatement,
-      Database database,
-      SqlGeneratorChain sqlGeneratorChain) {
-    ValidationErrors errors = super.validate(dropPrimaryKeyStatement, database, sqlGeneratorChain);
-    errors.addError(DROP_PK_VALIDATION_ERROR);
+      DropViewStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+    ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
+    errors.addError(DROP_VIEW_VALIDATION_ERROR);
     return errors;
   }
 
@@ -40,7 +38,7 @@ public class SpannerDropPrimaryKeyGenerator extends DropPrimaryKeyGenerator {
   }
 
   @Override
-  public boolean supports(DropPrimaryKeyStatement statement, Database database) {
+  public boolean supports(DropViewStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

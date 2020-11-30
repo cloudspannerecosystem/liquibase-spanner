@@ -32,7 +32,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.ModifyDataTypeGenerator;
 import liquibase.statement.core.ModifyDataTypeStatement;
 
-public class SpannerModifyDataTypeGenerator extends ModifyDataTypeGenerator {
+public class ModifyDataTypeGeneratorSpanner extends ModifyDataTypeGenerator {
 
   @Override
   public boolean supports(ModifyDataTypeStatement statement, Database database) {

@@ -17,18 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.CreateViewGenerator;
-import liquibase.statement.core.CreateViewStatement;
+import liquibase.sqlgenerator.core.AddDefaultValueGenerator;
+import liquibase.statement.core.AddDefaultValueStatement;
 
-public class SpannerCreateViewGenerator extends CreateViewGenerator {
-  static final String CREATE_VIEW_VALIDATION_ERROR =
-      "Cloud Spanner does not support creating views";
+public class AddDefaultValueGeneratorSpanner extends AddDefaultValueGenerator {
+  static final String ADD_DEFAULT_VALUE_VALIDATION_ERROR =
+      "Cloud Spanner does not support adding a default value to a column";
 
   @Override
   public ValidationErrors validate(
-      CreateViewStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+      AddDefaultValueStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(CREATE_VIEW_VALIDATION_ERROR);
+    errors.addError(ADD_DEFAULT_VALUE_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +38,7 @@ public class SpannerCreateViewGenerator extends CreateViewGenerator {
   }
 
   @Override
-  public boolean supports(CreateViewStatement statement, Database database) {
+  public boolean supports(AddDefaultValueStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }
