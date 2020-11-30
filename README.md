@@ -16,11 +16,12 @@ Liquibase also allows for automated rollback of SQL where possible, using markup
 formatted changesets.
 
 # Building
-This is a standard Gradle project with Jib integration, so can be built and tested with:
+This is a standard Gradle project with Jib integration, so can be built and tested with the following commands.
+Starting spanner emulator is required for tests
 * `./gradlew build`
 * `./gradlew test`
-* `./gradle jibDocker` (to create a local docker container)
-* `./gradle shadowJar` (to create a uber-Jar for packaging with Liquibase)
+* `./gradlew jibDocker` (to create a local docker container)
+* `./gradlew shadowJar` (to create a uber-Jar for packaging with Liquibase)
 
 # ShadowJar
 The ShadowJar contains the extension, Spanner JDBC Driver, and dependencies. This can be included
@@ -33,21 +34,18 @@ container that embeds everything you need to run Liquibase. See run.sh for an ex
 this.
 
 # Additional References
-* https://www.baeldung.com/liquibase-refactor-schema-of-java-app
-* https://forum.liquibase.org/topic/rollback-feature-using-sql-formatted-output-does-not-work-as-expected-in-liquibase-3-3-0-oracle-db
-* https://forum.liquibase.org/#topic/49382000000028385
-* https://cloud.google.com/spanner/docs/emulator
-* https://medium.com/google-cloud/cloud-spanner-emulator-bf12d141c12
-* https://github.com/GoogleCloudPlatform/java-docs-samples/blob/master/spanner/cloud-client/src/main/java/com/example/spanner/SpannerSample.java
-* https://github.com/flyway/flyway/pull/1880
+* [Use Liquibase to Safely Evolve Your Database Schema](https://www.baeldung.com/liquibase-refactor-schema-of-java-app)
+* [Install and configure Cloud Spanner Emulator](https://medium.com/google-cloud/cloud-spanner-emulator-bf12d141c12)
+* [Spanner Emulator Docs](https://cloud.google.com/spanner/docs/emulator)
+* ["rollback" feature using "SQL formatted output" does not work as expected in Liquibase 3.3.0 (Oracle DB)](https://web.archive.org/web/20170923161755/https://forum.liquibase.org/topic/rollback-feature-using-sql-formatted-output-does-not-work-as-expected-in-liquibase-3-3-0-oracle-db)
+* [Spanner Java API example](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/master/spanner/cloud-client/src/main/java/com/example/spanner/SpannerSample.java)
+* [Flyway Github - Request to add Spanner Support](https://github.com/flyway/flyway/pull/1880)
 
 # Issues
 Please feel free to report issues and send pull requests, but note that this application is not officially supported as part of the Cloud Spanner product.
 
 # NOTES:
-
  * We strongly recommend to use [Liquibase SQL format](https://docs.liquibase.com/concepts/basic/sql-format.html). This allows
    you to explicitly write Spanner SQL. Liquibase SQL generation for Spanner is incomplete. This is required for rollbacks as well.
- * You need to initialise Liquibase change log tables manually. The SQL used is in [sql/test/resources/initial.spanner.sql](sql/test/resources/initial.spanner.sql).
  * This is *alpha*.
 
