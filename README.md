@@ -34,42 +34,47 @@ this.
 
 # Supported Features
 
-Status meaning -
- * Checked means it is a supported and tested feature
- * Cross means it is not supported and will throw an error
- * No status means it is untested
+| Supported by Spanner             |
+| -------------------------------- |
+| createTable                      |
+| dropTable                        |
+| addColumn                        |
+| modifyDataType                   |
+| addNotNullConstraint             |     
+| dropColumn                       |
+| createIndex                      |
+| dropIndex                        |
+| addForeignKeyConstraint          |        
+| dropForeignKeyConstraint         |         
+| dropAllForeignKeyConstraints     |             
+| addLookupTable                   |
 
-| Change Type                      | Status  |
+| Changes not supported by Spanner | Remark                              |
+| -------------------------------- | ----------------------------------- |
+| addAutoIncrement                 | Use spanner allow_commit_timestamp? |                          
+| addDefaultValue                  |                                     |                         
+| addPrimaryKey                    |                                     |                       
+| addUniqueConstraint              | Use unique indexes instead          |          
+| createProcedure                  |                                     |                         
+| createSequence                   |                                     |                        
+| createView                       |                                     |                    
+| dropDefaultValue                 |                                     |                          
+| dropNotNullConstraint            | Use unique indexes instead          |                               
+| dropPrimaryKey                   |                                     |                        
+| dropProcedure                    |                                     |                       
+| dropSequence                     |                                     |
+| dropUniqueConstraint             |                                     |                              
+| dropView                         |                                     |
+| renameColumn                     |                                     |                      
+| renameSequence                   |                                     |                        
+| renameTable                      |                                     |                     
+| renameView                       |                                     |                    
+| setColumnRemarks                 |                                     |                          
+| setTableRemarks                  |                                     |                         
+
+
+| Test? Likely agnostic.           | Remark  |
 | -------------------------------- |:-------:|
-| addAutoIncrement                 | &cross; |                          
-| addColumn                        | &check; |                   
-| addDefaultValue                  | &cross; |                         
-| addForeignKeyConstraint          | &check; |                                 
-| addLookupTable                   | &check; |                        
-| addNotNullConstraint             | ??      |                              
-| addPrimaryKey                    | &cross; |                       
-| addUniqueConstraint              | &cross; |                             
-| createIndex                      | &check; |                     
-| createProcedure                  | To Stop |                         
-| createSequence                   | To Stop |                        
-| createTable                      | &check; |                     
-| createView                       | To Stop |                    
-| dropAllForeignKeyConstraints     | ??      |                                      
-| dropColumn                       | &check; |                    
-| dropDefaultValue                 | &cross; |                          
-| dropForeignKeyConstraint         | To Test |                                  
-| dropIndex                        | &check; |                   
-| dropNotNullConstraint            | &cross; |                               
-| dropPrimaryKey                   | &cross; |                        
-| dropProcedure                    | To Stop |                       
-| dropSequence                     | To Stop |                      
-| dropTable                        | &check; |                   
-| dropUniqueConstraint             | &cross; |                              
-| dropView                         | To Stop |                  
-| renameColumn                     | &cross; |                      
-| renameSequence                   | To Stop |                        
-| renameTable                      | ??      |                     
-| renameView                       | To Stop |                    
 | sql                              | N/A     |             
 | sqlFile                          | N/A     |                 
 | alterSequence                    | To Stop |                       
@@ -80,10 +85,7 @@ Status meaning -
 | loadData                         | To Test |                  
 | loadUpdateData                   | To Test |                        
 | mergeColumns                     | To Test |                      
-| modifyDataType                   | To Stop |                        
 | output                           | N/A     |                
-| setColumnRemarks                 | ??      |                          
-| setTableRemarks                  | ??      |                         
 | stop                             | N/A     |              
 | tagDatabase                      | N/A     |                     
 | update                           | To Test |                
