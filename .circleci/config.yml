@@ -74,8 +74,9 @@ workflows:
     jobs:
       - execute_unit_tests
       - build_and_test:
-          when: $GCLOUD_SERVICE_KEY
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
       - publish_github_release:
