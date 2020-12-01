@@ -2,7 +2,7 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
-version: 2
+version: 2.1
 jobs:
 
   # Only execute unit tests
@@ -18,7 +18,7 @@ jobs:
       - store_test_results:
           path: build/test-results/test
 
-  # Build and unit tests
+  # Build and unit and integration tests
   build_and_test:
     machine:
        # Due to test containers
@@ -68,12 +68,13 @@ jobs:
                 ./workspace
 
 workflows:
-  version: 2
+  version: 2.1
 
   commit:
     jobs:
       - execute_unit_tests
       - build_and_test:
+          when: $GCLOUD_SERVICE_KEY
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
