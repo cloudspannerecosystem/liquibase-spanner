@@ -14,7 +14,7 @@ jobs:
       - run:
           name: "Build and run tests"
           command: |
-            ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} build test shadowJar
+            ./gradlew --no-daemon test
       - store_test_results:
           path: build/test-results/test
 
@@ -72,7 +72,7 @@ workflows:
 
   commit:
     jobs:
-      - execute_unit_tests:
+      - execute_unit_tests
       - build_and_test:
           filters:
             tags:
