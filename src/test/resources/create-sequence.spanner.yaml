@@ -18,7 +18,7 @@ databaseChangeLog:
      onFail: HALT
      onError: HALT
   - changeSet:
-     id:     v0.1
+     id:     v0.1-create-sequence
      author: spanner-liquibase-tests
      changes:
        - createSequence:
