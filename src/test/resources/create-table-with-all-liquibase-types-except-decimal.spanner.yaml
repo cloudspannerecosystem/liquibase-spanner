@@ -18,7 +18,7 @@ databaseChangeLog:
      onFail: HALT
      onError: HALT
   - changeSet:
-     id:     v0.3
+     id:     v0.3-create-table-with-all-liquibase-types-except-decimal
      labels: version 0.3
      author: spanner-liquibase-tests
      changes:

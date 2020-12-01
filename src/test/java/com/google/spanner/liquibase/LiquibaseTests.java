@@ -240,13 +240,13 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorLoadDataTest() throws Exception {
-    doModifyDataTypeTest(getSpannerEmulator());
+    doLoadDataTest(getSpannerEmulator());
   }
 
   @Test
   @Tag("integration")
   void doRealSpannerLoadDataTest() throws Exception {
-    doModifyDataTypeTest(getSpannerReal());
+    doLoadDataTest(getSpannerReal());
   }
 
   void doLoadDataTest(TestHarness.Connection testHarness) throws Exception {

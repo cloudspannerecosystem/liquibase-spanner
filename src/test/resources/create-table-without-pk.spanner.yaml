@@ -18,7 +18,7 @@ databaseChangeLog:
      onFail: HALT
      onError: HALT
   - changeSet:
-     id:     v0.1
+     id:     v0.1-create-table-without-pk
      labels: version 0.1
      author: spanner-liquibase-tests
      changes:
