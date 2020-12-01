@@ -18,7 +18,7 @@ databaseChangeLog:
      onFail: HALT
      onError: HALT
   - changeSet:
-     id:     v0.1
+     id:     v0.1-add-lookup-teable-singers-countries
      author: spanner-liquibase-tests
      changes:
        # Creates a lookup table for the home country of a Singer. This will change the

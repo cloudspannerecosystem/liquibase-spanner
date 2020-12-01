@@ -18,7 +18,7 @@ databaseChangeLog:
      onFail: HALT
      onError: HALT
   - changeSet:
-     id:     v0.1
+     id:     v0.1-drop-all-foreign-key-constraints-singers
      author: spanner-liquibase-tests
      changes:
        - dropAllForeignKeyConstraints:
