@@ -17,6 +17,8 @@
 package com.google.spanner.liquibase;
 
 import static com.google.common.truth.Truth.assertThat;
+import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -227,6 +229,56 @@ public class LiquibaseTests {
           assertThat(rs.getString(1)).isEqualTo("STRING(MAX)");
           assertThat(rs.getString(2)).isEqualTo("YES");
           assertThat(rs.next()).isFalse();
+        }
+      } finally {
+        statement.execute("START BATCH DDL");
+        statement.execute("DROP TABLE Singers");
+        statement.execute("RUN BATCH");
+      }
+    }
+  }
+
+  @Test
+  void doEmulatorLoadDataTest() throws Exception {
+    doModifyDataTypeTest(getSpannerEmulator());
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerLoadDataTest() throws Exception {
+    doModifyDataTypeTest(getSpannerReal());
+  }
+
+  void doLoadDataTest(TestHarness.Connection testHarness) throws Exception {
+    Connection con = testHarness.getJDBCConnection();
+    try (Statement statement = con.createStatement()) {
+      statement.execute("START BATCH DDL");
+      statement.execute("CREATE TABLE Singers ("
+          + "SingerId INT64,"
+          + "Name STRING(100),"
+          + "Description STRING(MAX),"
+          + "SingerInfo BYTES(MAX),"
+          + "AnyGood BOOL,"
+          + "Birthdate DATE,"
+          + "LastConcertTimestamp TIMESTAMP,"
+          + "ExternalID STRING(36),"
+          + ") PRIMARY KEY (SingerId)");
+      statement.execute("RUN BATCH");
+      try {
+        Liquibase liquibase = getLiquibase(testHarness, "load-data-singers.spanner.yaml");
+        liquibase.update(new Contexts("test"));
+        
+        try (ResultSet rs = statement.executeQuery("SELECT * FROM Singers ORDER BY SingerId")) {
+          int index = 0;
+          while (rs.next()) {
+            index++;
+            assertThat(rs.getLong("SingerId")).isEqualTo(index);
+            assertThat(rs.getString("Name")).isEqualTo("Name " + index);
+            assertThat(rs.getString("Description")).isEqualTo("This is a CLOB description " + index);
+            assertThat(rs.getBytes("SingerInfo")).isEqualTo(ByteArray.copyFrom("singerinfo " + index).toByteArray());
+            assertThat(rs.getBoolean("AnyGood")).isEqualTo(index %2 == 0);
+          }
+          assertThat(index).isEqualTo(3);
         }
       } finally {
         statement.execute("START BATCH DDL");
