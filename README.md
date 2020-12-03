@@ -22,6 +22,13 @@ This is a standard Gradle project with Jib integration, so can be built and test
 * `./gradle jibDocker` (to create a local docker container)
 * `./gradle shadowJar` (to create a uber-Jar for packaging with Liquibase)
 
+# Testing
+Unit tests and container-based Spanner emulator tests are done as part of the build. It uses
+[testcontainers](www.testcontainers.org) which has some [requirements](https://www.testcontainers.org/supported_docker_environment/).
+
+For running tests against a real Spanner, please set the environment variables SPANNER_PROJECT and
+SPANNER_INSTANCE to your instance and run `./gradlew integrationTest`.
+
 # ShadowJar
 The ShadowJar contains the extension, Spanner JDBC Driver, and dependencies. This can be included
 in the classpath of Liquibase the CLI for interacting with Spanner databases. See run.sh for an
@@ -89,6 +96,7 @@ this.
 | output                           | N/A     |
 | stop                             | N/A     |
 | tagDatabase                      | N/A     |
+
 
 
 # Additional References
