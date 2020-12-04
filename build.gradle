@@ -73,7 +73,12 @@ dependencies {
     implementation("org.liquibase:liquibase-core:4.2.0")
     implementation("org.yaml:snakeyaml:1.26")
     implementation("org.apache.commons:commons-lang3:3.11")
-    
+
+    // This shouldn't be necessary!
+    implementation("com.google.api.grpc:grpc-google-cloud-spanner-v1")
+    implementation("com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1")
+    implementation("com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1")
+
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
     testImplementation("org.testcontainers:testcontainers:1.15.0")
@@ -86,9 +91,6 @@ dependencies {
     
     // For Spanner mock server testing
     testImplementation(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
-    testImplementation("com.google.api.grpc:grpc-google-cloud-spanner-v1")
-    testImplementation("com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1")
-    testImplementation("com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1")
     testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '1.60.0', classifier: 'testlib')
 }
 
