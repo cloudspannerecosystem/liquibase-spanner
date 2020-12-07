@@ -46,7 +46,11 @@ databaseChangeLog:
            - column:
               header: Info
               name:   SingerInfo
-              # BLOB literals are not treated differently from strings in Liquibase, so these are all NULLs in the tests.
+              # LoadUpdateDataChange uses SQL literals instead of PreparedStatement.
+              # Cloud Spanner does support BLOB (BYTES) literals, but Liquibase does
+              # not distinguish them during the SQL generation. That means that they
+              # are generated as normal strings, which again is not supported by
+              # Cloud Spanner. These are therefore NULL in the test data for this test.
               type:   BLOB
            - column:
               header: Good
