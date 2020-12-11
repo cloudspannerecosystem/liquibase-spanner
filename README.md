@@ -19,8 +19,9 @@ formatted changesets.
 This is a standard Gradle project with Jib integration, so can be built and tested with:
 * `./gradlew build`
 * `./gradlew test`
-* `./gradle jibDocker` (to create a local docker container)
-* `./gradle shadowJar` (to create a uber-Jar for packaging with Liquibase)
+* `./gradlew integrationTest`
+* `./gradlew jibDocker` (to create a local docker container)
+* `./gradlew shadowJar` (to create a uber-Jar for packaging with Liquibase)
 
 # Testing
 Unit tests and container-based Spanner emulator tests are done as part of the build. It uses
@@ -43,7 +44,7 @@ this.
 
 | Supported by Spanner             | Remark                                 |
 | -------------------------------- | -------------------------------------- |
-| createTable                      | Interleaved tales not supported.       |
+| createTable                      |                                        |
 | dropTable                        |                                        |
 | addColumn                        |                                        |
 | modifyDataType                   |                                        |
@@ -85,17 +86,9 @@ this.
 | alterSequence                    | To Stop |
 | delete                           | To Test |
 | insert                           | To Test |
-| loadData                         | To Test |
-| loadUpdateData                   | To Test |
+| loadData                         | Tested  |
+| loadUpdateData                   | Tested  |
 | mergeColumns                     | To Test |
-| update                           | To Test |
-| sql                              | N/A     |
-| sqlFile                          | N/A     |
-| customChange                     | N/A     |
-| executeCommand                   | N/A     |
-| output                           | N/A     |
-| stop                             | N/A     |
-| tagDatabase                      | N/A     |
 
 
 
@@ -113,8 +106,5 @@ Please feel free to report issues and send pull requests, but note that this app
 
 # NOTES:
 
- * We strongly recommend to use [Liquibase SQL format](https://docs.liquibase.com/concepts/basic/sql-format.html). This allows
-   you to explicitly write Spanner SQL. Liquibase SQL generation for Spanner is incomplete. This is required for rollbacks as well.
- * You need to initialise Liquibase change log tables manually. The SQL used is in [sql/test/resources/initial.spanner.sql](sql/test/resources/initial.spanner.sql).
  * This is *alpha*.
 
