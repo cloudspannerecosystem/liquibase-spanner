@@ -42,20 +42,27 @@ public class InsertWithSelectGenerator extends InsertGenerator {
     StringBuilder sql = new StringBuilder();
     sql.append("INSERT INTO ").append(database.escapeTableName(statement.getCatalogName(),
         statement.getSchemaName(), statement.getTableName())).append(" (");
+    boolean first = true;
     for (String column : statement.getColumnValues().keySet()) {
+      if (first) {
+        first = false;
+      } else {
+        sql.append(", ");
+      }
       sql.append(database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(),
-          statement.getTableName(), column)).append(", ");
-    }
-    sql.deleteCharAt(sql.lastIndexOf(" "));
-    int lastComma = sql.lastIndexOf(",");
-    if (lastComma >= 0) {
-      sql.deleteCharAt(lastComma);
+          statement.getTableName(), column));
     }
     sql.append(")");
 
     // Generate SELECT ... statement.
     sql.append(" SELECT ");
+    first = true;
     for (String column : statement.getColumnValues().keySet()) {
+      if (first) {
+        first = false;
+      } else {
+        sql.append(", ");
+      }
       Object newValue = statement.getColumnValues().get(column);
       if ((newValue == null) || "NULL".equalsIgnoreCase(newValue.toString())) {
         sql.append("NULL");
@@ -76,13 +83,6 @@ public class InsertWithSelectGenerator extends InsertGenerator {
       } else {
         sql.append(newValue);
       }
-      sql.append(", ");
-    }
-
-    sql.deleteCharAt(sql.lastIndexOf(" "));
-    lastComma = sql.lastIndexOf(",");
-    if (lastComma >= 0) {
-      sql.deleteCharAt(lastComma);
     }
 
     return new Sql[] {new UnparsedSql(sql.toString(), getAffectedTable(statement))};
