@@ -40,7 +40,7 @@
       <dependency>
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-core</artifactId>
-        <version>3.8.9</version>
+        <version>${liquibase.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

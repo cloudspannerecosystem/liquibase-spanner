@@ -25,6 +25,17 @@ public class CloudSpanner extends AbstractJdbcDatabase {
   public java.lang.Integer getDefaultPort() {
     return Integer.valueOf(9010);
   }
+  
+  @Override
+  public String getDateLiteral(final String isoDate) {
+    String literal = super.getDateLiteral(isoDate);
+    if (isDateTime(isoDate)) {
+      literal = "TIMESTAMP " + literal.replace(' ', 'T');
+    } else {
+      literal = "DATE " + literal;
+    }
+    return literal;
+  }
 
   @Override
   public String getCurrentDateTimeFunction() {
