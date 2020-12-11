@@ -65,9 +65,7 @@ dependencies {
 
     // Cloud Spanner related
     implementation platform('com.google.cloud:libraries-bom:16.1.0')
-    
     implementation("com.google.cloud:google-cloud-spanner-jdbc")
-    implementation("com.google.cloud:google-cloud-logging-logback")
 
     // Liquibase Core - needed for testing and docker container
     implementation("org.liquibase:liquibase-core:4.2.0")
