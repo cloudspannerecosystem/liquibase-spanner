@@ -8,11 +8,12 @@ Build the extension:
 
 Use the `build/libs/liquibase-extension-SNAPSHOT-all.jar`.
 
-## Installing the JAR
+## Installing and setting up Liquibase 
 
-Copy the built jar or release jar into the Liquibase lib directory.
+Install Liquibase Community CLI from [here](https://www.liquibase.org/). Alternatively, there are many other ways to install (e.g. brew on Mac OS/X).
+These examples were run with Liquibase 4.2.0.
 
-# Running the sample
+Once Liquibase is installed, the built jar or release jar needs to be copied into the Liquibase lib directory.
 
 ## Starting a Spanner database
 
@@ -27,9 +28,7 @@ Configure the connection in the file liquibase.properties:
   url: jdbc:cloudspanner:/projects/<project>/instances/<instance>/databases/<database>
 ```
 
-## Run same samples
-
-Install Liquibase Community CLI from [here](https://www.liquibase.org/). Alternatively, there are many other ways to install (e.g. brew on Mac OS/X). These samples were run with Liquibase 4.2.0.
+## Run some examples
 
 ### Create the Singers table
 

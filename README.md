@@ -40,57 +40,58 @@ The docker container contains the contents of the ShadowJar and Liquibase itself
 container that embeds everything you need to run Liquibase. See run.sh for an example of using
 this.
 
+# Examples
+
+See [examples](example/README.md) for a series of changes using Liquibase.
+
 # Supported Features
+The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported.
+ * createTable
+ * dropTable
+ * addColumn
+ * modifyDataType
+ * addNotNullConstraint
+ * dropColumn
+ * createIndex
+ * dropIndex
+ * addForeignKeyConstraint
+ * dropForeignKeyConstraint
+ * dropAllForeignKeyConstraints
+ * addLookupTable
 
-| Supported by Spanner             | Remark                                 |
-| -------------------------------- | -------------------------------------- |
-| createTable                      |                                        |
-| dropTable                        |                                        |
-| addColumn                        |                                        |
-| modifyDataType                   |                                        |
-| addNotNullConstraint             |                                        |
-| dropColumn                       |                                        |
-| createIndex                      |                                        |
-| dropIndex                        |                                        |
-| addForeignKeyConstraint          |                                        |
-| dropForeignKeyConstraint         |                                        |
-| dropAllForeignKeyConstraints     |                                        |
-| addLookupTable                   |                                        |
+The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are not allowed with Cloud Spanner.
+ * addAutoIncrement
+ * addDefaultValue
+ * addPrimaryKey
+ * addUniqueConstraint
+ * dropUniqueConstraint
+ * createProcedure
+ * createSequence
+ * createView
+ * dropDefaultValue
+ * dropNotNullConstraint
+ * dropPrimaryKey
+ * dropProcedure
+ * dropSequence
+ * dropView
+ * renameColumn
+ * renameSequence
+ * renameTable
+ * renameView 
+ * setColumnRemarks
+ * setTableRemarks
 
-| Changes not supported by Spanner | Remark                              |
-| -------------------------------- | ----------------------------------- |
-| addAutoIncrement                 | Use spanner allow_commit_timestamp? |
-| addDefaultValue                  |                                     |
-| addPrimaryKey                    |                                     |
-| addUniqueConstraint              | Use unique indexes instead.         |
-| createProcedure                  |                                     |
-| createSequence                   |                                     |
-| createView                       |                                     |
-| dropDefaultValue                 |                                     |
-| dropNotNullConstraint            | Use unique indexes instead.         |
-| dropPrimaryKey                   |                                     |
-| dropProcedure                    |                                     |
-| dropSequence                     |                                     |
-| dropUniqueConstraint             |                                     |
-| dropView                         |                                     |
-| renameColumn                     |                                     |
-| renameSequence                   |                                     |
-| renameTable                      |                                     |
-| renameView                       |                                     |
-| setColumnRemarks                 |                                     |
-| setTableRemarks                  |                                     |
+The following data DML are supported:
+ * delete, insert, loadData, loadUpdateData
 
+NOTE:
+ * Instead of addAutoIncrement use allow_commit_timestamp. See examples.
+ * Instead of unique constraints use unique indexes.
 
-| Test?                            | Remark  |
-| -------------------------------- |:-------:|
-| alterSequence                    | To Stop |
-| delete                           | To Test |
-| insert                           | To Test |
-| loadData                         | Tested  |
-| loadUpdateData                   | Tested  |
-| mergeColumns                     | To Test |
-
-
+TODO:
+ * mergeColumns
+ * alterSequence - is this blocked?
+ * delete/insert - do these just work?
 
 # Additional References
 * https://www.baeldung.com/liquibase-refactor-schema-of-java-app
