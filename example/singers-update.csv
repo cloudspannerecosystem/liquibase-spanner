@@ -1,0 +1,4 @@
+Id;FirstName;LastName;Info;Country
+1;FirstName 1b;LastName 1b;data/description1.txt;FR
+2;FirstName 2b;LastName 2b;data/description2.txt;IT
+4;FirstName 4b;LastName 2b;data/description2.txt;ES

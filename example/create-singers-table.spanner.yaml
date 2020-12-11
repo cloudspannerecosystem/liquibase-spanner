@@ -35,13 +35,21 @@ databaseChangeLog:
             -  column:
                 remarks: Singer's first name
                 name:    FirstName
-                type:    java.sql.Types.VARCHAR(255)
+                type:    VARCHAR(255)
             -  column:
                 remarks: Singer's last name
                 name:    LastName
-                type:    java.sql.Types.VARCHAR(255)
+                type:    STRING(255)
                 constraints:
                   nullable: false
             -  column:
                 name:    SingerInfo
-                type:    BLOB
+                type:    CLOB
+            -  column:
+                name:    LastUpdateTime
+                type:    TIMESTAMP
+       - modifySql:
+          dbms: cloudspanner
+          replace:
+             - replace: LastUpdateTime timestamp 
+             - with:    LastUpdateTime timestamp OPTIONS (allow_commit_timestamp=true)

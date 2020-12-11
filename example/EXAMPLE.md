@@ -31,11 +31,15 @@ Configure the connection in the file liquibase.properties:
 
 Install Liquibase Community CLI from [here](https://www.liquibase.org/). Alternatively, there are many other ways to install (e.g. brew on Mac OS/X). These samples were run with Liquibase 4.2.0.
 
-### Create the Singers table.
+### Create the Singers table
+
+Note that this will set a column with the auto_commit option if it is Cloud Spanner.
 
 ```liquibase --changeLogFile create-singers-table.spanner.yaml update```
 
-### Create the Albums table and interleave it with Singers when it is a Cloud Spanner database
+### Create the Albums table
+
+Note that this will interleave this in the Singers parent table if it is Cloud Spanner.
 
 ```liquibase --changeLogFile create-albums-table.spanner.yaml update```
 
@@ -46,6 +50,10 @@ Install Liquibase Community CLI from [here](https://www.liquibase.org/). Alterna
 ### Load in some data into the Singers table
 
 ```liquibase --changeLogFile load-data-singers.spanner.yaml```
+
+### Update some data in the Singers table.
+
+```liquibase --changeLogFile load-update-data-singers.spanner.yaml```
 
 ### Create a Lookup table for Countries
 

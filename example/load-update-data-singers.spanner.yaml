@@ -18,17 +18,18 @@ databaseChangeLog:
      onFail: HALT
      onError: HALT
   - changeSet:
-     id:     v0.1-load-data
+     id:     v0.1-load-update-data
      author: spanner-liquibase-tests
      changes:
-       - loadData:
+       - loadUpdateData:
           tableName: Singers
-          usePreparedStatements: false
+          usePreparedStatements: true
           separator: ;
           relativeToChangelogFile: true
-          file: singers.csv
+          file: singers-update.csv
           encoding: UTF-8
           quotchar:  ''''
+          primaryKey: SingerId
           columns:
            - column:
               header: Id
@@ -50,3 +51,9 @@ databaseChangeLog:
               header: Country
               name:   Country
               type:   STRING
+           - column:
+              header: CommitTime
+              name:   LastUpdatetime
+              type:   COMPUTED
+
+
