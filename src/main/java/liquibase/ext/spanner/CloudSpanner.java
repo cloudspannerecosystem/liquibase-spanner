@@ -13,12 +13,27 @@
  */
 package liquibase.ext.spanner;
 
+import java.lang.reflect.Field;
+import liquibase.Scope;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
+import liquibase.snapshot.SnapshotGeneratorFactory;
 
 public class CloudSpanner extends AbstractJdbcDatabase {
-
+  
   public CloudSpanner() {
+    // Try to register a SpannerSnapshotGeneratorFactory with Liquibase. This factory will create a
+    // specific Spanner snapshot if the database to snapshot is a Spanner database, and otherwise it
+    // will use the normal Liquibase snapshot generator factory.
+    try {
+      Field field = SnapshotGeneratorFactory.class.getDeclaredField("instance");
+      field.setAccessible(true);
+      field.set(null, new SpannerSnapshotGeneratorFactory());
+    } catch (Exception e) {
+      Scope.getCurrentScope().getLog(getClass()).warning(
+          "Could not register SpannerSnapshotGeneratorFactory. Creating a snapshot for Cloud Spanner will not work.",
+          e);
+    }
   }
 
   @Override
