@@ -45,19 +45,8 @@ this.
 See [examples](example/README.md) for a series of changes using Liquibase.
 
 # Supported Features
-The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported.
- * createTable
- * dropTable
- * addColumn
- * modifyDataType
- * addNotNullConstraint
- * dropColumn
- * createIndex
- * dropIndex
- * addForeignKeyConstraint
- * dropForeignKeyConstraint
- * dropAllForeignKeyConstraints
- * addLookupTable
+The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:
+createTable, dropTable, addColumn, modifyDataType, addNotNullConstraint, dropColumn, createIndex, dropIndex, addForeignKeyConstraint, dropForeignKeyConstraint, dropAllForeignKeyConstraints, addLookupTable
 
 The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are not allowed with Cloud Spanner.
  * addAutoIncrement
