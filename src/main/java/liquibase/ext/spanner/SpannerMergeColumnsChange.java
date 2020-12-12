@@ -31,6 +31,8 @@ import liquibase.structure.core.Column;
  * Cloud Spanner-specific implementation of {@link MergeColumnChange}. Cloud Spanner requires all
  * UPDATE and DELETE statements to include a WHERE clause, even when all rows should be
  * updated/deleted. This feature is a safety precaution against accidental updates/deletes.
+ * 
+ * {@link SpannerMergeColumnsChange} will use a Partitioned DML statement to fill the data in the new column.
  */
 @DatabaseChange(name = "mergeColumns",
     description = "Concatenates the values in two columns, joins them by with string, and stores the resulting value in a new column.",
@@ -51,6 +53,8 @@ public class SpannerMergeColumnsChange extends MergeColumnChange {
     addNewColumnChange.addColumn(columnConfig);
     statements.addAll(Arrays.asList(addNewColumnChange.generateStatements(database)));
 
+    statements.add(new RawSqlStatement("SET AUTOCOMMIT=TRUE"));
+    statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='PARTITIONED_NON_ATOMIC'"));
     String updateStatement = "UPDATE "
         + database.escapeTableName(getCatalogName(), getSchemaName(), getTableName()) + " SET "
         + database.escapeObjectName(getFinalColumnName(), Column.class) + " = "
@@ -58,6 +62,7 @@ public class SpannerMergeColumnsChange extends MergeColumnChange {
             "'" + getJoinString() + "'", database.escapeObjectName(getColumn2Name(), Column.class))
         + " WHERE TRUE";
     statements.add(new RawSqlStatement(updateStatement));
+    statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='TRANSACTIONAL'"));
 
     DropColumnChange dropColumn1Change = new DropColumnChange();
     dropColumn1Change.setCatalogName(getCatalogName());

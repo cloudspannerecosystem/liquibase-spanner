@@ -14,17 +14,21 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Statement;
+import com.google.protobuf.AbstractMessage;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.v1.BeginTransactionRequest;
 import java.sql.Connection;
-import liquibase.Contexts;
-import liquibase.Liquibase;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import liquibase.Contexts;
+import liquibase.Liquibase;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class MergeColumnsTest extends AbstractMockServerTest {
@@ -67,5 +71,22 @@ public class MergeColumnsTest extends AbstractMockServerTest {
       assertThat(request.getStatementsList()).hasSize(1);
       assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql[i]);
     }
+    // Verify that the mock server received one BeginTransactionRequest for a PDML transaction.
+    assertThat(mockSpanner.getRequests().stream().filter(new Predicate<AbstractMessage>() {
+      @Override
+      public boolean test(AbstractMessage t) {
+        return t instanceof BeginTransactionRequest;
+      }
+    }).map(new Function<AbstractMessage, BeginTransactionRequest>() {
+      @Override
+      public BeginTransactionRequest apply(AbstractMessage t) {
+        return (BeginTransactionRequest) t;
+      }
+    }).filter(new Predicate<BeginTransactionRequest>() {
+      @Override
+      public boolean test(BeginTransactionRequest t) {
+        return t.hasOptions() && t.getOptions().hasPartitionedDml();
+      }
+    }).count()).isEqualTo(1L);
   }
 }
