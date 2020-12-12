@@ -23,6 +23,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -178,6 +179,62 @@ public class LiquibaseTests {
         statement.execute("START BATCH DDL");
         statement.execute("DROP TABLE Singers");
         statement.execute("DROP TABLE Countries");
+        statement.execute("RUN BATCH");
+      }
+    }
+  }
+  
+  @Disabled("The emulator erroneously requires the optional COLUMN keyword to be included in ALTER TABLE <table> ADD [COLUMN] ...")
+  @Test
+  void doEmulatorMergeColumnsTest() throws Exception {
+    doMergeColumnsTest(getSpannerEmulator());
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerMergeColumnsTest() throws Exception {
+    doMergeColumnsTest(getSpannerReal());
+  }
+
+  void doMergeColumnsTest(TestHarness.Connection testHarness) throws Exception {
+    Connection con = testHarness.getJDBCConnection();
+    try (Statement statement = con.createStatement()) {
+      statement.execute("START BATCH DDL");
+      statement.execute("CREATE TABLE Singers (SingerId INT64, FirstName STRING(100), LastName STRING(100)) PRIMARY KEY (SingerId)");
+      statement.execute("RUN BATCH");
+      
+      Object[][] singers = new Object[][] {
+        {1L, "FirstName1", "LastName1"},
+        {2L, "FirstName2", "LastName2"},
+        {3L, "FirstName3", "LastName3"},
+      };
+      statement.execute("BEGIN");
+      try (PreparedStatement ps = con.prepareStatement("INSERT INTO Singers (SingerId, FirstName, LastName) VALUES (?, ?, ?)")) {
+        for (Object[] singer : singers) {
+          for (int p = 0; p < singer.length; p++) {
+            // JDBC param index is 1-based.
+            ps.setObject(p+1, singer[p]);
+          }
+          ps.addBatch();
+        }
+        ps.executeBatch();
+      }
+      statement.execute("COMMIT");
+      
+      try {
+        Liquibase liquibase = getLiquibase(testHarness, "merge-singers-firstname-and-lastname.spanner.yaml");
+        liquibase.update(new Contexts("test"));
+        
+        try (ResultSet rs = statement.executeQuery("SELECT * FROM Singers ORDER BY SingerId")) {
+          for (int i=1; i<=singers.length; i++) {
+            assertThat(rs.next()).isTrue();
+            assertThat(rs.getString("FullName")).isEqualTo(String.format("FirstName%dsome-stringLastName%d", i, i));
+          }
+          assertThat(rs.next()).isFalse();
+        }
+      } finally {
+        statement.execute("START BATCH DDL");
+        statement.execute("DROP TABLE Singers");
         statement.execute("RUN BATCH");
       }
     }
