@@ -18,9 +18,6 @@ databaseChangeLog:
      onFail: HALT
      onError: HALT
   - changeSet:
-     id:     v0.1-create-view
+     id:     v0.1-create-snapshot
      author: spanner-liquibase-tests
      changes:
-     - createView:
-        viewName:      V_Singers
-        selectQuery:   SELECT * FROM Singers WHERE SingerId > 10
