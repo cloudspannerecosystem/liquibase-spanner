@@ -1,4 +1,6 @@
-# Liquibase with Spanner support
+
+# Liquibase Spanner Extension
+
 It currently builds two artifacts:
 
 * Liquibase Spanner extension ShadowJar bundled with required dependencies
@@ -16,31 +18,34 @@ Liquibase also allows for automated rollback of SQL where possible, using markup
 formatted changesets.
 
 # Building
+
 This is a standard Gradle project with Jib integration, so can be built and tested with:
+
 * `./gradlew build`
 * `./gradlew test`
 * `./gradlew integrationTest`
 * `./gradlew jibDocker` (to create a local docker container)
 * `./gradlew shadowJar` (to create a uber-Jar for packaging with Liquibase)
 
-# Testing
+## Testing
+
 Unit tests and container-based Spanner emulator tests are done as part of the build. It uses
 [testcontainers](www.testcontainers.org) which has some [requirements](https://www.testcontainers.org/supported_docker_environment/).
 
 For running tests against a real Spanner, please set the environment variables SPANNER_PROJECT and
 SPANNER_INSTANCE to your instance and run `./gradlew integrationTest`.
 
-# ShadowJar
+## ShadowJar
 The ShadowJar contains the extension, Spanner JDBC Driver, and dependencies. This can be included
 in the classpath of Liquibase the CLI for interacting with Spanner databases. See run.sh for an
 example of using this.
 
-# Docker container
+## Docker container
 The docker container contains the contents of the ShadowJar and Liquibase itself. This is a runnable
 container that embeds everything you need to run Liquibase. See run.sh for an example of using
 this.
 
-# Examples
+# Getting Started
 
 See [examples](example/README.md) for a series of changes using Liquibase.
 
@@ -58,14 +63,45 @@ The following data DML are supported:
 
 > delete, insert, loadData, loadUpdateData
 
-NOTE:
- * Instead of addAutoIncrement use allow_commit_timestamp. See examples.
- * Instead of unique constraints use unique indexes.
-
 TODO:
- * mergeColumns
  * alterSequence - is this blocked?
  * delete/insert - do these just work?
+
+NOTE:
+ * Column OPTIONS and table INTERLEAVE must be applied using modifySql.
+ * Instead of addAutoIncrement use allow_commit_timestamp.
+ * Instead of unique constraints use unique indexes.
+
+# Limitations
+
+## Spanner-specific SQL
+
+Some Spanner specific SQL, such as INTERLEAVE'd tables or column OPTIONS, require using
+Liquibase's modifySql. See [create-schema.yml](example/create-schema.yml) for an example
+of doing this.
+
+## DDL Limits
+
+In order to [limit the number of schema updates in a 7-day period](https://cloud.google.com/spanner/docs/schema-updates#week-window), run
+Liquibase with small changeSets. Alternatively, use [SQL change](https://docs.liquibase.com/change-types/community/sql.html) and batch the DDL
+using [batch statements](https://cloud.google.com/spanner/docs/use-oss-jdbc#batch_statements).
+
+## DML Limits
+
+There are [DML limits](https://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data)
+for the number of rows affected during DML. The recommendation is to use
+[partitioned DML](https://cloud.google.com/spanner/docs/dml-partitioned#dml_and_partitioned_dml).
+Using Spanner JDBC driver this can be configured using the
+[AUTOCOMMIT_DML_MODE](https://cloud.google.com/spanner/docs/use-oss-jdbc#set_autocommit_dml_mode).
+
+This has been implemented in some of the changeSet types such as mergeColumns, but not in all changeSet types such as
+delete.
+
+## Unsupported Spanner Features
+
+There are a number of features that Spanner does not have such as views and stored procedures. The Liquibase extension will
+throw an exception during analysis of the changeSet in most cases, but not all. For example, a DELETE without a WHERE clause
+will fail in Spanner but not in the Liquibase extension.
 
 # Additional References
 * https://www.baeldung.com/liquibase-refactor-schema-of-java-app
@@ -78,8 +114,4 @@ TODO:
 
 # Issues
 Please feel free to report issues and send pull requests, but note that this application is not officially supported as part of the Cloud Spanner product.
-
-# NOTES:
-
- * This is *alpha*.
 

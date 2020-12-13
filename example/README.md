@@ -28,40 +28,30 @@ Configure the connection in the file liquibase.properties:
   url: jdbc:cloudspanner:/projects/<project>/instances/<instance>/databases/<database>
 ```
 
-## Run some examples
+# Run some examples
 
-### Create the Singers table
+## Create the schema
 
-Note that this will set a column with the auto_commit option if it is Cloud Spanner.
+Note this will use some Spanner-specific options when working with Spanner.
 
-```liquibase --changeLogFile create-singers-table.spanner.yaml update```
+```liquibase --changeLogFile create-schema.yaml update```
 
-### Create the Albums table
-
-Note that this will interleave this in the Singers parent table if it is Cloud Spanner.
-
-```liquibase --changeLogFile create-albums-table.spanner.yaml update```
-
-### Add a Country column to the Singers table
+## Add a Country column to the Singers table
 
 ```liquibase --changeLogFile add-country-to-singers-table.spanner.yaml```
 
-### Load in some data into the Singers table
+## Load in some data into the Singers table
 
 ```liquibase --changeLogFile load-data-singers.spanner.yaml```
 
-### Update some data in the Singers table.
+## Update some data in the Singers table.
 
 ```liquibase --changeLogFile load-update-data-singers.spanner.yaml```
 
-### Create a Lookup table for Countries
+## Create a Lookup table for Countries
 
 ```liquibase --changeLogFile add-lookup-table-singers-countries.spanner.yaml```
 
-### Index the Singers FirstName column
-
-```liquibase --changeLogFile create-index-singers-first-name.spanner.yaml```
-
-### Change the datatype of Singers LastName column
+## Change the datatype of Singers LastName column
 
 ```liquibase --changeLogFile modify-data-type-singers-lastname.spanner.yaml```

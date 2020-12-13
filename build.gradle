@@ -59,6 +59,7 @@ serviceLoader {
     serviceInterface 'liquibase.sqlgenerator.SqlGenerator'
     serviceInterface 'liquibase.change.Change'
     serviceInterface 'liquibase.changelog.ChangeLogHistoryService'
+    serviceInterface 'liquibase.snapshot.SnapshotGenerator'
 }
 
 dependencies {
