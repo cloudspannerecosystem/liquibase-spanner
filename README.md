@@ -3,7 +3,7 @@
 
 A Liquibase extension adding support for Google Cloud Spanner. Include this in your
 application project to run Liquibase database migration scripts against a Google
-Cloud Spanner instance.
+Cloud Spanner database.
 
 ## Release Notes
 
