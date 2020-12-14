@@ -5,6 +5,11 @@ A Liquibase extension adding support for Google Cloud Spanner. Include this in y
 application project to run Liquibase database migration scripts against a Google
 Cloud Spanner instance.
 
+## Release Notes
+
+#### 1.0
+* Initial release
+
 ## Getting Started
 
 ### Installing and setting up Liquibase
@@ -30,25 +35,33 @@ Configure the connection in the file liquibase.properties:
 ### Running Examples
 
 Using the [Liquibase CLI](https://docs.liquibase.com/tools-integrations/cli/home.html) the following ChangeLogs are examples of using Spanner.
+Review [Liquibase best practices](https://www.liquibase.org/get-started/best-practices). In this example, [changelog.yaml](example/changelog.yaml)
+is used as the master changelog.
 
-| Example                                                                                                    | Description                                                               |
-|------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| [create-schema.yaml](example/create-schema.yaml)                                                           | Create schema, including interleaved tables, column options, and indexes  |
-| [load-data-singers.spanner.yaml](example/load-data-singers.spanner.yaml)                                   | Load data into Singers table from CSV                                     | 
-| [load-update-data-singers.spanner.yaml](example/load-update-data-singers.spanner.yaml)                     | Insert or update data in Singers table from CSV                           |
-| [add-lookup-table-singers-countries.spanner.yaml](example/add-lookup-table-singers-countries.spanner.yaml) | Create countries table as a foreign key from Country field in Singers     |
-| [modify-data-type-singers-lastname.spanner.yaml](example/modify-data-type-singers-lastname.yaml)           | Convert STRING datatype in Singers LastName column                        |
+Run:
+```liquibase --changeLog example/changelog.yaml```
+
+| Example                                                                                    | Description                                                               |
+|--------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| [create-schema.yaml](example/create-schema.yaml)                                           | Create schema, including interleaved tables, column options, and indexes  |
+| [load-data-singers.yaml](example/load-data-singers.yaml)                                   | Load data into Singers table from CSV                                     | 
+| [load-update-data-singers.yaml](example/load-update-data-singers.yaml)                     | Insert or update data in Singers table from CSV                           |
+| [add-lookup-table-singers-countries.yaml](example/add-lookup-table-singers-countries.yaml) | Create countries table as a foreign key from Country field in Singers     |
+| [modify-data-type-singers-lastname.yaml](example/modify-data-type-singers-lastname.yaml)   | Alter STRING datatype in Singers LastName column                          |
+| [insert.yaml](example/insert.yaml)                                                         | Insert rows into Singers table                                            |
+| [delete.yaml](example/delete.yaml)                                                         | Delete rows from Singers                                                  |
+| [update.yaml](example/update.yaml)                                                         | Update rows in Singers                                                    |
 
 ## Supported Features
 
-The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:
+The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:<br/>
 createTable, dropTable, addColumn, modifyDataType, addNotNullConstraint, dropColumn, createIndex, dropIndex, addForeignKeyConstraint, dropForeignKeyConstraint, dropAllForeignKeyConstraints, addLookupTable
 
-The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are not allowed with Cloud Spanner:
-addAutoIncrement, addDefaultValue, addPrimaryKey, addUniqueConstraint, dropUniqueConstraint, createProcedure, createSequence, createView, dropDefaultValue, dropNotNullConstraint, dropPrimaryKey, dropProcedure, dropSequence, dropView, renameColumn, renameSequence, renameTable, renameView, setColumnRemarks, setTableRemarks
+The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are not allowed with Cloud Spanner:<br/>
+addAutoIncrement, addDefaultValue, addPrimaryKey, addUniqueConstraint, dropUniqueConstraint, createProcedure, createSequence, createView, dropDefaultValue, dropNotNullConstraint, dropPrimaryKey, dropProcedure, dropSequence, dropView, renameColumn, renameSequence, renameTable, renameView, setColumnRemarks, setTableRemarks, alterSequence
 
-The following data DML [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:
-delete, insert, loadData, loadUpdateData
+The following data DML [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:<br/>
+insert, update, loadData, loadUpdateData
 
 Note:
  * Column OPTIONS and table INTERLEAVE must be applied using modifySql.
@@ -56,7 +69,6 @@ Note:
  * Instead of unique constraints use unique indexes.
 
 TODO:
- * alterSequence - is this blocked?
  * delete/insert - do these just work?
 
 ## Limitations
@@ -64,7 +76,7 @@ TODO:
 ### Spanner-specific SQL
 
 Some Spanner specific SQL, such as INTERLEAVE'd tables or column OPTIONS, require using
-Liquibase's modifySql. See [create-schema.yml](example/create-schema.yml) for an example
+Liquibase's modifySql. See [create-schema.yml](example/create-schema.yaml) for an example
 of doing this.
 
 ### DDL Limits
@@ -90,19 +102,14 @@ There are a number of features that Spanner does not have such as views and stor
 throw an exception during analysis of the changeSet in most cases, but not all. For example, a DELETE without a WHERE clause
 will fail in Spanner but not in the Liquibase extension.
 
-## Release Notes
-
-#### 1.0
-* Initial release
-
 ## Building and Testing
 
 ### Building
 
 Testing is done on three levels:
  * Mock testing of Spanner
- * Spanner emulator using [testcontainers](www.testcontainers.org) (See [requirements](https://www.testcontainers.org/supported_docker_environment/)
- * Spanner in GCP (set SPANNER_PROJECT and SPANNER_INSTANCE)
+ * Spanner emulator using [testcontainers](https://www.testcontainers.org/) (See [requirements](https://www.testcontainers.org/supported_docker_environment/))
+ * Spanner in GCP (set SPANNER_PROJECT and SPANNER_INSTANCE environment variables)
 
 | Gradle target      | Description                                     |
 |--------------------|-------------------------------------------------|

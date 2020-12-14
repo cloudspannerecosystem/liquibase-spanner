@@ -18,8 +18,9 @@ databaseChangeLog:
      onFail: HALT
      onError: HALT
   - changeSet:
-     id:     v0.1-load-data
-     author: spanner-liquibase-tests
+     id: load-singers-data
+     labels: example
+     author: spanner-examples
      changes:
        - loadData:
           tableName: Singers

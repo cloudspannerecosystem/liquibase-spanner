@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 databaseChangeLog:
   - preConditions:
      onFail: HALT
      onError: HALT
-  - changeSet:
-     id:     v0.1
-     author: spanner-liquibase-tests
-     changes:
-       - addColumn:
+
+#
+# Delete a row from Singers
+#
+# Note the where clause. This is required for Spanner.
+#
+  - changeSet:  
+     id: delete-row
+     labels: example
+     author: spanner-examples
+     changes:  
+       - delete:
           tableName: Singers
-          columns:
-            -  column:
-                name:    Country
-                type:    STRING(2)
+          where: SingerId=100

@@ -12,16 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 databaseChangeLog:
   - preConditions:
      onFail: HALT
      onError: HALT
-  - changeSet:
-     id:     v0.1-modify-data-type-singers-lastname
-     author: spanner-liquibase-tests
-     changes:
-       - modifyDataType:
-          tableName:   Singers
-          columnName:  LastName
-          newDataType: varchar(1000)
+
+#
+# Update all rows in Singers
+#
+# Note the DML limit -- this will only work for small tables
+#
+  - changeSet:  
+     id: update-all-rows
+     labels: example
+     author: spanner-examples
+     changes:  
+       - update:  
+          tableName:  Singers
+          where: TRUE
+          columns:  
+            - column:  
+               name: LastName  
+               valueComputed: CONCAT(LastName, '-2')
+            - column:  
+               name: LastUpdateTime  
+               valueComputed: PENDING_COMMIT_TIMESTAMP()

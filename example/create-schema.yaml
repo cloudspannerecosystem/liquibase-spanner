@@ -24,9 +24,9 @@ databaseChangeLog:
 # column to add a Spanner-specific option.
 #
   - changeSet:
-     id:     v0.1-create-singers-table
-     labels: version 0.1
-     author: spanner-liquibase-tests
+     id: create-singers-table
+     labels: example
+     author: spanner-examples
      changes:
        - createTable:
           remarks:   Singer information
@@ -64,8 +64,9 @@ databaseChangeLog:
 # Create an index on Singers
 #
   - changeSet:
-     id:     v0.1-create-index-singers-first-name
-     author: spanner-liquibase-tests
+     id: add-singers-index
+     labels: example
+     author: spanner-examples
      changes:
        - createIndex:
           tableName: Singers
@@ -81,9 +82,9 @@ databaseChangeLog:
 # Note the modifySql that appends INTERLEAVE to the table for Spanner-specific
 #
   - changeSet:
-     id:     v0.1-create-albums-table
-     labels: version 0.1
-     author: spanner-liquibase-tests
+     id: create-albums-table
+     labels: example
+     author: spanner-examples
      changes:
        - createTable:
           remarks:   Albums information

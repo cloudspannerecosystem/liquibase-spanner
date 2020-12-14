@@ -1,0 +1,51 @@
+
+
+databaseChangeLog:
+  - preConditions:
+     onFail: HALT
+     onError: HALT
+
+# Initial schema including
+  - include:
+     file: create-schema.yaml
+     relativeToChangelogFile: true
+
+# Add a column
+  - include:
+     file: add-country-to-singers-table.yaml
+     relativeToChangelogFile: true
+
+# Load reference data into Singers
+  - include:
+     file: load-data-singers.yaml
+     relativeToChangelogFile: true
+
+# Update reference data in Singers
+  - include:
+     file: load-update-data-singers.yaml
+     relativeToChangelogFile: true
+
+# Create a lookup table for the Country column
+  - include:
+     file: add-lookup-table-singers-countries.yaml
+     relativeToChangelogFile: true
+
+# Modify the LastName datatype in Singers
+  - include:
+     file: modify-data-type-singers-lastname.yaml
+     relativeToChangelogFile: true
+
+# Execute a normal insert into Singers
+  - include:
+     file: insert.yaml
+     relativeToChangelogFile: true
+
+# Execute a normal delete in Singers
+  - include:
+     file: delete.yaml
+     relativeToChangelogFile: true
+
+# Execute a normal update in Singers
+  - include:
+     file: update.yaml
+     relativeToChangelogFile: true
