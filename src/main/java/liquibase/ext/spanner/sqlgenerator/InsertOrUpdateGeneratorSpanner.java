@@ -25,7 +25,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.InsertOrUpdateGenerator;
 import liquibase.statement.core.InsertOrUpdateStatement;
 
-public class SpannerInsertOrUpdateGenerator extends InsertOrUpdateGenerator {
+public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
   @Override
   public boolean supports(InsertOrUpdateStatement statement, Database database) {
     return database instanceof CloudSpanner;
@@ -67,7 +67,7 @@ public class SpannerInsertOrUpdateGenerator extends InsertOrUpdateGenerator {
   @Override
   protected String getInsertStatement(InsertOrUpdateStatement insertOrUpdateStatement,
       Database database, SqlGeneratorChain sqlGeneratorChain) {
-    InsertWithSelectGenerator insertGenerator = new InsertWithSelectGenerator();
+    InsertWithSelectGeneratorSpanner insertGenerator = new InsertWithSelectGeneratorSpanner();
     StringBuffer sql = new StringBuffer(
         insertGenerator.generateSql(insertOrUpdateStatement, database, sqlGeneratorChain)[0]
             .toSql());

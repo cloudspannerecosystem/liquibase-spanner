@@ -14,9 +14,9 @@ import liquibase.structure.core.Schema;
 import liquibase.structure.core.Table;
 import java.util.logging.Logger;
 
-public class SpannerUniqueConstraintSnapshotGenerator extends UniqueConstraintSnapshotGenerator
+public class UniqueConstraintSnapshotGeneratorSpanner extends UniqueConstraintSnapshotGenerator
 {
-  public SpannerUniqueConstraintSnapshotGenerator() {
+  public UniqueConstraintSnapshotGeneratorSpanner() {
   }
 
   /*

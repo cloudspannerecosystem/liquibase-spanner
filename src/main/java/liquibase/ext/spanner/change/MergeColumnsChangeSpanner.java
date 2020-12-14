@@ -37,7 +37,7 @@ import liquibase.structure.core.Column;
 @DatabaseChange(name = "mergeColumns",
     description = "Concatenates the values in two columns, joins them by with string, and stores the resulting value in a new column.",
     priority = ChangeMetaData.PRIORITY_DATABASE)
-public class SpannerMergeColumnsChange extends MergeColumnChange {
+public class MergeColumnsChangeSpanner extends MergeColumnChange {
 
   @Override
   public SqlStatement[] generateStatements(final Database database) {
