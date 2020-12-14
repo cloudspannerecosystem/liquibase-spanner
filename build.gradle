@@ -16,7 +16,7 @@
 
 plugins {
     id "java"
-    id "com.google.cloud.tools.jib" version "2.4.0"
+    id "com.google.cloud.tools.jib" version "2.7.0"
     id "com.github.johnrengelman.shadow" version "6.0.0"
     id "com.github.harbby.gradle.serviceloader" version "1.1.2"
 }
@@ -122,12 +122,19 @@ task integrationTest(type: Test) {
   }
 }
 
+build {
+
+    // Build shadowJar during normal build
+    // This includes all the needed classes for an extension
+    dependsOn "shadowJar"
+}
+
 // Output shadowJar that can be used directly by Liquibase
 //
 // This contains all Cloud Spanner dependencies.
 shadowJar {
-    dependsOn("test")
-    archiveBaseName.set("liquibase-extension")
+    dependsOn "test"
+    archiveBaseName.set("liquibase-spanner")
     mergeServiceFiles()
     dependencies {
         exclude([
@@ -144,7 +151,7 @@ jib {
         image = "gcr.io/distroless/java:8"
     }
     to {
-        image = "spanner-liquibase"
+        image = "liquibase-spanner"
     }
     container {
         mainClass = 'liquibase.integration.commandline.Main'
