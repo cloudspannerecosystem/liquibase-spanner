@@ -7,8 +7,7 @@ Cloud Spanner instance.
 
 ## Release Notes
 
-#### 1.0
-* Initial release
+TO-BE-FILLED-IN
 
 ## Getting Started
 
