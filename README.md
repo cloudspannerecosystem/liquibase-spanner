@@ -64,7 +64,6 @@ insert, update, loadData, loadUpdateData
 
 Note:
  * Column OPTIONS and table INTERLEAVE must be applied using modifySql.
- * Instead of addAutoIncrement use allow_commit_timestamp.
  * Instead of unique constraints use unique indexes.
 
 ## Limitations
