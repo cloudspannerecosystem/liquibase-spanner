@@ -22,7 +22,7 @@ Once Liquibase is installed, use the built liquibase-spanner-VERSION-all.jar or 
 
 You can create a Spanner instance in the [GCP console](https://console.cloud.google.com/spanner/instances/new)
 or use an [emulator](https://cloud.google.com/spanner/docs/emulator) (with [JDBC](https://cloud.google.com/spanner/docs/use-oss-jdbc)).
-You will also need to create to create a database for Liquibase to use.
+You will also need to create a database for Liquibase to use.
 
 Spanner CLI is a convenient way to access Spanner. It can be installed from [here](https://github.com/cloudspannerecosystem/spanner-cli#install).
 
