@@ -23,18 +23,14 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
-import liquibase.Contexts;
-import liquibase.LabelExpression;
-import liquibase.Liquibase;
-import liquibase.database.DatabaseFactory;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.DatabaseException;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
@@ -44,6 +40,20 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import liquibase.CatalogAndSchema;
+import liquibase.Contexts;
+import liquibase.LabelExpression;
+import liquibase.Liquibase;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import liquibase.snapshot.DatabaseSnapshot;
+import liquibase.snapshot.SnapshotControl;
+import liquibase.snapshot.SnapshotGeneratorFactory;
+import liquibase.structure.core.Column;
+import liquibase.structure.core.Table;
 
 // As these are forms of integration tests -- against an external emulator or a real Spanner
 // instance --
@@ -178,6 +188,62 @@ public class LiquibaseTests {
         statement.execute("START BATCH DDL");
         statement.execute("DROP TABLE Singers");
         statement.execute("DROP TABLE Countries");
+        statement.execute("RUN BATCH");
+      }
+    }
+  }
+  
+  @Disabled("The emulator erroneously requires the optional COLUMN keyword to be included in ALTER TABLE <table> ADD [COLUMN] ...")
+  @Test
+  void doEmulatorMergeColumnsTest() throws Exception {
+    doMergeColumnsTest(getSpannerEmulator());
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerMergeColumnsTest() throws Exception {
+    doMergeColumnsTest(getSpannerReal());
+  }
+
+  void doMergeColumnsTest(TestHarness.Connection testHarness) throws Exception {
+    Connection con = testHarness.getJDBCConnection();
+    try (Statement statement = con.createStatement()) {
+      statement.execute("START BATCH DDL");
+      statement.execute("CREATE TABLE Singers (SingerId INT64, FirstName STRING(100), LastName STRING(100)) PRIMARY KEY (SingerId)");
+      statement.execute("RUN BATCH");
+      
+      Object[][] singers = new Object[][] {
+        {1L, "FirstName1", "LastName1"},
+        {2L, "FirstName2", "LastName2"},
+        {3L, "FirstName3", "LastName3"},
+      };
+      statement.execute("BEGIN");
+      try (PreparedStatement ps = con.prepareStatement("INSERT INTO Singers (SingerId, FirstName, LastName) VALUES (?, ?, ?)")) {
+        for (Object[] singer : singers) {
+          for (int p = 0; p < singer.length; p++) {
+            // JDBC param index is 1-based.
+            ps.setObject(p+1, singer[p]);
+          }
+          ps.addBatch();
+        }
+        ps.executeBatch();
+      }
+      statement.execute("COMMIT");
+      
+      try {
+        Liquibase liquibase = getLiquibase(testHarness, "merge-singers-firstname-and-lastname.spanner.yaml");
+        liquibase.update(new Contexts("test"));
+        
+        try (ResultSet rs = statement.executeQuery("SELECT * FROM Singers ORDER BY SingerId")) {
+          for (int i=1; i<=singers.length; i++) {
+            assertThat(rs.next()).isTrue();
+            assertThat(rs.getString("FullName")).isEqualTo(String.format("FirstName%dsome-stringLastName%d", i, i));
+          }
+          assertThat(rs.next()).isFalse();
+        }
+      } finally {
+        statement.execute("START BATCH DDL");
+        statement.execute("DROP TABLE Singers");
         statement.execute("RUN BATCH");
       }
     }
@@ -431,7 +497,7 @@ public class LiquibaseTests {
     liquibase.tag("tag-at-rollback_all_types");
 
     // Expect all of the columns and types
-    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
+    ColDesc[] cols = new ColDesc[] {
         new ColDesc("ColBigInt", "INT64", Boolean.FALSE),
         new ColDesc("ColBlob", "BYTES(MAX)"),
         new ColDesc("ColBoolean", "BOOL"),
@@ -452,10 +518,21 @@ public class LiquibaseTests {
         new ColDesc("ColTinyInt", "INT64"),
         new ColDesc("ColUUID", "STRING(36)"),
         new ColDesc("ColXml", "STRING(MAX)")
-        );
+    };
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes", cols);
 
     testTablePrimaryKeys(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
         new ColDesc("ColBigInt"));
+    
+    // Generate a snapshot of the database.
+    SnapshotGeneratorFactory factory = SnapshotGeneratorFactory.getInstance();
+    CatalogAndSchema schema = new CatalogAndSchema("", "");
+    SnapshotControl control = new SnapshotControl(liquibase.getDatabase());
+    DatabaseSnapshot snapshot = factory.createSnapshot(schema, liquibase.getDatabase(), control);
+    
+    testSnapshotTableAndColumns(snapshot, "TableWithAllLiquibaseTypes", cols);
+    testSnapshotPrimaryKey(snapshot, "TableWithAllLiquibaseTypes",
+        new ColDesc("ColBigInt", "INT64", Boolean.FALSE));
 
     // Do rollback
     liquibase.rollback(1, null);
@@ -482,7 +559,7 @@ public class LiquibaseTests {
     liquibase.tag("tag-at-rollback_all_types");
 
     // Expect all of the columns and types
-    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
+    ColDesc[] cols = new ColDesc[] {
         new ColDesc("ColBigInt", "INT64", Boolean.FALSE),
         new ColDesc("ColBlob", "BYTES(MAX)"),
         new ColDesc("ColBoolean", "BOOL"),
@@ -505,10 +582,21 @@ public class LiquibaseTests {
         new ColDesc("ColTinyInt", "INT64"),
         new ColDesc("ColUUID", "STRING(36)"),
         new ColDesc("ColXml", "STRING(MAX)")
-    );
+    };
+    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes", cols);
 
     testTablePrimaryKeys(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
         new ColDesc("ColBigInt"));
+    
+    // Generate a snapshot of the database.
+    SnapshotGeneratorFactory factory = SnapshotGeneratorFactory.getInstance();
+    CatalogAndSchema schema = new CatalogAndSchema("", "");
+    SnapshotControl control = new SnapshotControl(liquibase.getDatabase());
+    DatabaseSnapshot snapshot = factory.createSnapshot(schema, liquibase.getDatabase(), control);
+
+    testSnapshotTableAndColumns(snapshot, "TableWithAllLiquibaseTypes", cols);
+    testSnapshotPrimaryKey(snapshot, "TableWithAllLiquibaseTypes",
+        new ColDesc("ColBigInt", "INT64", Boolean.FALSE));
 
     // Do rollback
     liquibase.rollback(1, null);
@@ -537,9 +625,12 @@ public class LiquibaseTests {
   static void testTableColumns(java.sql.Connection conn, String table, ColDesc... cols)
       throws SQLException {
 
+    boolean autocommitStatus = conn.getAutoCommit();
     boolean readOnlyStatus = conn.isReadOnly();
+    conn.setAutoCommit(true);
     conn.setReadOnly(true);
     ResultSet rs = conn.getMetaData().getColumns(null, null, table, null);
+    conn.setAutoCommit(autocommitStatus);
     conn.setReadOnly(readOnlyStatus);
 
     List<Map<String, Object>> rows = getResults(rs);
@@ -578,6 +669,30 @@ public class LiquibaseTests {
       Assert.assertEquals(
           rows.get(i).get("COLUMN_NAME").toString().compareTo(cols[i].name),
           0);
+    }
+  }
+  
+  static void testSnapshotTableAndColumns(DatabaseSnapshot snapshot, String tableName, ColDesc... cols) {
+    Table table = snapshot.get(new Table("", "", tableName));
+    assertThat(table).isNotNull();
+    
+    for (ColDesc col : cols) {
+      Column column = snapshot.get(new Column(Table.class, "", "", tableName, col.name));
+      assertThat(column).isNotNull();
+      assertThat(column.getType().getTypeName()).isEqualTo(col.type);
+      assertThat(column.isNullable()).isEqualTo(col.isNullable);
+    }
+  }
+  
+  static void testSnapshotPrimaryKey(DatabaseSnapshot snapshot, String tableName, ColDesc... cols) {
+    Table table = snapshot.get(new Table("", "", tableName));
+    assertThat(table.getPrimaryKey().getColumns()).hasSize(cols.length);
+    List<Column> snapshotColumns = table.getPrimaryKey().getColumns();
+    for (int i=0; i<cols.length; i++) {
+      Column column = snapshotColumns.get(i);
+      assertThat(cols[i].name).isEqualTo(column.getName());
+      assertThat(cols[i].type).isEqualTo(column.getType().getTypeName());
+      assertThat(cols[i].isNullable).isEqualTo(column.isNullable());
     }
   }
 
