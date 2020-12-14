@@ -68,9 +68,6 @@ Note:
  * Instead of addAutoIncrement use allow_commit_timestamp.
  * Instead of unique constraints use unique indexes.
 
-TODO:
- * delete/insert - do these just work?
-
 ## Limitations
 
 ### Spanner-specific SQL
@@ -106,10 +103,10 @@ will fail in Spanner but not in the Liquibase extension.
 
 ### Building
 
-Testing is done on three levels:
- * Mock testing of Spanner
- * Spanner emulator using [testcontainers](https://www.testcontainers.org/) (See [requirements](https://www.testcontainers.org/supported_docker_environment/))
- * Spanner in GCP (set SPANNER_PROJECT and SPANNER_INSTANCE environment variables)
+Testing requirements:
+ * Spanner emulator requires [testcontainers](https://www.testcontainers.org/) and its [requirements](https://www.testcontainers.org/supported_docker_environment/) installed.
+ * Spanner in GCP requires SPANNER_PROJECT and SPANNER_INSTANCE environment variables set to an active GCP instance
+ * Spanner in GCP requires application default credentials set or GOOGLE_APPLICATION_CREDENTIALS environent variable pointing to a JSON file.
 
 | Gradle target      | Description                                     |
 |--------------------|-------------------------------------------------|
@@ -121,8 +118,8 @@ Testing is done on three levels:
 ### Deploying
 
 There are two JARs built:
- * build/libs/liquibase-spanner-<VERSION|SNAPSHOT>.jar
- * build/libs/liquibase-spanner-<VERSION|SNAPSHOT>-all.jar
+ * build/libs/liquibase-spanner-VERSION.jar
+ * build/libs/liquibase-spanner-VERSION-all.jar
 
 The first JAR is just the extension itself, while the second one includes all of the dependencies needed to run with Liquibase. Install the second one into the Liquibase lib directory.
 
@@ -130,7 +127,7 @@ The first JAR is just the extension itself, while the second one includes all of
 
 For contributions please see [contributing](docs/contributing.md) and our [code of conduct](docs/code-of-conduct.md).
 
-## Issues and Support
+## Raising Issues
 
-If you have any questions or find a bug, please [open an issue](https://github.com/cloudspannerecosystem/liquibase-spanner/issues/new).
+If you have any questions, find a bug, or have a feature request please [open an issue](https://github.com/cloudspannerecosystem/liquibase-spanner/issues/new).
 Please note that this extension is not officially supported as part of the Cloud Spanner product.
