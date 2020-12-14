@@ -27,7 +27,7 @@ import liquibase.statement.DatabaseFunction;
 import liquibase.statement.core.InsertStatement;
 
 /** Generator for INSERT statements in the form 'INSERT INTO FOO (..) SELECT ...'. */
-public class InsertWithSelectGenerator extends InsertGenerator {
+public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
 
   @Override
   public int getPriority() {
