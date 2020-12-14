@@ -18,7 +18,7 @@ databaseChangeLog:
      onFail: HALT
      onError: HALT
   - changeSet:
-     id:     v0.2
+     id:     v0.2-create-table-with-all-spanner-types
      labels: version 0.2
      author: spanner-liquibase-tests
      changes:

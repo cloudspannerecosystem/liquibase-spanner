@@ -26,6 +26,18 @@ class JdbcMetadataQueries {
       convertPositionalParametersToNamedParameters(
           StatementParser.removeCommentsAndTrim(
               readMetaDataSqlFromFile("DatabaseMetaData_GetColumns.sql")));
+  static final String GET_INDEX_INFO =
+      convertPositionalParametersToNamedParameters(
+          StatementParser.removeCommentsAndTrim(
+              readMetaDataSqlFromFile("DatabaseMetaData_GetIndexInfo.sql")));
+  static final String GET_PRIMARY_KEYS =
+      convertPositionalParametersToNamedParameters(
+          StatementParser.removeCommentsAndTrim(
+              readMetaDataSqlFromFile("DatabaseMetaData_GetPrimaryKeys.sql")));
+  static final String GET_IMPORTED_KEYS =
+      convertPositionalParametersToNamedParameters(
+          StatementParser.removeCommentsAndTrim(
+              readMetaDataSqlFromFile("DatabaseMetaData_GetImportedKeys.sql")));
 
   static final ResultSetMetadata GET_TABLES_METADATA =
       ResultSetMetadata.newBuilder()
@@ -88,6 +100,168 @@ class JdbcMetadataQueries {
               .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE))
               .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE))
               .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE)));
+    }
+    return builder.build();
+  }
+  
+  static final ResultSetMetadata GET_PRIMARY_KEYS_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TABLE_CAT")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TABLE_SCHEM")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TABLE_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("COLUMN_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("KEY_SEQ")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("PK_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+              )
+          .build();
+  
+  static class PrimaryKeyMetaData {
+    final String table;
+    final String column;
+
+    PrimaryKeyMetaData(String table, String column) {
+      this.table = table;
+      this.column = column;
+    }
+  }
+
+  static ResultSet createGetPrimaryKeysResultSet(Iterable<PrimaryKeyMetaData> keys) {
+    ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_PRIMARY_KEYS_METADATA);
+    int position = 1;
+    for (PrimaryKeyMetaData key : keys) {
+      builder.addRows(
+          ListValue.newBuilder()
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(key.table))
+              .addValues(Value.newBuilder().setStringValue(key.column))
+              .addValues(Value.newBuilder().setStringValue(String.valueOf(position)))
+              .addValues(Value.newBuilder().setStringValue("PRIMARY_KEY"))
+          );
+      position++;
+    }
+    return builder.build();
+  }
+  
+  static final ResultSetMetadata GET_IMPORTED_KEYS_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("PKTABLE_CAT")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("PKTABLE_SCHEM")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("PKTABLE_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("PKCOLUMN_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("FKTABLE_CAT")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("FKTABLE_SCHEM")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("FKTABLE_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("FKCOLUMN_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("KEY_SEQ")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("UPDATE_RULE")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("DELETE_RULE")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("FK_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("PK_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("DEFERRABILITY")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+              )
+          .build();
+  
+  static class ImportedKeyMetaData {
+    final String pkTable;
+    final String pkColumn;
+    final String fkTable;
+    final String fkColumn;
+
+    ImportedKeyMetaData(String pkTable, String pkColumn, String fkTable, String fkColumn) {
+      this.pkTable = pkTable;
+      this.pkColumn = pkColumn;
+      this.fkTable = fkTable;
+      this.fkColumn = fkColumn;
+    }
+  }
+
+  static ResultSet createGetImportedKeysResultSet(Iterable<ImportedKeyMetaData> keys) {
+    ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_IMPORTED_KEYS_METADATA);
+    int position = 1;
+    for (ImportedKeyMetaData key : keys) {
+      builder.addRows(
+          ListValue.newBuilder()
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(key.pkTable))
+              .addValues(Value.newBuilder().setStringValue(key.pkColumn))
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(key.fkTable))
+              .addValues(Value.newBuilder().setStringValue(key.fkColumn))
+              .addValues(Value.newBuilder().setStringValue(String.valueOf(position)))
+              .addValues(Value.newBuilder().setStringValue("1"))
+              .addValues(Value.newBuilder().setStringValue("0"))
+              .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE))
+              .addValues(Value.newBuilder().setStringValue("PRIMARY_KEY"))
+              .addValues(Value.newBuilder().setStringValue("7"))
+          );
+      position++;
     }
     return builder.build();
   }
@@ -249,6 +423,109 @@ class JdbcMetadataQueries {
               .addValues(Value.newBuilder().setStringValue("NO")) // IS_GENERATEDCOLUMN
           );
       position++;
+    }
+    return builder.build();
+  }
+  
+  static final ResultSetMetadata GET_INDEX_INFO_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TABLE_CAT")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TABLE_SCHEM")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TABLE_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("NON_UNIQUE")
+                          .setType(Type.newBuilder().setCode(TypeCode.BOOL)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("INDEX_QUALIFIER")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("INDEX_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TYPE")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("ORDINAL_POSITION")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("COLUMN_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("ASC_OR_DESC")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("CARDINALITY")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("PAGES")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64))))
+          .build();
+  
+  static class IndexMetaData {
+    final String table;
+    final boolean unique;
+    final String name;
+    final boolean primaryKey;
+    final int ordinalPosition;
+    final String column;
+    final boolean ascending;
+
+    IndexMetaData(
+        String table,
+        boolean unique,
+        String name,
+        boolean primaryKey,
+        int ordinalPosition,
+        String column,
+        boolean ascending) {
+      this.table = table;
+      this.unique = unique;
+      this.name = name;
+      this.primaryKey = primaryKey;
+      this.ordinalPosition = ordinalPosition;
+      this.column = column;
+      this.ascending = ascending;
+    }
+  }
+
+  static ResultSet createGetIndexInfoResultSet(Iterable<IndexMetaData> indexes) {
+    ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_INDEX_INFO_METADATA);
+    for (IndexMetaData index : indexes) {
+      builder.addRows(
+          ListValue.newBuilder()
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(index.table))
+              .addValues(Value.newBuilder().setBoolValue(!index.unique))
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(index.name))
+              .addValues(Value.newBuilder().setStringValue(index.primaryKey ? "1" : "2"))
+              .addValues(Value.newBuilder().setStringValue(String.valueOf(index.ordinalPosition)))
+              .addValues(Value.newBuilder().setStringValue(index.column))
+              .addValues(Value.newBuilder().setStringValue(index.ascending ? "A" : "D"))
+              .addValues(Value.newBuilder().setStringValue("-1"))
+              .addValues(Value.newBuilder().setStringValue("-1"))
+          );
     }
     return builder.build();
   }

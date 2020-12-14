@@ -1,0 +1,4 @@
+Id;Name;Desc;Info;Good;Birthdate;LastConcert;UUID
+1;Name 1;data/description1.txt;data/singerinfo1.txt;FALSE;1997-10-01;2019-12-31T10:30:00;5b4beb53-27a6-4b7f-92ac-19c7c95353da
+2;Name 2;data/description2.txt;data/singerinfo2.txt;TRUE;2000-02-29;2020-07-09T22:45:10;9bff9ea5-024c-49b4-8f24-46570e515aff
+3;Name 3;data/description3.txt;data/singerinfo3.txt;FALSE;1980-12-01;2018-01-19T01:00:01;f1f4c7d2-9ae8-4fdb-94f6-7931736c9cd1

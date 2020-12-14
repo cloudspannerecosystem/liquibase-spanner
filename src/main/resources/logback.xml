@@ -1,0 +1,3 @@
+<configuration>
+    <logger name="io.grpc.netty.shaded" level="INFO" /> 
+</configuration>
