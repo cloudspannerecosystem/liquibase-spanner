@@ -31,15 +31,13 @@ Configure the connection in the file liquibase.properties:
 
 Using the [Liquibase CLI](https://docs.liquibase.com/tools-integrations/cli/home.html) the following ChangeLogs are examples of using Spanner.
 
-|-----------------------------------------------------------|---------------------------------------------------------------------------|
-| Example                                                   | Description                                                               |
-|-----------------------------------------------------------|---------------------------------------------------------------------------|
-| [example/create-schema.yaml]                              | Create schema, including interleaved tables, column options, and indexes  |
-| [example/load-data-singers.spanner.yaml]                  | Load data into Singers table from CSV                                     | 
-| [example/load-update-data-singers.spanner.yaml]           | Insert or update data in Singers table from CSV                           |
-| [example/add-lookup-table-singers-countries.spanner.yaml] | Create countries table as a foreign key from Country field in Singers     |
-| [example/modify-data-type-singers-lastname.spanner.yaml]  | Convert STRING datatype in Singers LastName column                        |
-|-----------------------------------------------------------|---------------------------------------------------------------------------|
+| Example                                                                                                    | Description                                                               |
+|------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| [create-schema.yaml](example/create-schema.yaml)                                                           | Create schema, including interleaved tables, column options, and indexes  |
+| [load-data-singers.spanner.yaml](example/load-data-singers.spanner.yaml)                                   | Load data into Singers table from CSV                                     | 
+| [load-update-data-singers.spanner.yaml](example/load-update-data-singers.spanner.yaml)                     | Insert or update data in Singers table from CSV                           |
+| [add-lookup-table-singers-countries.spanner.yaml](example/add-lookup-table-singers-countries.spanner.yaml) | Create countries table as a foreign key from Country field in Singers     |
+| [modify-data-type-singers-lastname.spanner.yaml](example/modify-data-type-singers-lastname.yaml)           | Convert STRING datatype in Singers LastName column                        |
 
 ## Supported Features
 
@@ -106,20 +104,18 @@ Testing is done on three levels:
  * Spanner emulator using [testcontainers](www.testcontainers.org) (See [requirements](https://www.testcontainers.org/supported_docker_environment/)
  * Spanner in GCP (set SPANNER_PROJECT and SPANNER_INSTANCE)
 
-|--------------------------------|-------------------------------------------------|
-| Gradle target                  | Description                                     |
-|--------------------------------|-------------------------------------------------|
-| `./gradlew test`               | Run mock and Spanner emulator tests             |
-| `./gradlew build`              | Build extension and run above tests             |
-| `./gradlew integrationTest`    | Run Spanner in GCP tests                        |
-| `./gradlew jibDocker`          | Build a local runnable docker container         |
-|--------------------------------|-------------------------------------------------|
+| Gradle target      | Description                                     |
+|--------------------|-------------------------------------------------|
+| test               | Run mock and Spanner emulator tests             |
+| build              | Build extension and run above tests             |
+| integrationTest    | Run Spanner in GCP tests                        |
+| jibDocker          | Build a local runnable docker container         |
 
 ### Deploying
 
 There are two JARs built:
- * build/libs/liquibase-spanner-<VERSION | SNAPSHOT>.jar
- * build/libs/liquibase-spanner-<VERSION | SNAPSHOT>-all.jar
+ * build/libs/liquibase-spanner-<VERSION|SNAPSHOT>.jar
+ * build/libs/liquibase-spanner-<VERSION|SNAPSHOT>-all.jar
 
 The first JAR is just the extension itself, while the second one includes all of the dependencies needed to run with Liquibase. Install the second one into the Liquibase lib directory.
 
