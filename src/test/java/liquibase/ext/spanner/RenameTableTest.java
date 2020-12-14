@@ -43,7 +43,7 @@ public class RenameTableTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerRenameTableGenerator.RENAME_TABLE_VALIDATION_ERROR);
+            .contains(RenameTableGeneratorSpanner.RENAME_TABLE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

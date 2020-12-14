@@ -22,7 +22,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateProcedureGenerator;
 import liquibase.statement.core.CreateProcedureStatement;
 
-public class SpannerCreateProcedureGenerator extends CreateProcedureGenerator {
+public class CreateProcedureGeneratorSpanner extends CreateProcedureGenerator {
   static final String CREATE_PROCEDURE_VALIDATION_ERROR =
       "Cloud Spanner does not support creating procedures";
 

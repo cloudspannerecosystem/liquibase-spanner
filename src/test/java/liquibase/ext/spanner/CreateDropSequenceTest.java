@@ -43,7 +43,7 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerCreateSequenceGenerator.CREATE_SEQUENCE_VALIDATION_ERROR);
+            .contains(CreateSequenceGeneratorSpanner.CREATE_SEQUENCE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -58,7 +58,7 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerDropSequenceGenerator.DROP_SEQUENCE_VALIDATION_ERROR);
+            .contains(DropSequenceGeneratorSpanner.DROP_SEQUENCE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -73,7 +73,7 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(SpannerRenameSequenceGenerator.RENAME_SEQUENCE_VALIDATION_ERROR);
+            .contains(RenameSequenceGeneratorSpanner.RENAME_SEQUENCE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

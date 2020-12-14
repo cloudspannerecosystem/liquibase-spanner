@@ -24,7 +24,7 @@ import liquibase.statement.core.DeleteStatement;
 import liquibase.statement.core.InitializeDatabaseChangeLogLockTableStatement;
 import liquibase.statement.core.InsertStatement;
 
-public class SpannerInitializeChangeLogLockTableGenerator
+public class InitializeChangeLogLockTableGeneratorSpanner
     extends AbstractSqlGenerator<InitializeDatabaseChangeLogLockTableStatement> {
 
   @Override

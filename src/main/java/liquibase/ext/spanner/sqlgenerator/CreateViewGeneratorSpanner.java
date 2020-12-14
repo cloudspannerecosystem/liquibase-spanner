@@ -17,20 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.AddPrimaryKeyGenerator;
-import liquibase.statement.core.AddPrimaryKeyStatement;
+import liquibase.sqlgenerator.core.CreateViewGenerator;
+import liquibase.statement.core.CreateViewStatement;
 
-public class SpannerAddPrimaryKeyGenerator extends AddPrimaryKeyGenerator {
-  static final String ADD_PK_VALIDATION_ERROR =
-      "Cloud Spanner does not support adding a primary key to an existing table";
+public class CreateViewGeneratorSpanner extends CreateViewGenerator {
+  static final String CREATE_VIEW_VALIDATION_ERROR =
+      "Cloud Spanner does not support creating views";
 
   @Override
   public ValidationErrors validate(
-      AddPrimaryKeyStatement addPrimaryKeyStatement,
-      Database database,
-      SqlGeneratorChain sqlGeneratorChain) {
-    ValidationErrors errors = super.validate(addPrimaryKeyStatement, database, sqlGeneratorChain);
-    errors.addError(ADD_PK_VALIDATION_ERROR);
+      CreateViewStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+    ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
+    errors.addError(CREATE_VIEW_VALIDATION_ERROR);
     return errors;
   }
 
@@ -40,7 +38,7 @@ public class SpannerAddPrimaryKeyGenerator extends AddPrimaryKeyGenerator {
   }
 
   @Override
-  public boolean supports(AddPrimaryKeyStatement statement, Database database) {
+  public boolean supports(CreateViewStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

@@ -17,18 +17,18 @@ import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
-import liquibase.sqlgenerator.core.CreateSequenceGenerator;
-import liquibase.statement.core.CreateSequenceStatement;
+import liquibase.sqlgenerator.core.RenameViewGenerator;
+import liquibase.statement.core.RenameViewStatement;
 
-public class SpannerCreateSequenceGenerator extends CreateSequenceGenerator {
-  static final String CREATE_SEQUENCE_VALIDATION_ERROR =
-      "Cloud Spanner does not support creating sequences";
+public class RenameViewGeneratorSpanner extends RenameViewGenerator {
+  static final String RENAME_VIEW_VALIDATION_ERROR =
+      "Cloud Spanner does not support renaming views";
 
   @Override
   public ValidationErrors validate(
-      CreateSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+      RenameViewStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(CREATE_SEQUENCE_VALIDATION_ERROR);
+    errors.addError(RENAME_VIEW_VALIDATION_ERROR);
     return errors;
   }
 
@@ -38,7 +38,7 @@ public class SpannerCreateSequenceGenerator extends CreateSequenceGenerator {
   }
 
   @Override
-  public boolean supports(CreateSequenceStatement statement, Database database) {
+  public boolean supports(RenameViewStatement statement, Database database) {
     return (database instanceof CloudSpanner);
   }
 }

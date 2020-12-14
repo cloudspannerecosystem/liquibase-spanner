@@ -16,9 +16,9 @@ package liquibase.ext.spanner;
 import liquibase.changelog.StandardChangeLogHistoryService;
 import liquibase.database.Database;
 
-public class SpannerStandardChangeLogHistoryService extends StandardChangeLogHistoryService {
+public class StandardChangeLogHistoryServiceSpanner extends StandardChangeLogHistoryService {
 
-  public SpannerStandardChangeLogHistoryService() {}
+  public StandardChangeLogHistoryServiceSpanner() {}
 
   @Override
   public boolean supports(Database database) {
