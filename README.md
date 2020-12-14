@@ -5,9 +5,13 @@ A Liquibase extension adding support for Google Cloud Spanner. Include this in y
 application project to run Liquibase database migration scripts against a Google
 Cloud Spanner database.
 
+This extension is currently beta.
+
 ## Release Notes
 
-TO-BE-FILLED-IN
+#### 1.0
+
+ * Initial beta release.
 
 ## Getting Started
 
@@ -16,7 +20,8 @@ TO-BE-FILLED-IN
 Install Liquibase Community CLI from [here](https://www.liquibase.org/). Alternatively, there are many other ways to install (e.g. brew on Mac OS/X).
 These examples were run with Liquibase 4.2.0.
 
-Once Liquibase is installed, use the built liquibase-spanner-VERSION-all.jar or release jar needs to be copied into the Liquibase lib directory.
+Once Liquibase is installed, use the [latest release](https://github.com/cloudspannerecosystem/liquibase-spanner/releases) or build your own
+liquibase-spanner-SNAPSHOT-all.jar and copy it into the Liquibase lib directory.
 
 ### Starting a Spanner database
 
