@@ -99,14 +99,9 @@ There are a number of features that Spanner does not have such as views and stor
 throw an exception during analysis of the changeSet in most cases, but not all. For example, a DELETE without a WHERE clause
 will fail in Spanner but not in the Liquibase extension.
 
-## Building and Testing
+## Building
 
 ### Building
-
-Testing requirements:
- * Spanner emulator requires [testcontainers](https://www.testcontainers.org/) and its [requirements](https://www.testcontainers.org/supported_docker_environment/) installed.
- * Spanner in GCP requires SPANNER_PROJECT and SPANNER_INSTANCE environment variables set to an active GCP instance
- * Spanner in GCP requires application default credentials set or GOOGLE_APPLICATION_CREDENTIALS environent variable pointing to a JSON file.
 
 | Gradle target      | Description                                     |
 |--------------------|-------------------------------------------------|
@@ -114,6 +109,11 @@ Testing requirements:
 | build              | Build extension and run above tests             |
 | integrationTest    | Run Spanner in GCP tests                        |
 | jibDocker          | Build a local runnable docker container         |
+
+Testing requirements:
+ * Emulator requires [testcontainers](https://www.testcontainers.org/) and its [requirements](https://www.testcontainers.org/supported_docker_environment/) installed.
+ * Spanner in GCP requires SPANNER_PROJECT and SPANNER_INSTANCE environment variables set to an active instance
+ * Spanner in GCP requires application default credentials set or GOOGLE_APPLICATION_CREDENTIALS environent set
 
 ### Deploying
 
