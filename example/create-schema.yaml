@@ -1,0 +1,116 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+databaseChangeLog:
+  - preConditions:
+     onFail: HALT
+     onError: HALT
+
+#
+# Create Singers table
+#
+# Note the modifySql that adjusts the LastUpdateTime
+# column to add a Spanner-specific option.
+#
+  - changeSet:
+     id: create-singers-table
+     labels: example
+     author: spanner-examples
+     changes:
+       - createTable:
+          remarks:   Singer information
+          tableName: Singers
+          columns:
+            -  column:
+                remarks: Unique id
+                name:    SingerId
+                type:    BIGINT
+                constraints:
+                  primaryKey: true
+            -  column:
+                remarks: Singer's first name
+                name:    FirstName
+                type:    VARCHAR(255)
+            -  column:
+                remarks: Singer's last name
+                name:    LastName
+                type:    STRING(255)
+                constraints:
+                  nullable: false
+            -  column:
+                name:    SingerInfo
+                type:    CLOB
+            -  column:
+                name:    LastUpdateTime
+                type:    TIMESTAMP
+       - modifySql:
+          dbms: cloudspanner
+          replace:
+             - replace: LastUpdateTime timestamp 
+             - with:    LastUpdateTime timestamp OPTIONS (allow_commit_timestamp=true)
+
+#
+# Create an index on Singers
+#
+  - changeSet:
+     id: add-singers-index
+     labels: example
+     author: spanner-examples
+     changes:
+       - createIndex:
+          tableName: Singers
+          indexName: Idx_Singers_FirstName
+          unique:    false
+          columns:
+            - column:
+                name:       FirstName
+                descending: true
+#
+# Create Albums table
+#
+# Note the modifySql that appends INTERLEAVE to the table for Spanner-specific
+#
+  - changeSet:
+     id: create-albums-table
+     labels: example
+     author: spanner-examples
+     changes:
+       - createTable:
+          remarks:   Albums information
+          tableName: Albums
+          columns:
+            -  column:
+                remarks: Unique id
+                name:    SingerId
+                type:    BIGINT
+                constraints:
+                  primaryKey: true
+            -  column:
+                remarks: Unique id
+                name:    AlbumId
+                type:    BIGINT
+                constraints:
+                  primaryKey: true
+            -  column:
+                remarks: Album Name
+                name:    Name
+                type:    String(255)
+            -  column:
+                name:    AlbumInfo
+                type:    BLOB
+       - modifySql:
+          dbms: "cloudspanner"
+          append:
+            - value: ", INTERLEAVE IN PARENT Singers ON DELETE CASCADE"
+
