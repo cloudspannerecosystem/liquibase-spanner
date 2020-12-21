@@ -11,7 +11,7 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -20,13 +20,14 @@ import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.exception.ValidationFailedException;
+import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.SAME_THREAD)
-public class CreateDropViewTest extends AbstractMockServerTest {
+public class RenameColumnTest extends AbstractMockServerTest {
 
   @BeforeEach
   void resetServer() {
@@ -35,45 +36,15 @@ public class CreateDropViewTest extends AbstractMockServerTest {
   }
 
   @Test
-  void testCreateViewFromYaml() throws Exception {
-    for (String file : new String[] {"create-view.spanner.yaml"}) {
+  void testAddPrimaryKeySingersFromYaml() throws Exception {
+    for (String file : new String[] {"rename-column-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(CreateViewGeneratorSpanner.CREATE_VIEW_VALIDATION_ERROR);
-      }
-    }
-    assertThat(mockAdmin.getRequests()).isEmpty();
-  }
-
-  @Test
-  void testDropViewFromYaml() throws Exception {
-    for (String file : new String[] {"drop-view.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
-            .contains(DropViewGeneratorSpanner.DROP_VIEW_VALIDATION_ERROR);
-      }
-    }
-    assertThat(mockAdmin.getRequests()).isEmpty();
-  }
-
-  @Test
-  void testRenameViewFromYaml() throws Exception {
-    for (String file : new String[] {"rename-view.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
-            .contains(RenameViewGeneratorSpanner.RENAME_VIEW_VALIDATION_ERROR);
+            .contains(RenameColumnGeneratorSpanner.RENAME_COLUMN_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

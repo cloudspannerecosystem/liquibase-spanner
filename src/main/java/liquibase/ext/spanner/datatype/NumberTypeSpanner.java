@@ -1,8 +1,9 @@
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.datatype;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.NumberType;
+import liquibase.ext.spanner.CloudSpanner;
 
 public class NumberTypeSpanner extends NumberType {
   private static final DatabaseDataType NUMERIC = new DatabaseDataType("NUMERIC");

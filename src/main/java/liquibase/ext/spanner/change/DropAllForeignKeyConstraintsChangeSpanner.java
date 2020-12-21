@@ -1,4 +1,4 @@
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.change;
 
 import com.google.common.base.MoreObjects;
 import java.sql.PreparedStatement;
@@ -15,6 +15,7 @@ import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.UnexpectedLiquibaseException;
+import liquibase.ext.spanner.CloudSpanner;
 import liquibase.statement.SqlStatement;
 
 @DatabaseChange(name="dropAllForeignKeyConstraints", description = "Drops all foreign key constraints for a table", priority = ChangeMetaData.PRIORITY_DATABASE, appliesTo = "table")

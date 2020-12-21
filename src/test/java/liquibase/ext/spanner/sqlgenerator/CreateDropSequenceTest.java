@@ -11,7 +11,7 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -20,13 +20,14 @@ import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.exception.ValidationFailedException;
+import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.SAME_THREAD)
-public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
+public class CreateDropSequenceTest extends AbstractMockServerTest {
 
   @BeforeEach
   void resetServer() {
@@ -35,29 +36,45 @@ public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
   }
 
   @Test
-  void testAddPrimaryKeySingersFromYaml() throws Exception {
-    for (String file : new String[] {"add-primary-key-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage()).contains(AddPrimaryKeyGeneratorSpanner.ADD_PK_VALIDATION_ERROR);
-      }
-    }
-    assertThat(mockAdmin.getRequests()).isEmpty();
-  }
-
-  @Test
-  void testDropPrimaryKeySingersFromYaml() throws Exception {
-    for (String file : new String[] {"drop-primary-key-singers.spanner.yaml"}) {
+  void testCreateSequenceFromYaml() throws Exception {
+    for (String file : new String[] {"create-sequence.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(DropPrimaryKeyGeneratorSpanner.DROP_PK_VALIDATION_ERROR);
+            .contains(CreateSequenceGeneratorSpanner.CREATE_SEQUENCE_VALIDATION_ERROR);
+      }
+    }
+    assertThat(mockAdmin.getRequests()).isEmpty();
+  }
+
+  @Test
+  void testDropSequenceFromYaml() throws Exception {
+    for (String file : new String[] {"drop-sequence.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.update(new Contexts("test"));
+        fail("missing expected validation exception");
+      } catch (ValidationFailedException e) {
+        assertThat(e.getMessage())
+            .contains(DropSequenceGeneratorSpanner.DROP_SEQUENCE_VALIDATION_ERROR);
+      }
+    }
+    assertThat(mockAdmin.getRequests()).isEmpty();
+  }
+
+  @Test
+  void testRenameSequenceFromYaml() throws Exception {
+    for (String file : new String[] {"rename-sequence.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.update(new Contexts("test"));
+        fail("missing expected validation exception");
+      } catch (ValidationFailedException e) {
+        assertThat(e.getMessage())
+            .contains(RenameSequenceGeneratorSpanner.RENAME_SEQUENCE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

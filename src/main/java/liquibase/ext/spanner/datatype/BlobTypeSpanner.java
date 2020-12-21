@@ -1,8 +1,9 @@
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.datatype;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.BlobType;
+import liquibase.ext.spanner.CloudSpanner;
 
 /** BLOB is translated to BYTES(MAX) */
 public class BlobTypeSpanner extends BlobType {
