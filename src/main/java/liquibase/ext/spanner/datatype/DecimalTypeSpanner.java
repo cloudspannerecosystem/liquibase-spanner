@@ -1,8 +1,9 @@
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.datatype;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.DecimalType;
+import liquibase.ext.spanner.CloudSpanner;
 
 /** DECIMAL is translated to NUMERIC. */
 public class DecimalTypeSpanner extends DecimalType {

@@ -313,7 +313,7 @@ public abstract class AbstractMockServerTest {
     return builder.build();
   }
 
-  static Liquibase getLiquibase(Connection connection, String changeLogFile)
+  protected static Liquibase getLiquibase(Connection connection, String changeLogFile)
       throws DatabaseException {
     Liquibase liquibase =
         new Liquibase(
@@ -348,7 +348,7 @@ public abstract class AbstractMockServerTest {
     return ((UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(index)).getStatementsList();
   }
 
-  static Connection createConnection() throws SQLException {
+  protected static Connection createConnection() throws SQLException {
     StringBuilder url =
         new StringBuilder("jdbc:cloudspanner://localhost:")
             .append(server.getPort())

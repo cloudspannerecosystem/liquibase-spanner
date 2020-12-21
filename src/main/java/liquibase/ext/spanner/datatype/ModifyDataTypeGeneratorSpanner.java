@@ -14,7 +14,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.datatype;
 
 import com.google.common.base.MoreObjects;
 import java.sql.PreparedStatement;
@@ -25,6 +25,7 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.datatype.DataTypeFactory;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.UnexpectedLiquibaseException;
+import liquibase.ext.spanner.CloudSpanner;
 import liquibase.sql.Sql;
 import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGenerator;

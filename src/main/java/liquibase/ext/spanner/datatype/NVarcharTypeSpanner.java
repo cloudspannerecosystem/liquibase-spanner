@@ -11,11 +11,12 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License. package liquibase.ext.spanner;
  */
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.datatype;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.NVarcharType;
+import liquibase.ext.spanner.CloudSpanner;
 
 /** NVARCHAR(n) is translated to STRING(n). */
 public class NVarcharTypeSpanner extends NVarcharType {

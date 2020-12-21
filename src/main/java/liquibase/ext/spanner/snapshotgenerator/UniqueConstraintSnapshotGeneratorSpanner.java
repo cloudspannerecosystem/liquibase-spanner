@@ -1,10 +1,11 @@
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.snapshotgenerator;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import liquibase.database.Database;
 import liquibase.exception.DatabaseException;
+import liquibase.ext.spanner.CloudSpanner;
 import liquibase.snapshot.CachedRow;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.SnapshotGenerator;

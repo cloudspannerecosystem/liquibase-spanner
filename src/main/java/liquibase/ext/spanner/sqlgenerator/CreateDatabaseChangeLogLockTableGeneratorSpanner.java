@@ -1,4 +1,4 @@
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.sqlgenerator;
 
 import liquibase.database.Database;
 import liquibase.sql.Sql;

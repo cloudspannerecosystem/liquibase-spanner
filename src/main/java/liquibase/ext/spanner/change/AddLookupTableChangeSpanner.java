@@ -11,7 +11,7 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.change;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +21,7 @@ import liquibase.change.DatabaseChange;
 import liquibase.change.core.AddForeignKeyConstraintChange;
 import liquibase.change.core.AddLookupTableChange;
 import liquibase.database.Database;
+import liquibase.ext.spanner.CloudSpanner;
 import liquibase.statement.SqlStatement;
 import liquibase.statement.core.RawSqlStatement;
 import liquibase.structure.core.Column;

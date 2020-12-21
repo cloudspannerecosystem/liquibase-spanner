@@ -1,8 +1,9 @@
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.datatype;
 
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.FloatType;
+import liquibase.ext.spanner.CloudSpanner;
 
 public class FloatTypeSpanner extends FloatType {
   private static final DatabaseDataType FLOAT64 = new DatabaseDataType("FLOAT64");

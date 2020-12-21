@@ -11,10 +11,11 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.change;
 
 import liquibase.changelog.StandardChangeLogHistoryService;
 import liquibase.database.Database;
+import liquibase.ext.spanner.CloudSpanner;
 
 public class StandardChangeLogHistoryServiceSpanner extends StandardChangeLogHistoryService {
 

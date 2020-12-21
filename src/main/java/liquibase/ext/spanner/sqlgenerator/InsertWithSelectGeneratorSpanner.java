@@ -14,7 +14,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.sqlgenerator;
 
 import java.util.Date;
 import liquibase.database.Database;

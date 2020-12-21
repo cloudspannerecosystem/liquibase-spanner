@@ -11,22 +11,24 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package liquibase.ext.spanner;
+package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-
 import java.sql.Connection;
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import liquibase.Contexts;
+import liquibase.Liquibase;
+import liquibase.exception.ValidationFailedException;
+import liquibase.ext.spanner.AbstractMockServerTest;
+import liquibase.ext.spanner.sqlgenerator.AddDefaultValueGeneratorSpanner;
+import liquibase.ext.spanner.sqlgenerator.DropDefaultValueGeneratorSpanner;
 
 @Execution(ExecutionMode.SAME_THREAD)
-public class RenameTableTest extends AbstractMockServerTest {
+public class AddDropDefaultValueTest extends AbstractMockServerTest {
 
   @BeforeEach
   void resetServer() {
@@ -35,15 +37,30 @@ public class RenameTableTest extends AbstractMockServerTest {
   }
 
   @Test
-  void testRenameTableSingersFromYaml() throws Exception {
-    for (String file : new String[] {"rename-table-singers.spanner.yaml"}) {
+  void testAddDefaultValueSingersFromYaml() throws Exception {
+    for (String file : new String[] {"add-default-value-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
         assertThat(e.getMessage())
-            .contains(RenameTableGeneratorSpanner.RENAME_TABLE_VALIDATION_ERROR);
+            .contains(AddDefaultValueGeneratorSpanner.ADD_DEFAULT_VALUE_VALIDATION_ERROR);
+      }
+    }
+    assertThat(mockAdmin.getRequests()).isEmpty();
+  }
+
+  @Test
+  void testDropDefaultValueSingersFromYaml() throws Exception {
+    for (String file : new String[] {"drop-default-value-singers.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.update(new Contexts("test"));
+        fail("missing expected validation exception");
+      } catch (ValidationFailedException e) {
+        assertThat(e.getMessage())
+            .contains(DropDefaultValueGeneratorSpanner.DROP_DEFAULT_VALUE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
