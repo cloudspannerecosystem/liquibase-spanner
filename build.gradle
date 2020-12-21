@@ -22,7 +22,7 @@ plugins {
 }
 
 
-group = "com.google.spanner"
+group = "com.google.cloudspannerecosystem"
 
 
 if (project.hasProperty('tagVersion') && project.tagVersion.trim()) {
