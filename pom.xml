@@ -8,6 +8,22 @@
   <version>1.0.0</version>
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Liquibase Integeration</name>
+  <description>Liquibase extension for Google Cloud Spanner</description>
+  <url>https://github.com/cloudspannerecosystem/liquibase-spanner</url>
+  <organization>
+    <name>Google LLC</name>
+  </organization>
+  <developers>
+    <developer>
+      <name>Mark Scannell</name>
+      <organization>Google LLC</organization>
+    </developer>
+    <developer>
+      <name>Knut Olav Løite</name>
+      <email>koloite@gmail.com</email>
+      <organizationUrl>https://github.com/olavloite</organizationUrl>
+    </developer>
+  </developers>
   <distributionManagement>
     <snapshotRepository>
       <id>sonatype-nexus-snapshots</id>
