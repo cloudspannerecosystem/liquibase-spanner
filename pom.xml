@@ -202,6 +202,11 @@
             <artifactId>maven-gpg-plugin</artifactId>
             <version>1.6</version>
           </plugin>
+          <plugin>
+            <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+            <artifactId>serviceloader-maven-plugin</artifactId>
+            <version>1.1.0</version>
+          </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -211,6 +216,27 @@
         <configuration>
           <excludedGroups>integration</excludedGroups>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+        <artifactId>serviceloader-maven-plugin</artifactId>
+        <configuration>
+          <services>
+            <param>liquibase.database.Database</param>
+            <param>liquibase.datatype.LiquibaseDataType</param>
+            <param>liquibase.sqlgenerator.SqlGenerator</param>
+            <param>liquibase.change.Change</param>
+            <param>liquibase.changelog.ChangeLogHistoryService</param>
+            <param>liquibase.snapshot.SnapshotGenerator</param>
+          </services>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
