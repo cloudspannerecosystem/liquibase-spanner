@@ -59,7 +59,10 @@ public class CloudSpanner extends AbstractJdbcDatabase {
 
   @Override
   public String getDefaultDriver(String url) {
-    return "com.google.cloud.spanner.jdbc.JdbcDriver";
+    if (url != null && url.startsWith("jdbc:cloudspanner:")) {
+      return "com.google.cloud.spanner.jdbc.JdbcDriver";
+    }
+    return null;
   }
 
   @Override
