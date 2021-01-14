@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloudspannerecosystem</groupId>
   <artifactId>liquibase-spanner</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Liquibase Integeration</name>
   <description>Liquibase extension for Google Cloud Spanner</description>
@@ -26,13 +26,9 @@
   </developers>
   <distributionManagement>
     <snapshotRepository>
-      <id>sonatype-nexus-snapshots</id>
+      <id>ossrh</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
-    <repository>
-      <id>sonatype-nexus-staging</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
   </distributionManagement>
   <scm>
     <connection>scm:git:git@github.com:cloudspannerecosystem/liquibase-spanner.git</connection>
@@ -243,13 +239,12 @@
   <profiles>
     <profile>
       <id>release</id>
-      <activation>
-        <property>
-          <name>performRelease</name>
-        </property>
-      </activation>
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
