@@ -73,6 +73,8 @@ Note:
 
 ## Limitations
 
+See [limitations.md](limitations.md) for a full list of limitations and unsupported features.
+
 ### Spanner-specific SQL
 
 Some Spanner specific SQL, such as INTERLEAVE'd tables or column OPTIONS, require using
