@@ -39,7 +39,7 @@ The following Liquibase change types are implemented for Cloud Spanner but have 
 - AddLookupTable: This feature is implemented and works for most cases. If however the amount of data that will be inserted in the new lookup table exceeds any of the [transaction limits](https://cloud.google.com/spanner/docs/dml-tasks#transaction_limits) of Cloud Spanner, the change will fail and you should implement it using a custom SQL change.
 - Delete: This feature is implemented and works for most cases. If however the amount of data that will be inserted in the new lookup table exceeds any of the [transaction limits](https://cloud.google.com/spanner/docs/dml-tasks#transaction_limits) of Cloud Spanner, the change will fail and you should implement it using a custom SQL change. Specifying a `WHERE` clause for the `DELETE` statement is required (the clause may be `WHERE TRUE`).
 - Load data / Load-update data: These features are implemented and works for most cases. If however the amount of data that will be inserted/updated exceeds any of the [transaction limits](https://cloud.google.com/spanner/docs/dml-tasks#transaction_limits) of Cloud Spanner, the change will fail and you should implement it using a custom SQL change.
-- Modify data type: This feature works, but only for the data type changes that are allowed by Cloud Spanner: https://cloud.google.com/spanner/docs/data-definition-language#description_3
+- Modify data type: This feature works, but only for the data type changes that are [allowed by Cloud Spanner](https://cloud.google.com/spanner/docs/data-definition-language#description_3).
 
 A potential work-around for the transaction limits in Cloud Spanner is to use [Partitioned DML](https://cloud.google.com/spanner/docs/dml-tasks#partitioned-dml) instead of transactional DML. Partitioned DML statements are not bound by the transaction limits, but are also not atomic. The Cloud Spanner JDBC driver that is used by Liquibase supports Partitioned DML by setting the `AUTOCOMMIT_DML_MODE` connection property to `PARTITIONED_NON_ATOMIC`:
 
@@ -53,3 +53,7 @@ UPDATE <table> SET <column>=<value> WHERE TRUE;
 SET AUTOCOMMIT_DML_MODE = 'TRANSACTIONAL';
 ```
 
+## DDL Limits
+
+In order to [limit the number of schema updates in a 7-day period](https://cloud.google.com/spanner/docs/schema-updates#week-window), run
+Liquibase with small change sets. Alternatively, use [SQL change](https://docs.liquibase.com/change-types/community/sql.html) and batch the DDL using [batch statements](https://cloud.google.com/spanner/docs/use-oss-jdbc#batch_statements).
