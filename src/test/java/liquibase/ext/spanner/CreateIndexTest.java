@@ -90,4 +90,24 @@ public class CreateIndexTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList()).hasSize(1);
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
+
+  @Test
+  void testCreateNullFilteredIndexFromYaml() throws Exception {
+    String expectedSql =
+        "CREATE NULL_FILTERED INDEX Idx_Singers_FirstName ON Singers(FirstName)";
+    addUpdateDdlStatementsResponse(expectedSql);
+
+    for (String file : new String[] {"create-null-filtered-index-singers-first-name.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.update(new Contexts("test"));
+      }
+    }
+
+    assertThat(mockAdmin.getRequests()).hasSize(1);
+    assertThat(mockAdmin.getRequests().get(0)).isInstanceOf(UpdateDatabaseDdlRequest.class);
+    UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
+    assertThat(request.getStatementsList()).hasSize(1);
+    assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
+  }
 }
