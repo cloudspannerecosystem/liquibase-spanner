@@ -9,6 +9,10 @@ This extension is currently beta.
 
 ## Release Notes
 
+#### 1.0.2
+
+ * Bug fix: Fixed a potential `ClassNotFoundException` for `com.google.spanner.admin.database.v1.DatabaseAdminGrpc`
+
 #### 1.0
 
  * Initial beta release.
