@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloudspannerecosystem</groupId>
   <artifactId>liquibase-spanner</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Liquibase Integeration</name>
   <description>Liquibase extension for Google Cloud Spanner</description>
@@ -67,7 +67,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>16.1.0</version>
+        <version>16.4.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
