@@ -148,7 +148,6 @@ public class LiquibaseTests {
     doLiquibaseUpdateTest(getSpannerReal());
   }
 
-  @Disabled("The emulator seems to hang when a query is executed on the INFORMATION_SCHEMA after a table with a foreign key has been created")
   @Test
   void doEmulatorDropAllForeignKeysTest() throws Exception {
     logger.warn("Starting emulator foreign key test");
@@ -482,72 +481,18 @@ public class LiquibaseTests {
   @Test
   void doEmulatorSpannerCreateAllDataTypesTest()
       throws SQLException, LiquibaseException {
-
-    // Emulator only -- we need an exception here to skip the NUMERIC type as this is not
-    // yet supported by the emulator.
-    TestHarness.Connection testHarness = getSpannerEmulator();
-
-    // No columns yet in the table -- it doesn't exist
-    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
-
-    // Run the Liquibase
-    Liquibase liquibase = getLiquibase(testHarness,
-        "create-table-with-all-liquibase-types-except-decimal.spanner.yaml");
-    liquibase.update(null, new LabelExpression("version 0.3"));
-    liquibase.tag("tag-at-rollback_all_types");
-
-    // Expect all of the columns and types
-    ColDesc[] cols = new ColDesc[] {
-        new ColDesc("ColBigInt", "INT64", Boolean.FALSE),
-        new ColDesc("ColBlob", "BYTES(MAX)"),
-        new ColDesc("ColBoolean", "BOOL"),
-        new ColDesc("ColChar", "STRING(100)"),
-        new ColDesc("ColNChar", "STRING(50)"),
-        new ColDesc("ColNVarchar", "STRING(100)"),
-        new ColDesc("ColVarchar", "STRING(200)"),
-        new ColDesc("ColClob", "STRING(MAX)"),
-        new ColDesc("ColDateTime", "TIMESTAMP"),
-        new ColDesc("ColTimestamp", "TIMESTAMP"),
-        new ColDesc("ColDate", "DATE"),
-        new ColDesc("ColDouble", "FLOAT64"),
-        new ColDesc("ColFloat", "FLOAT64"),
-        new ColDesc("ColInt", "INT64"),
-        new ColDesc("ColMediumInt", "INT64"),
-        new ColDesc("ColSmallInt", "INT64"),
-        new ColDesc("ColTime", "TIMESTAMP"),
-        new ColDesc("ColTinyInt", "INT64"),
-        new ColDesc("ColUUID", "STRING(36)"),
-        new ColDesc("ColXml", "STRING(MAX)")
-    };
-    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes", cols);
-
-    testTablePrimaryKeys(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes",
-        new ColDesc("ColBigInt"));
-    
-    // Generate a snapshot of the database.
-    SnapshotGeneratorFactory factory = SnapshotGeneratorFactory.getInstance();
-    CatalogAndSchema schema = new CatalogAndSchema("", "");
-    SnapshotControl control = new SnapshotControl(liquibase.getDatabase());
-    DatabaseSnapshot snapshot = factory.createSnapshot(schema, liquibase.getDatabase(), control);
-    
-    testSnapshotTableAndColumns(snapshot, "TableWithAllLiquibaseTypes", cols);
-    testSnapshotPrimaryKey(snapshot, "TableWithAllLiquibaseTypes",
-        new ColDesc("ColBigInt", "INT64", Boolean.FALSE));
-
-    // Do rollback
-    liquibase.rollback(1, null);
-
-    // Ensure nothing is there!
-    testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
+    doSpannerCreateAllDataTypesTest(getSpannerEmulator());
   }
 
   @Test
   @Tag("integration")
   void doRealSpannerCreateAllDataTypesTest()
       throws SQLException, LiquibaseException {
-
-    // Real Spanner -- test all supported tests
-    TestHarness.Connection testHarness = getSpannerReal();
+     doSpannerCreateAllDataTypesTest(getSpannerReal());
+  }
+  
+  private void doSpannerCreateAllDataTypesTest(TestHarness.Connection testHarness)
+      throws SQLException, LiquibaseException {
 
     // No columns yet in the table -- it doesn't exist
     testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
