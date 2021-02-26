@@ -2,8 +2,5 @@ inputFormat: xml
 context: testContext
 
 databasesUnderTest:
-  - name: postgresql
-    version: 13
-    url: jdbc:postgresql://localhost:5437/lbcat
-    username: lbuser
-    password: LiquibasePass1
+  - name: cloudspanner
+    url: jdbc:cloudspanner://localhost:9010/projects/test-project/instances/test-instance/databases/test-database
