@@ -16,6 +16,7 @@ package liquibase.ext.spanner.sqlgenerator;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.DropPrimaryKeyGenerator;
@@ -42,6 +43,6 @@ public class DropPrimaryKeyGeneratorSpanner extends DropPrimaryKeyGenerator {
 
   @Override
   public boolean supports(DropPrimaryKeyStatement statement, Database database) {
-    return (database instanceof CloudSpanner);
+    return (database instanceof ICloudSpanner);
   }
 }

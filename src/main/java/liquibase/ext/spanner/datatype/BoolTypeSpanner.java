@@ -17,18 +17,19 @@ import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.BooleanType;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 public class BoolTypeSpanner extends BooleanType {
   private static final DatabaseDataType BOOL = new DatabaseDataType("BOOL");
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof CloudSpanner) {
+    if (database instanceof ICloudSpanner) {
       return BOOL;
     } else {
       return super.toDatabaseDataType(database);

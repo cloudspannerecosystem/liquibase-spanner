@@ -16,6 +16,7 @@ package liquibase.ext.spanner.sqlgenerator;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.AddUniqueConstraintGenerator;
 import liquibase.statement.core.AddUniqueConstraintStatement;
@@ -35,7 +36,7 @@ public class AddUniqueConstraintGeneratorSpanner extends AddUniqueConstraintGene
 
   @Override
   public boolean supports(AddUniqueConstraintStatement statement, Database database) {
-    return (database instanceof CloudSpanner);
+    return (database instanceof ICloudSpanner);
   }
 
   @Override

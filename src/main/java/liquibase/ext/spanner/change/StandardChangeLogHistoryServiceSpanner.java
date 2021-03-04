@@ -16,6 +16,7 @@ package liquibase.ext.spanner.change;
 import liquibase.changelog.StandardChangeLogHistoryService;
 import liquibase.database.Database;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 public class StandardChangeLogHistoryServiceSpanner extends StandardChangeLogHistoryService {
 
@@ -23,7 +24,7 @@ public class StandardChangeLogHistoryServiceSpanner extends StandardChangeLogHis
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override

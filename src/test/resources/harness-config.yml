@@ -3,4 +3,5 @@ context: testContext
 
 databasesUnderTest:
   - name: cloudspanner
-    url: jdbc:cloudspanner://localhost:9010/projects/test-project/instances/test-instance/databases/test-database
+    version: 1.0
+    url: jdbc:cloudspanner://localhost:9010/projects/my-project/instances/my-instance/databases/my-database?usePlainText=true

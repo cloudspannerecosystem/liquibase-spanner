@@ -4,6 +4,7 @@ import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.DecimalType;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 /** DECIMAL is translated to NUMERIC. */
 public class DecimalTypeSpanner extends DecimalType {
@@ -11,12 +12,12 @@ public class DecimalTypeSpanner extends DecimalType {
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof CloudSpanner) {
+    if (database instanceof ICloudSpanner) {
       return DECIMAL;
     } else {
       return super.toDatabaseDataType(database);

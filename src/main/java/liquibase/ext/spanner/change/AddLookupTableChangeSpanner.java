@@ -22,6 +22,7 @@ import liquibase.change.core.AddForeignKeyConstraintChange;
 import liquibase.change.core.AddLookupTableChange;
 import liquibase.database.Database;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.statement.SqlStatement;
 import liquibase.statement.core.RawSqlStatement;
 import liquibase.structure.core.Column;
@@ -36,7 +37,7 @@ public class AddLookupTableChangeSpanner extends AddLookupTableChange {
 
   @Override
   public boolean supports(Database database) {
-    return (database instanceof CloudSpanner);
+    return (database instanceof ICloudSpanner);
   }
 
   public SqlStatement[] generateStatements(Database database) {

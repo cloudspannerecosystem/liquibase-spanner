@@ -1,0 +1,1 @@
+CREATE TABLE createTableDataTypeText (id INT64 NOT NULL, textCol STRING(MAX)) PRIMARY KEY (id)

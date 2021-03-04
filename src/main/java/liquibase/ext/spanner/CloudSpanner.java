@@ -15,8 +15,9 @@ package liquibase.ext.spanner;
 
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
+import liquibase.structure.core.Column;
 
-public class CloudSpanner extends AbstractJdbcDatabase {
+public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
 
   public CloudSpanner() {
   }
@@ -25,7 +26,7 @@ public class CloudSpanner extends AbstractJdbcDatabase {
   public java.lang.Integer getDefaultPort() {
     return Integer.valueOf(9010);
   }
-  
+
   @Override
   public String getDateLiteral(final String isoDate) {
     String literal = super.getDateLiteral(isoDate);

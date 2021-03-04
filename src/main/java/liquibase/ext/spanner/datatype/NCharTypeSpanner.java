@@ -17,18 +17,19 @@ import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.NCharType;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 /** NCHAR(n) is translated to STRING(n). */
 public class NCharTypeSpanner extends NCharType {
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof CloudSpanner) {
+    if (database instanceof ICloudSpanner) {
       return new DatabaseDataType("STRING(" + getParameters()[0] + ")");
     } else {
       return super.toDatabaseDataType(database);

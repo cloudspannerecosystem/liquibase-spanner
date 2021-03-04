@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import liquibase.database.Database;
 import liquibase.exception.LiquibaseException;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
 import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
@@ -29,7 +30,7 @@ import liquibase.statement.core.InsertOrUpdateStatement;
 public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
   @Override
   public boolean supports(InsertOrUpdateStatement statement, Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override

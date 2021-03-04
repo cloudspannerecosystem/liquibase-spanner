@@ -10,3 +10,4 @@ bin/
 .idea/
 .vscode/
 /target/
+liquibase-spanner.iml

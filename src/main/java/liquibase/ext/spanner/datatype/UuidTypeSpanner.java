@@ -17,6 +17,7 @@ import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.UUIDType;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 /** UUID is translated to STRING(36) as Cloud Spanner does not have a built-in type for UUID's. */
 public class UuidTypeSpanner extends UUIDType {
@@ -24,12 +25,12 @@ public class UuidTypeSpanner extends UUIDType {
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof CloudSpanner) {
+    if (database instanceof ICloudSpanner) {
       return UUID;
     } else {
       return super.toDatabaseDataType(database);

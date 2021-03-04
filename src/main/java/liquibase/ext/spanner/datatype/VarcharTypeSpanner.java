@@ -17,19 +17,24 @@ import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.VarcharType;
 import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 /** VARCHAR(n) is translated to STRING(n). */
 public class VarcharTypeSpanner extends VarcharType {
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof CloudSpanner) {
-      return new DatabaseDataType("STRING(" + getParameters()[0] + ")");
+    if (database instanceof ICloudSpanner) {
+      if (getParameters() != null && getParameters().length > 0) {
+        return new DatabaseDataType("STRING(" + getParameters()[0] + ")");
+      } else {
+        return new DatabaseDataType("STRING(MAX)");
+      }
     } else {
       return super.toDatabaseDataType(database);
     }
