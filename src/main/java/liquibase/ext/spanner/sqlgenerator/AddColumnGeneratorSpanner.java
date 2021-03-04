@@ -36,6 +36,10 @@ public class AddColumnGeneratorSpanner extends AddColumnGenerator {
 
     @Override
     protected String generateSingleColumnSQL(AddColumnStatement statement, Database database) {
+        // Create a proxy that will add the COLUMN keyword in front of the column name when it is
+        // needed specifically for this change. That prevents the Cloud Spanner emulator from
+        // rejecting the DDL statement, as it requires the COLUMN keyword to be included in the
+        // statement.
         InvocationHandler handler = (proxy, method, args) -> {
             if (method.getName().equals("escapeColumnName")) {
                 return "COLUMN " + method.invoke(database, args);

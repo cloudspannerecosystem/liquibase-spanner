@@ -38,6 +38,8 @@ public class AddForeignKeyConstraintGeneratorSpanner extends AddForeignKeyConstr
         String onUpdate = statement.getOnUpdate();
         String onDelete = statement.getOnDelete();
         try {
+            // Ignore any onUpdate or onDelete clauses. Ignoring this instead of failing is
+            // consistent with other databases that also do not support these features.
             statement.setOnUpdate(null);
             statement.setOnDelete(null);
             return super.generateSql(statement, database, sqlGeneratorChain);
