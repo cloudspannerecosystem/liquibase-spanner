@@ -25,7 +25,6 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.datatype.DataTypeFactory;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.UnexpectedLiquibaseException;
-import liquibase.ext.spanner.CloudSpanner;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
 import liquibase.sql.UnparsedSql;

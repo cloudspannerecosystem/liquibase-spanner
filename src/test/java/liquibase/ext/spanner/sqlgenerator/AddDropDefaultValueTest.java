@@ -24,8 +24,6 @@ import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.exception.ValidationFailedException;
 import liquibase.ext.spanner.AbstractMockServerTest;
-import liquibase.ext.spanner.sqlgenerator.AddDefaultValueGeneratorSpanner;
-import liquibase.ext.spanner.sqlgenerator.DropDefaultValueGeneratorSpanner;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class AddDropDefaultValueTest extends AbstractMockServerTest {

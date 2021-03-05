@@ -3,7 +3,6 @@ package liquibase.ext.spanner.datatype;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.FloatType;
-import liquibase.ext.spanner.CloudSpanner;
 import liquibase.ext.spanner.ICloudSpanner;
 
 public class FloatTypeSpanner extends FloatType {

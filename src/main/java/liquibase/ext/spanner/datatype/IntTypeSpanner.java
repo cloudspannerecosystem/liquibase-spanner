@@ -16,7 +16,6 @@ package liquibase.ext.spanner.datatype;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.IntType;
-import liquibase.ext.spanner.CloudSpanner;
 import liquibase.ext.spanner.ICloudSpanner;
 
 public class IntTypeSpanner extends IntType {

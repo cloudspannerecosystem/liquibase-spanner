@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import liquibase.database.Database;
 import liquibase.exception.DatabaseException;
-import liquibase.ext.spanner.CloudSpanner;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.snapshot.CachedRow;
 import liquibase.snapshot.DatabaseSnapshot;
@@ -14,7 +13,6 @@ import liquibase.snapshot.jvm.UniqueConstraintSnapshotGenerator;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Schema;
 import liquibase.structure.core.Table;
-import java.util.logging.Logger;
 
 public class UniqueConstraintSnapshotGeneratorSpanner extends UniqueConstraintSnapshotGenerator
 {

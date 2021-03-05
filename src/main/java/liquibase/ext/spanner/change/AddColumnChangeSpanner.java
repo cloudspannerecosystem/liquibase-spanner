@@ -16,18 +16,10 @@ package liquibase.ext.spanner.change;
 import liquibase.change.ChangeMetaData;
 import liquibase.change.DatabaseChange;
 import liquibase.change.core.AddColumnChange;
-import liquibase.change.core.AddForeignKeyConstraintChange;
-import liquibase.change.core.AddLookupTableChange;
 import liquibase.database.Database;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.statement.SqlStatement;
-import liquibase.statement.core.RawSqlStatement;
 import liquibase.statement.core.UpdateStatement;
-import liquibase.structure.core.Column;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @DatabaseChange(name="addColumn", description = "Adds a new column to an existing table", priority = ChangeMetaData.PRIORITY_DATABASE, appliesTo = "table")
 public class AddColumnChangeSpanner extends AddColumnChange {

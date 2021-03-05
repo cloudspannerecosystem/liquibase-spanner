@@ -16,7 +16,6 @@ package liquibase.ext.spanner.sqlgenerator;
 import liquibase.database.Database;
 import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.exception.ValidationErrors;
-import liquibase.ext.spanner.CloudSpanner;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
 import liquibase.sqlgenerator.SqlGenerator;

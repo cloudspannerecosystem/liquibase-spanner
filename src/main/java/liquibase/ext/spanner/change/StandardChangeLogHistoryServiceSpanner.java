@@ -15,7 +15,6 @@ package liquibase.ext.spanner.change;
 
 import liquibase.changelog.StandardChangeLogHistoryService;
 import liquibase.database.Database;
-import liquibase.ext.spanner.CloudSpanner;
 import liquibase.ext.spanner.ICloudSpanner;
 
 public class StandardChangeLogHistoryServiceSpanner extends StandardChangeLogHistoryService {

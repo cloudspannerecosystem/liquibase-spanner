@@ -15,7 +15,6 @@ package liquibase.ext.spanner;
 
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
-import liquibase.structure.core.Column;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
 

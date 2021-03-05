@@ -16,7 +16,6 @@ package liquibase.ext.spanner.datatype;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.XMLType;
-import liquibase.ext.spanner.CloudSpanner;
 import liquibase.ext.spanner.ICloudSpanner;
 
 /** XML is translated to STRING(MAX) as Cloud Spanner does not have a built-in type for XML. */

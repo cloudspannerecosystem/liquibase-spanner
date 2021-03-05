@@ -16,7 +16,6 @@ package liquibase.ext.spanner.datatype;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.UUIDType;
-import liquibase.ext.spanner.CloudSpanner;
 import liquibase.ext.spanner.ICloudSpanner;
 
 /** UUID is translated to STRING(36) as Cloud Spanner does not have a built-in type for UUID's. */
