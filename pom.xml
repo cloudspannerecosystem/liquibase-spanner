@@ -92,8 +92,8 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>
       <version>4.13.1</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.liquibase</groupId>
@@ -116,11 +116,13 @@
           <artifactId>groovy-swing</artifactId>
         </exclusion>
       </exclusions>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.spockframework</groupId>
       <artifactId>spock-core</artifactId>
       <version>1.3-groovy-2.5</version>
+      <scope>test</scope>
     </dependency>
 
     <!-- Generic test dependencies -->
