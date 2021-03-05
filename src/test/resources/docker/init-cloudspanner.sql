@@ -1,8 +1,9 @@
 
 -- To run Liquibase Harness test suite:
 -- 1. Start Cloud Spanner emulator with `docker run -p 9010:9010 -p 9020:9020 gcr.io/cloud-spanner-emulator/emulator`
--- 2. Execute the script below to initialize a database on projects/my-project/instances/my-instance/databases/my-database
--- 3. Execute test suite
+-- 2. Create an instance and a database on the emulator (See https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator).
+-- 3. Execute the script below to initialize a database on projects/my-project/instances/my-instance/databases/my-database
+-- 4. Execute test suite
 
 START BATCH DDL;
 CREATE TABLE authors (
