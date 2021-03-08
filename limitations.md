@@ -55,5 +55,4 @@ SET AUTOCOMMIT_DML_MODE = 'TRANSACTIONAL';
 
 ## DDL Limits
 
-In order to [limit the number of schema updates in a 7-day period](https://cloud.google.com/spanner/docs/schema-updates#week-window), run
-Liquibase with small change sets. Alternatively, use [SQL change](https://docs.liquibase.com/change-types/community/sql.html) and batch the DDL using [batch statements](https://cloud.google.com/spanner/docs/use-oss-jdbc#batch_statements).
+It is recommended that [the frequency of schema updates is limited](Spanner https://cloud.google.com/spanner/docs/schema-updates#frequency). It is important to read in detail Cloud Spanner's [schema updates](https://cloud.google.com/spanner/docs/schema-updates) to understand the impact of large scale schema changes. Applying a small number of change sets is on option or use [SQL change](https://docs.liquibase.com/change-types/community/sql.html) and batch the DDL using [batch statements](https://cloud.google.com/spanner/docs/use-oss-jdbc#batch_statements).
