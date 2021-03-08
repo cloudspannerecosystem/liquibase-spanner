@@ -21,7 +21,6 @@ import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.exception.ValidationFailedException;
 import liquibase.ext.spanner.AbstractMockServerTest;
-import liquibase.ext.spanner.sqlgenerator.RenameTableGeneratorSpanner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;

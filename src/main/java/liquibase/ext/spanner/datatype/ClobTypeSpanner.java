@@ -16,7 +16,7 @@ package liquibase.ext.spanner.datatype;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.ClobType;
-import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 /** CLOB is translated to STRING(MAX). */
 public class ClobTypeSpanner extends ClobType {
@@ -24,12 +24,12 @@ public class ClobTypeSpanner extends ClobType {
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof CloudSpanner) {
+    if (database instanceof ICloudSpanner) {
       return CLOB;
     } else {
       return super.toDatabaseDataType(database);

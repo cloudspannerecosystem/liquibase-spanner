@@ -45,11 +45,16 @@ public class CreateTableGeneratorSpanner extends CreateTableGenerator {
   public Sql[] generateSql(
       CreateTableStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     Sql[] res = super.generateSql(statement, database, sqlGeneratorChain);
+    // If there is no PK constraint, leave it as it is and let validate method above throw the error.
+    if (statement.getPrimaryKeyConstraint() == null || statement.getPrimaryKeyConstraint().getColumns() == null) {
+      return res;
+    }
+    
     // Move the PRIMARY KEY statement from inside the table creation to outside.
     StringBuilder buffer = new StringBuilder(", PRIMARY KEY (");
     buffer.append(
-        database.escapeColumnNameList(
-            StringUtils.join(statement.getPrimaryKeyConstraint().getColumns(), ", ")));
+            database.escapeColumnNameList(
+                    StringUtils.join(statement.getPrimaryKeyConstraint().getColumns(), ", ")));
     buffer.append(")");
 
     String pk = buffer.toString();
@@ -58,12 +63,12 @@ public class CreateTableGeneratorSpanner extends CreateTableGenerator {
     // Append PRIMARY KEY (without the leading ,)
     sql = sql + pk.substring(1);
 
-    return new Sql[] {
-      new UnparsedSql(
-          sql,
-          res[0]
-              .getAffectedDatabaseObjects()
-              .toArray(new DatabaseObject[res[0].getAffectedDatabaseObjects().size()]))
+    return new Sql[]{
+            new UnparsedSql(
+                    sql,
+                    res[0]
+                            .getAffectedDatabaseObjects()
+                            .toArray(new DatabaseObject[res[0].getAffectedDatabaseObjects().size()]))
     };
   }
 

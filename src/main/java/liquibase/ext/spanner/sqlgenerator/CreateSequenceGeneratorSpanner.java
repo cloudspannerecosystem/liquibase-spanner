@@ -15,7 +15,7 @@ package liquibase.ext.spanner.sqlgenerator;
 
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
-import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateSequenceGenerator;
@@ -40,6 +40,6 @@ public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
 
   @Override
   public boolean supports(CreateSequenceStatement statement, Database database) {
-    return (database instanceof CloudSpanner);
+    return (database instanceof ICloudSpanner);
   }
 }

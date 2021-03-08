@@ -15,7 +15,7 @@ import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.UnexpectedLiquibaseException;
-import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.statement.SqlStatement;
 
 @DatabaseChange(name="dropAllForeignKeyConstraints", description = "Drops all foreign key constraints for a table", priority = ChangeMetaData.PRIORITY_DATABASE, appliesTo = "table")
@@ -23,7 +23,7 @@ public class DropAllForeignKeyConstraintsChangeSpanner extends DropAllForeignKey
 
   @Override
   public boolean supports(Database database) {
-    return (database instanceof CloudSpanner);
+    return (database instanceof ICloudSpanner);
   }
   
   public SqlStatement[] generateStatements(Database database) {

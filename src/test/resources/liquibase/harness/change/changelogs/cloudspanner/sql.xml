@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="sqlTest" author="kristyl">
+        <comment>Creates a table and inserts values into the table with actual SQL</comment>
+        <createTable tableName="sqltest">
+            <column name="id" type="int">
+                <constraints primaryKey="true" />
+            </column>
+        </createTable>
+        <sql>
+            start batch dml;
+            insert into sqltest (id) values (1);
+            insert into sqltest (id) values (2);
+            insert into sqltest (id) values (3);
+            run batch;
+        </sql>
+        <rollback>
+            <dropTable tableName="sqltest"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

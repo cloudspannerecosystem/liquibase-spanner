@@ -38,12 +38,12 @@ public class AddColumnTest extends AbstractMockServerTest {
     // The following statement does not include the COLUMN keyword. According to the Cloud Spanner
     // documentation the keyword is required, but the documentation is slightly off here. The COLUMN
     // keyword is actually optional in Cloud Spanner (as in most other DBMS's).
-    String expectedSql = "ALTER TABLE Singers ADD SingerInfo BYTES(MAX)";
+    String expectedSql = "ALTER TABLE Singers ADD COLUMN SingerInfo BYTES(MAX)";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"add-singerinfo-to-singers-table.spanner.yaml"}) {
       try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -58,16 +58,16 @@ public class AddColumnTest extends AbstractMockServerTest {
   @Test
   void testAddTrackAndLyricsToSongsFromYaml() throws Exception {
     String[] expectedSql =
-        new String[] {
-          "ALTER TABLE Songs ADD Track INT64 NOT NULL", "ALTER TABLE Songs ADD Lyrics STRING(MAX)"
-        };
+            new String[]{
+                    "ALTER TABLE Songs ADD COLUMN Track INT64 NOT NULL", "ALTER TABLE Songs ADD COLUMN Lyrics STRING(MAX)"
+            };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
     }
 
-    for (String file : new String[] {"add-track-and-lyrics-to-songs-table.spanner.yaml"}) {
+    for (String file : new String[]{"add-track-and-lyrics-to-songs-table.spanner.yaml"}) {
       try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -84,17 +84,17 @@ public class AddColumnTest extends AbstractMockServerTest {
   @Test
   void testAddSingerToConcertsFromYaml() throws Exception {
     String[] expectedSql =
-        new String[] {
-          "ALTER TABLE Concerts ADD SingerId INT64 NOT NULL",
-          "ALTER TABLE Concerts ADD CONSTRAINT FK_Concerts_Singer FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)"
-        };
+            new String[]{
+                    "ALTER TABLE Concerts ADD COLUMN SingerId INT64 NOT NULL",
+                    "ALTER TABLE Concerts ADD CONSTRAINT FK_Concerts_Singer FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)"
+            };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
     }
 
-    for (String file : new String[] {"add-singer-to-concerts-table.spanner.yaml"}) {
+    for (String file : new String[]{"add-singer-to-concerts-table.spanner.yaml"}) {
       try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }

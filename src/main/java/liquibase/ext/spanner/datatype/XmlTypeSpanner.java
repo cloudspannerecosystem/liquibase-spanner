@@ -16,7 +16,7 @@ package liquibase.ext.spanner.datatype;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.XMLType;
-import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 /** XML is translated to STRING(MAX) as Cloud Spanner does not have a built-in type for XML. */
 public class XmlTypeSpanner extends XMLType {
@@ -24,12 +24,12 @@ public class XmlTypeSpanner extends XMLType {
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof CloudSpanner) {
+    if (database instanceof ICloudSpanner) {
       return XML;
     } else {
       return super.toDatabaseDataType(database);

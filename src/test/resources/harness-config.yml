@@ -1,0 +1,7 @@
+inputFormat: xml
+context: testContext
+
+databasesUnderTest:
+  - name: cloudspanner
+    version: 1.0
+    url: jdbc:cloudspanner://localhost:9010/projects/my-project/instances/my-instance/databases/my-database?usePlainText=true

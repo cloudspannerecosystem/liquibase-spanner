@@ -16,19 +16,19 @@ package liquibase.ext.spanner.datatype;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.TinyIntType;
-import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 public class TinyIntTypeSpanner extends TinyIntType {
   private static final DatabaseDataType INT64 = new DatabaseDataType("INT64");
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof CloudSpanner) {
+    if (database instanceof ICloudSpanner) {
       return INT64;
     } else {
       return super.toDatabaseDataType(database);

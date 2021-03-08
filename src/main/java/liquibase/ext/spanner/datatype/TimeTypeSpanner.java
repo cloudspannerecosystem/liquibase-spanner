@@ -16,7 +16,7 @@ package liquibase.ext.spanner.datatype;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.TimeType;
-import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 
 /**
  * Cloud Spanner does not have a data type that only stores time information. The best possible
@@ -27,12 +27,12 @@ public class TimeTypeSpanner extends TimeType {
 
   @Override
   public boolean supports(Database database) {
-    return database instanceof CloudSpanner;
+    return database instanceof ICloudSpanner;
   }
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof CloudSpanner) {
+    if (database instanceof ICloudSpanner) {
       return TIME;
     } else {
       return super.toDatabaseDataType(database);

@@ -15,7 +15,7 @@ package liquibase.ext.spanner.sqlgenerator;
 
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
-import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.RenameColumnGenerator;
@@ -40,6 +40,6 @@ public class RenameColumnGeneratorSpanner extends RenameColumnGenerator {
 
   @Override
   public boolean supports(RenameColumnStatement statement, Database database) {
-    return (database instanceof CloudSpanner);
+    return (database instanceof ICloudSpanner);
   }
 }
