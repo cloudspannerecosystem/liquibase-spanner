@@ -13,17 +13,32 @@
  */
 package liquibase.ext.spanner;
 
+import com.google.cloud.spanner.Type;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
 
   public CloudSpanner() {
+    unmodifiableDataTypes.add(Type.Code.BOOL.name().toLowerCase());
+    unmodifiableDataTypes.add(Type.Code.DATE.name().toLowerCase());
+    unmodifiableDataTypes.add(Type.Code.FLOAT64.name().toLowerCase());
+    unmodifiableDataTypes.add(Type.Code.INT64.name().toLowerCase());
+    unmodifiableDataTypes.add(Type.Code.NUMERIC.name().toLowerCase());
+    unmodifiableDataTypes.add(Type.Code.STRUCT.name().toLowerCase());
+    unmodifiableDataTypes.add(Type.Code.TIMESTAMP.name().toLowerCase());
   }
 
   @Override
   public java.lang.Integer getDefaultPort() {
     return Integer.valueOf(9010);
+  }
+  
+  @Override
+  public boolean dataTypeIsNotModifiable(final String typeName) {
+    // All data types are returned including the length by the JDBC driver
+    // and are therefore unmodifiable.
+    return true;
   }
 
   @Override
