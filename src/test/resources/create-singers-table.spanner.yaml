@@ -32,6 +32,7 @@ databaseChangeLog:
                 type:    BIGINT
                 constraints:
                   primaryKey: true
+                  nullable: true
             -  column:
                 remarks: Singer's first name
                 name:    FirstName

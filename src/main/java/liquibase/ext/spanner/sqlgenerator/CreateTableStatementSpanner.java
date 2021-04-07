@@ -43,7 +43,7 @@ public class CreateTableStatementSpanner extends CreateTableStatement {
   @Override
   public CreateTableStatement addPrimaryKeyColumn(String columnName, LiquibaseDataType columnType, Object defaultValue,
       Boolean validate,String keyName, String tablespace, ColumnConstraint... constraints) {
-    CreateTableStatement statement = super.addPrimaryKeyColumn(columnName, columnType, defaultValue, keyName, tablespace, constraints);
+    CreateTableStatement statement = super.addPrimaryKeyColumn(columnName, columnType, defaultValue, validate, keyName, tablespace, constraints);
     if (!containsNotNullConstraintForColumn(columnName, constraints)) {
       getNotNullColumns().remove(columnName);
     }
