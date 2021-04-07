@@ -28,21 +28,18 @@ public class CreateTableTest extends AbstractMockServerTest {
   @Test
   void testCreateSingersTableFromYaml() throws Exception {
     String expectedSql =
-        "CREATE TABLE Singers (SingerId INT64 NOT NULL, FirstName STRING(255), LastName STRING(255) NOT NULL, SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)";
+        "CREATE TABLE Singers (SingerId INT64, FirstName STRING(255), LastName STRING(255) NOT NULL, SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"create-singers-table.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
         // Update to version v0.1.
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"));
 
         // Register result for tagging the last update and then tag it.
-        mockSpanner.putStatementResult(
-            StatementResult.update(
-                Statement.of(
-                    "UPDATE DATABASECHANGELOG SET TAG = 'rollback-v0.1' WHERE DATEEXECUTED = (SELECT MAX(DATEEXECUTED) FROM DATABASECHANGELOG)"),
-                1L));
+        mockSpanner.putStatementResult(StatementResult.update(Statement.of(
+            "UPDATE DATABASECHANGELOG SET TAG = 'rollback-v0.1' WHERE DATEEXECUTED = (SELECT MAX(DATEEXECUTED) FROM DATABASECHANGELOG)"),
+            1L));
         liquibase.tag("rollback-v0.1");
       }
     }
@@ -61,8 +58,7 @@ public class CreateTableTest extends AbstractMockServerTest {
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"create-table-with-all-spanner-types.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.2"));
       }
     }
@@ -81,8 +77,7 @@ public class CreateTableTest extends AbstractMockServerTest {
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"create-table-with-all-liquibase-types.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.3"));
       }
     }
@@ -97,8 +92,7 @@ public class CreateTableTest extends AbstractMockServerTest {
   @Test
   void testTableWithoutPrimaryKeyFromYaml() throws Exception {
     for (String file : new String[] {"create-table-without-pk.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"));
         fail("missing expected validation exception");
       } catch (ValidationFailedException e) {
