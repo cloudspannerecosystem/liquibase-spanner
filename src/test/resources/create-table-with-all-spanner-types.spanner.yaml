@@ -31,6 +31,7 @@ databaseChangeLog:
                 type:    BIGINT
                 constraints:
                   primaryKey: true
+                  nullable: false
             -  column:
                 name:    ColFloat64
                 type:    DOUBLE

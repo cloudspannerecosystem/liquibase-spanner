@@ -31,6 +31,7 @@ databaseChangeLog:
                 type:  int64
                 constraints:
                   primaryKey: true
+                  nullable: false
             -  column:  
                 name:  name  
                 type:  varchar(255)  
