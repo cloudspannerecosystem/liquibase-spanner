@@ -29,6 +29,7 @@ public class CreateTableChangeSpanner extends CreateTableChange {
     return (database instanceof ICloudSpanner);
   }
   
+  @Override
   protected CreateTableStatementSpanner generateCreateTableStatement() {
     return new CreateTableStatementSpanner(getCatalogName(), getSchemaName(), getTableName(), getRemarks());
   }

@@ -30,6 +30,7 @@ public class CreateTableStatementSpanner extends CreateTableStatement {
     super(catalogName, schemaName, tableName, remarks);
   }
   
+  @Override
   public CreateTableStatement addPrimaryKeyColumn(String columnName, LiquibaseDataType columnType, Object defaultValue, String keyName,
       String tablespace, ColumnConstraint... constraints) {
     CreateTableStatement statement = super.addPrimaryKeyColumn(columnName, columnType, defaultValue, keyName, tablespace, constraints);
@@ -39,6 +40,7 @@ public class CreateTableStatementSpanner extends CreateTableStatement {
     return statement;
   }
   
+  @Override
   public CreateTableStatement addPrimaryKeyColumn(String columnName, LiquibaseDataType columnType, Object defaultValue,
       Boolean validate,String keyName, String tablespace, ColumnConstraint... constraints) {
     CreateTableStatement statement = super.addPrimaryKeyColumn(columnName, columnType, defaultValue, keyName, tablespace, constraints);
