@@ -38,6 +38,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
@@ -492,19 +493,19 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorSpannerCreateAllDataTypesTest()
-      throws SQLException, LiquibaseException {
+      throws Exception {
     doSpannerCreateAllDataTypesTest(getSpannerEmulator());
   }
 
   @Test
   @Tag("integration")
   void doRealSpannerCreateAllDataTypesTest()
-      throws SQLException, LiquibaseException {
+      throws Exception {
      doSpannerCreateAllDataTypesTest(getSpannerReal());
   }
   
   private void doSpannerCreateAllDataTypesTest(TestHarness.Connection testHarness)
-      throws SQLException, LiquibaseException {
+      throws Exception {
 
     // No columns yet in the table -- it doesn't exist
     testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
@@ -538,7 +539,17 @@ public class LiquibaseTests {
         new ColDesc("ColTime", "TIMESTAMP"),
         new ColDesc("ColTinyInt", "INT64"),
         new ColDesc("ColUUID", "STRING(36)"),
-        new ColDesc("ColXml", "STRING(MAX)")
+        new ColDesc("ColXml", "STRING(MAX)"),
+        new ColDesc("ColBoolArray", "ARRAY<BOOL>"),
+        new ColDesc("ColBytesArray", "ARRAY<BYTES(100)>"),
+        new ColDesc("ColBytesMaxArray", "ARRAY<BYTES(MAX)>"),
+        new ColDesc("ColDateArray", "ARRAY<DATE>"),
+        new ColDesc("ColFloat64Array", "ARRAY<FLOAT64>"),
+        new ColDesc("ColInt64Array", "ARRAY<INT64>"),
+        new ColDesc("ColNumericArray", "ARRAY<NUMERIC>"),
+        new ColDesc("ColStringArray", "ARRAY<STRING(100)>"),
+        new ColDesc("ColStringMaxArray", "ARRAY<STRING(MAX)>"),
+        new ColDesc("ColTimestampArray", "ARRAY<TIMESTAMP>")
     };
     testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes", cols);
 
@@ -554,6 +565,20 @@ public class LiquibaseTests {
     testSnapshotTableAndColumns(snapshot, "TableWithAllLiquibaseTypes", cols);
     testSnapshotPrimaryKey(snapshot, "TableWithAllLiquibaseTypes",
         new ColDesc("ColBigInt", "INT64", Boolean.FALSE));
+    
+    // Generate an initial changelog for the database.
+    File changeLogFile = File.createTempFile("test-changelog", ".xml");
+    changeLogFile.deleteOnExit();
+    Main.run(new String[] {
+        "--overwriteOutputFile=true",
+        String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
+        String.format("--url=%s", testHarness.getJDBCConnection().getMetaData().getURL()),
+        "generateChangeLog"});
+    DocumentBuilderFactory documentBuilderFactory =
+        DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+    Document document = builder.parse(changeLogFile);
+    testTableColumnsInXml(document, "TableWithAllLiquibaseTypes", cols);
 
     // Do rollback
     liquibase.rollback(1, null);
@@ -649,21 +674,41 @@ public class LiquibaseTests {
 
     Assert.assertEquals(rows.size(), cols.length);
     for (int i = 0; i < cols.length; i++) {
-      Assert.assertEquals(
-          rows.get(i).get("COLUMN_NAME").toString().compareTo(cols[i].name),
-          0);
+      assertEquals(cols[i].name, rows.get(i).get("COLUMN_NAME"));
       if (cols[i].type != null) {
-        Assert.assertEquals(
-            rows.get(i).get("TYPE_NAME").toString().compareToIgnoreCase(cols[i].type),
-            0);
+        assertEquals(cols[i].type, rows.get(i).get("TYPE_NAME"));
       }
       if (cols[i].isNullable != null) {
         String expectedValue = cols[i].isNullable ? "YES" : "NO";
-        Assert.assertEquals(
-            rows.get(i).get("IS_NULLABLE").toString().compareToIgnoreCase(expectedValue),
-            0);
+        assertEquals(expectedValue, rows.get(i).get("IS_NULLABLE"));
       }
     }
+  }
+
+  static void testTableColumnsInXml(Document document, String table, ColDesc... cols)
+      throws XPathExpressionException {
+    XPathFactory xPathfactory = XPathFactory.newInstance();
+    XPath xpath = xPathfactory.newXPath();
+    XPathExpression expr = xpath.compile(String.format("//createTable[@tableName=\"%s\"]", table));
+    NodeList createTables = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+    assertEquals(1, createTables.getLength());
+    Node createTable = createTables.item(0);
+
+    for (ColDesc col : cols) {
+      testTableColumn(xpath, createTable, col);
+    }
+  }
+
+  static void testTableColumn(XPath xpath, Node createTableNode, ColDesc col)
+      throws XPathExpressionException {
+    NodeList createCols =
+        (NodeList) xpath.compile(String.format("//column[@name=\"%s\"]", col.name))
+            .evaluate(createTableNode, XPathConstants.NODESET);
+    assertEquals(1, createCols.getLength());
+    Node createCol = createCols.item(0);
+    assertEquals(col.name, createCol.getAttributes().getNamedItem("name").getNodeValue());
+    assertEquals(col.type.toUpperCase(),
+        createCol.getAttributes().getNamedItem("type").getNodeValue().toUpperCase());
   }
 
   static void testTablePrimaryKeys(java.sql.Connection conn, String table, ColDesc... cols)
