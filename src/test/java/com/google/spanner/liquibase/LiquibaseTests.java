@@ -587,6 +587,61 @@ public class LiquibaseTests {
     testTableColumns(testHarness.getJDBCConnection(), "TableWithAllLiquibaseTypes");
   }
 
+  @Test
+  void doEmulatorSpannerGenerateChangeLogForInterleavedTableTest()
+      throws Exception {
+    doSpannerGenerateChangeLogForInterleavedTableTest(getSpannerEmulator());
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerGenerateChangeLogForInterleavedTableTest()
+      throws Exception {
+    doSpannerGenerateChangeLogForInterleavedTableTest(getSpannerReal());
+  }
+  
+  private void doSpannerGenerateChangeLogForInterleavedTableTest(TestHarness.Connection testHarness)
+      throws Exception {
+    try (Statement statement = testHarness.getJDBCConnection().createStatement()) {
+      // Create a parent and child table manually.
+      statement
+          .addBatch("CREATE TABLE Singers (SingerId INT64, Name STRING(200)) PRIMARY KEY (SingerId)");
+      statement.addBatch(
+          "CREATE TABLE Albums (SingerId INT64, AlbumId INT64, Title STRING(MAX)) PRIMARY KEY (SingerId, AlbumId), INTERLEAVE IN PARENT Singers");
+      statement.addBatch(
+          "CREATE TABLE Concerts (ConcertId INT64, SingerId INT64, CONSTRAINT FK_Concerts_Singers FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)) PRIMARY KEY (ConcertId)");
+      statement.executeBatch();
+      
+      try {
+        // Generate an initial changelog for the database.
+        File changeLogFile = File.createTempFile("test-changelog", ".xml");
+        changeLogFile.deleteOnExit();
+        Main.run(new String[] {"--overwriteOutputFile=true",
+            String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
+            String.format("--url=%s", testHarness.getJDBCConnection().getMetaData().getURL()),
+            "generateChangeLog"});
+    
+        // Verify that the generated change log only includes one foreign key.
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+        Document document = builder.parse(changeLogFile);
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+        XPathExpression expr = xpath.compile(String.format("//addForeignKeyConstraint", document));
+        NodeList createForeignKeys = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+        assertEquals(1, createForeignKeys.getLength());
+        Node createForeignKey = createForeignKeys.item(0);
+        assertEquals("FK_Concerts_Singers",
+            createForeignKey.getAttributes().getNamedItem("constraintName").getNodeValue());
+      } finally {
+        statement.addBatch("DROP TABLE Concerts");
+        statement.addBatch("DROP TABLE Albums");
+        statement.addBatch("DROP TABLE Singers");
+        statement.executeBatch();
+      }
+    }
+  }
+
   public static class ColDesc {
     public final String name;
     public final String type;
