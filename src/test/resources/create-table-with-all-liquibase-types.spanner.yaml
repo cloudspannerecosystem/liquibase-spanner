@@ -94,3 +94,33 @@ databaseChangeLog:
             -  column:
                 name:    ColXml
                 type:    XML
+            -  column:
+                name:    ColBoolArray
+                type:    ARRAY<BOOL>
+            -  column:
+                name:    ColBytesArray
+                type:    ARRAY<BYTES(100)>
+            -  column:
+                name:    ColBytesMaxArray
+                type:    ARRAY<BYTES(MAX)>
+            -  column:
+                name:    ColDateArray
+                type:    ARRAY<DATE>
+            -  column:
+                name:    ColFloat64Array
+                type:    ARRAY<FLOAT64>
+            -  column:
+                name:    ColInt64Array
+                type:    ARRAY<INT64>
+            -  column:
+                name:    ColNumericArray
+                type:    ARRAY<NUMERIC>
+            -  column:
+                name:    ColStringArray
+                type:    ARRAY<STRING(100)>
+            -  column:
+                name:    ColStringMaxArray
+                type:    ARRAY<STRING(MAX)>
+            -  column:
+                name:    ColTimestampArray
+                type:    ARRAY<TIMESTAMP>

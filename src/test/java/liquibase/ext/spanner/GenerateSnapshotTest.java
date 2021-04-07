@@ -13,9 +13,9 @@
  */
 package liquibase.ext.spanner;
 
-import com.google.cloud.spanner.Statement;
 import static com.google.common.truth.Truth.assertThat;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
 import java.sql.Connection;
 import java.util.Set;
@@ -148,8 +148,11 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
       assertThat(singers.getName()).isEqualTo("Singers");
       assertThat(singers.getColumns()).hasSize(3);
       assertThat(singers.getColumn("SingerId").getType().getTypeName()).isEqualTo("INT64");
+      assertThat(singers.getColumn("SingerId").getType().toString()).isEqualTo("INT64");
       assertThat(singers.getColumn("FirstName").getType().getTypeName()).isEqualTo("STRING(100)");
+      assertThat(singers.getColumn("FirstName").getType().toString()).isEqualTo("STRING(100)");
       assertThat(singers.getColumn("LastName").getType().getTypeName()).isEqualTo("STRING(200)");
+      assertThat(singers.getColumn("LastName").getType().toString()).isEqualTo("STRING(200)");
     }
   }
 }
