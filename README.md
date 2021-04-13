@@ -9,6 +9,13 @@ This extension is currently beta.
 
 ## Release Notes
 
+#### 1.0.3
+
+* Bug fix (#83): Columns in the primary key were always generated as not nullable, even when they were marked as nullable.
+* Bug fix (#78): INTERLEAVED table was generated as FOREIGN KEY in snapshots
+* Bug fix (#75, #76, #77): Wrong type names were generated in snapshots
+* Bug fix: Removed logback configuration from build.
+
 #### 1.0.2
 
  * Bug fix: Fixed a potential `ClassNotFoundException` for `com.google.spanner.admin.database.v1.DatabaseAdminGrpc`
