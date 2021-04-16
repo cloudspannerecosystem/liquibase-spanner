@@ -318,7 +318,7 @@ public abstract class AbstractMockServerTest {
   }
   
   @AfterEach
-  void checkValidRequest() {
+  void checkForLiquibaseToken() {
     if (receivedRequestWithNonLiquibaseToken.get()) {
       // Clear flag for following tests.
       receivedRequestWithNonLiquibaseToken.set(false);
