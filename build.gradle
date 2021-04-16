@@ -56,6 +56,7 @@ jar {
 // Liquibase 4 uses ServiceLoader
 serviceLoader {
     serviceInterface 'liquibase.database.Database'
+    serviceInterface 'liquibase.database.DatabaseConnection'
     serviceInterface 'liquibase.datatype.LiquibaseDataType'
     serviceInterface 'liquibase.sqlgenerator.SqlGenerator'
     serviceInterface 'liquibase.change.Change'
@@ -66,7 +67,7 @@ serviceLoader {
 dependencies {
 
     // Cloud Spanner related
-    implementation platform('com.google.cloud:libraries-bom:16.4.0')
+    implementation platform('com.google.cloud:libraries-bom:20.0.0')
     implementation("com.google.cloud:google-cloud-spanner-jdbc")
 
     // Liquibase Core - needed for testing and docker container

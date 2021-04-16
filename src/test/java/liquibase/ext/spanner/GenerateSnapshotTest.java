@@ -17,7 +17,6 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
-import java.sql.Connection;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -135,8 +134,7 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
 
   @Test
   void testGenerateSnapshot() throws Exception {
-    try (Connection con = createConnection();
-        Liquibase liquibase = getLiquibase(con, "create-snapshot.spanner.yaml")) {
+    try (Liquibase liquibase = getLiquibase(createConnectionUrl(), "create-snapshot.spanner.yaml")) {
       SnapshotGeneratorFactory factory = SnapshotGeneratorFactory.getInstance();
       Database database = liquibase.getDatabase();
       SnapshotControl control = new SnapshotControl(database);

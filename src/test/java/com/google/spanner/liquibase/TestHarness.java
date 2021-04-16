@@ -40,11 +40,9 @@ public class TestHarness {
    * Interface for a Liquibase JDBC Test Harness
    */
   public interface Connection {
-
-    // Return the active JDBC connection.
-    //
-    // This will reuse JDBC connections between tests.
-    java.sql.Connection getJDBCConnection();
+    
+    // Returns the connection URL that is used by this connection.
+    String getConnectionUrl();
 
     // Stop() stops the test Spanner database and does any needed cleanup.
     void stop() throws SQLException;
@@ -174,24 +172,20 @@ public class TestHarness {
     createInstance(service, INSTANCE_ID);
     createDatabase(service, INSTANCE_ID, DATABASE_ID);
 
-    // JDBC Connection
-    final java.sql.Connection conn =
-        DriverManager.getConnection(
-            String.format(
-                "jdbc:cloudspanner://%s/projects/%s/instances/%s/databases/%s?autocommit=false;usePlainText=true",
-                spannerEmulatorHost, PROJECT_ID, INSTANCE_ID, DATABASE_ID));
+    final String connectionUrl = String.format(
+        "jdbc:cloudspanner://%s/projects/%s/instances/%s/databases/%s?autocommit=true;usePlainText=true",
+        spannerEmulatorHost, PROJECT_ID, INSTANCE_ID, DATABASE_ID); 
 
     return new Connection() {
-
+      
       @Override
-      public java.sql.Connection getJDBCConnection() {
-        return conn;
+      public String getConnectionUrl() {
+        return connectionUrl;
       }
 
       @Override
       public void stop() throws SQLException {
         service.close();
-        conn.close();
         try {
           ConnectionOptions.closeSpanner();
         } catch (SpannerException e) {
@@ -224,18 +218,19 @@ public class TestHarness {
 
     createDatabase(service, instanceId, databaseId);
 
+    final String connectionUrl = 
+        String.format(
+            "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s?autocommit=true",
+            projectId, instanceId, databaseId);
     // JDBC connection initialize
     java.sql.Connection conn =
-        DriverManager.getConnection(
-            String.format(
-                "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s?autocommit=true",
-                projectId, instanceId, databaseId));
+        DriverManager.getConnection(connectionUrl);
 
     return new Connection() {
-
+      
       @Override
-      public java.sql.Connection getJDBCConnection() {
-        return conn;
+      public String getConnectionUrl() {
+        return connectionUrl;
       }
 
       @Override

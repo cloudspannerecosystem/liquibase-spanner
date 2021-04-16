@@ -25,6 +25,12 @@ public class SimpleMockServerTest extends AbstractMockServerTest {
     assertThat(mockAdmin.getRequests()).hasSize(1);
     assertThat(mockAdmin.getRequests().get(0)).isInstanceOf(UpdateDatabaseDdlRequest.class);
     assertThat(getUpdateDdlStatementsList(0)).containsExactly(statement).inOrder();
+    
+    // This test does not use Liquibase but JDBC directly, so it is expected to send requests that
+    // do not contain a Liquibase client lib token.
+    assertThat(receivedRequestWithNonLiquibaseToken.get()).isTrue();
+    // Clear the flag to prevent the check after each test to fail.
+    receivedRequestWithNonLiquibaseToken.set(false);
   }
 
   @Test

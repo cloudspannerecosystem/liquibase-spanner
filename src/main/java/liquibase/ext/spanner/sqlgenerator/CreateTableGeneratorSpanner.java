@@ -21,7 +21,6 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateTableGenerator;
 import liquibase.statement.core.CreateTableStatement;
 import liquibase.structure.DatabaseObject;
-import org.apache.commons.lang3.StringUtils;
 
 public class CreateTableGeneratorSpanner extends CreateTableGenerator {
 
@@ -54,7 +53,7 @@ public class CreateTableGeneratorSpanner extends CreateTableGenerator {
     StringBuilder buffer = new StringBuilder(", PRIMARY KEY (");
     buffer.append(
             database.escapeColumnNameList(
-                    StringUtils.join(statement.getPrimaryKeyConstraint().getColumns(), ", ")));
+                    String.join(", ", statement.getPrimaryKeyConstraint().getColumns())));
     buffer.append(")");
 
     String pk = buffer.toString();
