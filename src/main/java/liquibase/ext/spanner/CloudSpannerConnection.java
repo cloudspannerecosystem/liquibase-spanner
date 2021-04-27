@@ -23,9 +23,7 @@ import java.util.Properties;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
-import liquibase.servicelocator.LiquibaseService;
 
-@LiquibaseService()
 public class CloudSpannerConnection extends JdbcConnection {
   private final DatabaseConnection originalConnection;
 

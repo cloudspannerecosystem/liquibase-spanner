@@ -90,14 +90,16 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
     // If a user creates a JDBC connection manually and then passes this manually into Liquibase,
     // then this method will be called by Liquibase. Normally, a connection will be opened by
     // Liquibase based on the connection URL that is configured. In that case, the
-    // CloudSpanneConnection class will ensure that the correct user-agent string is set. That is
-    // not the case when a user creates the connection manually. This method therefore checks
-    // whether it is actually a Spanner JDBC connection, and if it is, replaces it with a new
-    // connection that uses the same connection URL + the user-agent string. The original connection
-    // is kept open in case the caller also uses the connection for other purposes, but will
-    // automatically be closed when the 'replacement' connection is closed. The latter should be
-    // safe, even if the caller uses the connection for other purposes, as even if the connection
-    // was not replaced it would have been closed by Liquibase at the same moment.
+    // CloudSpannerConnection class will ensure that the correct user-agent string is set. That is
+    // not the case when a user creates the connection programmatically and passes it in to
+    // Liquibase. This method therefore checks whether it is actually a Spanner JDBC connection,
+    // and if it is, replaces it with a new connection that uses the same connection URL + the
+    // user-agent string. The original connection is kept open in case the caller also uses the
+    // connection for other purposes, but will automatically be closed when the 'replacement'
+    // connection is closed.
+    // The latter should be safe, even if the caller uses the connection for other purposes, as
+    // even if the connection was not replaced it would have been closed by Liquibase at the same
+    // moment.
     if (!(conn instanceof CloudSpannerConnection) && conn instanceof JdbcConnection
         && ((JdbcConnection) conn)
             .getUnderlyingConnection() instanceof CloudSpannerJdbcConnection) {
