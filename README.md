@@ -10,6 +10,7 @@ Cloud Spanner database.
 #### 1.0.4
 
 * Extension is no longer beta.
+* deps: update to jdbc driver version 2.0 and set user agent
 
 #### 1.0.3
 
