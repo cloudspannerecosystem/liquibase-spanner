@@ -1,5 +1,6 @@
 package liquibase.ext.spanner;
 
+import static org.junit.Assert.fail;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
@@ -21,7 +22,14 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import io.grpc.Context;
+import io.grpc.Contexts;
+import io.grpc.Metadata;
 import io.grpc.Server;
+import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
+import io.grpc.ServerInterceptor;
+import io.grpc.Metadata.Key;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -30,12 +38,14 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.concurrent.atomic.AtomicBoolean;
 import liquibase.Liquibase;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 
 public abstract class AbstractMockServerTest {
@@ -103,6 +113,8 @@ public abstract class AbstractMockServerTest {
   protected static MockDatabaseAdminImpl mockAdmin;
   private static Server server;
   private static InetSocketAddress address;
+  protected static AtomicBoolean receivedRequestWithNonLiquibaseToken = new AtomicBoolean();
+  private static String invalidClientLibToken;
 
   @BeforeAll
   static void startStaticServer() throws IOException {
@@ -110,12 +122,33 @@ public abstract class AbstractMockServerTest {
     mockSpanner.setAbortProbability(0.0D);
     mockAdmin = new MockDatabaseAdminImpl();
     address = new InetSocketAddress("localhost", 0);
-    server =
-        NettyServerBuilder.forAddress(address)
-            .addService(mockSpanner)
-            .addService(mockAdmin)
-            .build()
-            .start();
+    server = NettyServerBuilder.forAddress(address).addService(mockSpanner).addService(mockAdmin)
+        // Add a server interceptor that will check that we receive the client lib
+        // token that we expect.
+        .intercept(new ServerInterceptor() {
+          @Override
+          public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
+              Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+            // Ignore create/delete session and execute query calls. Some other
+            // database drivers try to execute a query to check whether the
+            // backend is the 'right' database, instead of at least checking the driver first...
+            if (!(call.getMethodDescriptor().getFullMethodName()
+                .equals("google.spanner.v1.Spanner/BatchCreateSessions")
+                || call.getMethodDescriptor().getFullMethodName()
+                    .equals("google.spanner.v1.Spanner/ExecuteStreamingSql")
+                || call.getMethodDescriptor().getFullMethodName()
+                    .equals("google.spanner.v1.Spanner/DeleteSession"))) {
+              String clientLibToken =
+                  headers.get(Key.of("x-goog-api-client", Metadata.ASCII_STRING_MARSHALLER));
+              if (clientLibToken == null || !clientLibToken.contains("sp-liq")) {
+                if (!receivedRequestWithNonLiquibaseToken.getAndSet(true)) {
+                  invalidClientLibToken = clientLibToken;
+                }
+              }
+            }
+            return Contexts.interceptCall(Context.current(), call, headers, next);
+          }
+        }).build().start();
 
     registerDefaultResults();
   }
@@ -283,6 +316,15 @@ public abstract class AbstractMockServerTest {
     server.shutdown();
     server.awaitTermination();
   }
+  
+  @AfterEach
+  void checkForLiquibaseToken() {
+    if (receivedRequestWithNonLiquibaseToken.get()) {
+      // Clear flag for following tests.
+      receivedRequestWithNonLiquibaseToken.set(false);
+      fail("Server received request with invalid client lib token: " + invalidClientLibToken);
+    }
+  }
 
   static ResultSet createInt64ResultSet(long value) {
     return com.google.spanner.v1.ResultSet.newBuilder()
@@ -323,6 +365,16 @@ public abstract class AbstractMockServerTest {
                 .findCorrectDatabaseImplementation(new JdbcConnection(connection)));
     return liquibase;
   }
+  
+  protected static Liquibase getLiquibase(String connectionUrl, String changeLogFile) throws DatabaseException {
+    Liquibase liquibase =
+        new Liquibase(
+            changeLogFile,
+            new ClassLoaderResourceAccessor(),
+            DatabaseFactory.getInstance()
+                .openDatabase(connectionUrl, null, null, null, null));
+    return liquibase;
+  }
 
   static void addUpdateDdlStatementsResponse(String statement) {
     addUpdateDdlStatementsResponse(ImmutableList.of(statement));
@@ -349,10 +401,13 @@ public abstract class AbstractMockServerTest {
   }
 
   protected static Connection createConnection() throws SQLException {
-    StringBuilder url =
+    return DriverManager.getConnection(createConnectionUrl());
+  }
+  
+  protected static String createConnectionUrl() {
+    return
         new StringBuilder("jdbc:cloudspanner://localhost:")
             .append(server.getPort())
-            .append("/projects/p/instances/i/databases/d;usePlainText=true");
-    return DriverManager.getConnection(url.toString());
+            .append("/projects/p/instances/i/databases/d;usePlainText=true;minSessions=0").toString();
   }
 }

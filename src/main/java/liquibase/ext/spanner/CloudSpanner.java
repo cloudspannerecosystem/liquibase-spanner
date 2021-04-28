@@ -14,8 +14,12 @@
 package liquibase.ext.spanner;
 
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
+import liquibase.database.jvm.JdbcConnection;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
 
@@ -78,6 +82,43 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
       return "com.google.cloud.spanner.jdbc.JdbcDriver";
     }
     return null;
+  }
+  
+  @Override
+  public void setConnection(final DatabaseConnection conn) {
+    DatabaseConnection connectionToUse = conn;
+    // If a user creates a JDBC connection manually and then passes this manually into Liquibase,
+    // then this method will be called by Liquibase. Normally, a connection will be opened by
+    // Liquibase based on the connection URL that is configured. In that case, the
+    // CloudSpannerConnection class will ensure that the correct user-agent string is set. That is
+    // not the case when a user creates the connection programmatically and passes it in to
+    // Liquibase. This method therefore checks whether it is actually a Spanner JDBC connection,
+    // and if it is, replaces it with a new connection that uses the same connection URL + the
+    // user-agent string. The original connection is kept open in case the caller also uses the
+    // connection for other purposes, but will automatically be closed when the 'replacement'
+    // connection is closed.
+    // The latter should be safe, even if the caller uses the connection for other purposes, as
+    // even if the connection was not replaced it would have been closed by Liquibase at the same
+    // moment.
+    if (!(conn instanceof CloudSpannerConnection) && conn instanceof JdbcConnection
+        && ((JdbcConnection) conn)
+            .getUnderlyingConnection() instanceof CloudSpannerJdbcConnection) {
+      // The underlying connection is a Spanner JDBC connection. Check whether it already included a
+      // user-agent string.
+      if (!conn.getURL().contains("userAgent=")) {
+        // The underlying connection does not use a specific user-agent string. Create a replacement
+        // connection that will be used by Liquibase with the correct user-agent.
+        try {
+          connectionToUse = new CloudSpannerConnection(
+              DriverManager.getConnection(conn.getURL() + ";userAgent=sp-liq"), conn);
+        } catch (SQLException e) {
+          // Ignore and use the original connection. This could for example happen if the user is
+          // using an older version of the Spanner JDBC driver that does not support this user-agent
+          // string.
+        }
+      }
+    }
+    super.setConnection(connectionToUse);
   }
 
   @Override

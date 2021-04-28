@@ -67,7 +67,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>16.4.0</version>
+        <version>20.0.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -259,6 +259,7 @@
         <configuration>
           <services>
             <param>liquibase.database.Database</param>
+            <param>liquibase.database.DatabaseConnection</param>
             <param>liquibase.datatype.LiquibaseDataType</param>
             <param>liquibase.sqlgenerator.SqlGenerator</param>
             <param>liquibase.change.Change</param>
