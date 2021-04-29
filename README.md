@@ -5,9 +5,12 @@ A Liquibase extension adding support for Google Cloud Spanner. Include this in y
 application project to run Liquibase database migration scripts against a Google
 Cloud Spanner database.
 
-This extension is currently beta.
-
 ## Release Notes
+
+#### 1.0.4
+
+* Extension is no longer beta.
+* deps: update to jdbc driver version 2.0 and set user agent
 
 #### 1.0.3
 
