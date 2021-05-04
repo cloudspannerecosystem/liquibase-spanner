@@ -40,6 +40,7 @@ jobs:
           name: "Run integration tests"
           command: |
             ./gradlew --no-daemon -PtagVersion=${CIRCLE_TAG} integrationTest
+          no_output_timeout: 30m
       - store_test_results:
           path: build/test-results/test
       - store_artifacts:
