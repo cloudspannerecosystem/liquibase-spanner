@@ -70,6 +70,9 @@ Run:
 | [delete.yaml](example/delete.yaml)                                                         | Delete rows from Singers                                                  |
 | [update.yaml](example/update.yaml)                                                         | Update rows in Singers                                                    |
 
+### Other Samples
+See the samples directory for specific integrations with other frameworks, such as Spring Boot.
+
 ## Supported Features
 
 The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:<br/>
