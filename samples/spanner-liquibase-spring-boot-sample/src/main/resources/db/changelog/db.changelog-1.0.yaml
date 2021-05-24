@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      author: some-developer
+      id: create-singers-table
+      changes:
+        - createTable:
+            tableName: Singers
+            columns:
+              - column:
+                  name: SingerId
+                  type: STRING(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: FirstName
+                  type: STRING(200)
+              - column:
+                  name: LastName
+                  type: STRING(200)

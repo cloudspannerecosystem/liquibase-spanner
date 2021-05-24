@@ -9,5 +9,5 @@ bin/
 .settings/
 .idea/
 .vscode/
-/target/
+target/
 liquibase-spanner.iml
