@@ -190,4 +190,9 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   public boolean supportsPrimaryKeyNames() {
     return false;
   }
+
+  @Override
+  public String escapeStringForDatabase(String string) {
+    return string == null ? null : string.replace("'", "\\'");
+  }
 }

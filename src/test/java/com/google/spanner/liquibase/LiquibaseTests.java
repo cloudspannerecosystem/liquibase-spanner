@@ -377,6 +377,49 @@ public class LiquibaseTests {
   }
 
   @Test
+  void doEmulatorLoadDataWithSingleQuotesTest() throws Exception {
+    doLoadDataWithSingleQuotesTest(getSpannerEmulator());
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerLoadDataWithSingleQuotesTest() throws Exception {
+    doLoadDataWithSingleQuotesTest(getSpannerReal());
+  }
+
+  void doLoadDataWithSingleQuotesTest(TestHarness.Connection testHarness) throws Exception {
+    try (Connection con = DriverManager.getConnection(testHarness.getConnectionUrl())) {
+      try (Statement statement = con.createStatement()) {
+        statement.execute("START BATCH DDL");
+        statement.execute("CREATE TABLE TableWithEscapedStringData (" + "Id INT64,"
+            + "ColString STRING(100),"
+            + ") PRIMARY KEY (Id)");
+        statement.execute("RUN BATCH");
+        try (Liquibase liquibase =
+            getLiquibase(testHarness, "load-data-with-single-quotes.spanner.yaml")) {
+          liquibase.update(new Contexts("test"));
+
+          try (ResultSet rs = statement
+              .executeQuery("SELECT * FROM TableWithEscapedStringData ORDER BY Id")) {
+            int index = 0;
+            while (rs.next()) {
+              index++;
+              assertThat(rs.getLong("Id")).isEqualTo(index);
+              assertThat(rs.getString("ColString"))
+                  .isEqualTo("Shouldn't have an issue inserting this as row " + index);
+            }
+            assertThat(index).isEqualTo(3);
+          }
+        } finally {
+          statement.execute("START BATCH DDL");
+          statement.execute("DROP TABLE TableWithEscapedStringData");
+          statement.execute("RUN BATCH");
+        }
+      }
+    }
+  }
+
+  @Test
   void doEmulatorLoadUpdateDataTest() throws Exception {
     doLoadUpdateDataTest(getSpannerEmulator());
   }
