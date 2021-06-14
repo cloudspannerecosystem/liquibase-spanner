@@ -7,6 +7,11 @@ Cloud Spanner database.
 
 ## Release Notes
 
+#### 1.0.5
+
+* Added sample for Spring Boot integration
+* Bug fix ([#94](https://github.com/cloudspannerecosystem/liquibase-spanner/issues/94)): loadData change did not escape single quotes correctly
+
 #### 1.0.4
 
 * Extension is no longer beta.
