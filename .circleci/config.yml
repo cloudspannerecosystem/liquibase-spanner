@@ -8,7 +8,7 @@ jobs:
   # Only execute unit tests
   execute_unit_tests:
     machine:
-       image: ubuntu-2004:202107-02
+       image: ubuntu-1604:201903-01
     steps:
       - checkout
       - run:
