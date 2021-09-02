@@ -8,13 +8,13 @@ jobs:
   # Only execute unit tests
   execute_unit_tests:
     machine:
-       image: ubuntu-1604:201903-01
+       image: ubuntu-2004:202107-02
     steps:
       - checkout
       - run:
           name: "Build and run tests"
           command: |
-            ./gradlew test
+            ./gradlew --no-daemon test
       - store_test_results:
           path: build/test-results/test
 
