@@ -7,6 +7,10 @@ Cloud Spanner database.
 
 ## Release Notes
 
+#### 4.4.3
+* Requires Liquibase 4.4.3.
+* The version of this library now mirrors the version number of the Liquibase version that it requires.
+
 #### 1.0.5
 
 * Added sample for Spring Boot integration
