@@ -97,4 +97,5 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
   protected String getElse(Database database) {
     return "";
   }
+
 }
