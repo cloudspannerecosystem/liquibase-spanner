@@ -23,5 +23,5 @@ databaseChangeLog:
      changes:
      - createView:
         viewName:        V_Singers
-        selectQuery:     SELECT s.SingerId AS SingerId, s.FirstName AS FirstName, s.LastName AS LastName FROM Singers s ORDER BY s.LastName, s.FirstName, s.SingerId
+        selectQuery:     SELECT s.SingerId AS SingerId, s.FirstName AS FirstName, s.LastName AS LastName FROM Singers s ORDER BY s.LastName, s.FirstName, s.SingerId LIMIT 2
         replaceIfExists: true

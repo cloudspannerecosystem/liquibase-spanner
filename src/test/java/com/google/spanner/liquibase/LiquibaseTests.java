@@ -920,18 +920,18 @@ public class LiquibaseTests {
         }
         statement.execute("COMMIT");
 
-        char[] prefixes = new char[] {'a', 'b', 'c'};
+        // The VIEW definition contains a LIMIT 2, so it will only return the first two rows.
+        char[] prefixes = new char[] {'a', 'b'};
         try {
           Liquibase liquibase =
               getLiquibase(testHarness, "create-or-replace-view.spanner.yaml");
           liquibase.update(new Contexts("test"));
 
-          // TODO: Investigate why the ORDER BY clause in the view itself is not respected.
-          try (ResultSet rs = statement.executeQuery("SELECT * FROM V_Singers ORDER BY LastName")) {
-            for (int i = 1; i <= singers.length; i++) {
+          try (ResultSet rs = statement.executeQuery("SELECT * FROM V_Singers")) {
+            for (char prefix : prefixes) {
               assertThat(rs.next()).isTrue();
               assertThat(rs.getString("LastName"))
-                  .startsWith(String.format("%s LastName", prefixes[i-1]));
+                  .startsWith(String.format("%s LastName", prefix));
             }
             assertThat(rs.next()).isFalse();
           }

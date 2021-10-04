@@ -56,7 +56,7 @@ public class CreateDropViewTest extends AbstractMockServerTest {
 
   @Test
   void testCreateOrReplaceViewFromYaml() throws Exception {
-    String expectedSql = "CREATE OR REPLACE VIEW V_Singers SQL SECURITY INVOKER AS SELECT s.SingerId AS SingerId, s.FirstName AS FirstName, s.LastName AS LastName FROM Singers s ORDER BY s.LastName, s.FirstName, s.SingerId";
+    String expectedSql = "CREATE OR REPLACE VIEW V_Singers SQL SECURITY INVOKER AS SELECT s.SingerId AS SingerId, s.FirstName AS FirstName, s.LastName AS LastName FROM Singers s ORDER BY s.LastName, s.FirstName, s.SingerId LIMIT 2";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"create-or-replace-view.spanner.yaml"}) {
