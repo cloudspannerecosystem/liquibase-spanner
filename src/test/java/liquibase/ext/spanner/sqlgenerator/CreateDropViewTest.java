@@ -16,6 +16,7 @@ package liquibase.ext.spanner.sqlgenerator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -37,32 +38,56 @@ public class CreateDropViewTest extends AbstractMockServerTest {
 
   @Test
   void testCreateViewFromYaml() throws Exception {
+    String expectedSql = "CREATE VIEW V_Singers SQL SECURITY INVOKER AS SELECT * FROM Singers WHERE SingerId > 10";
+    addUpdateDdlStatementsResponse(expectedSql);
+
     for (String file : new String[] {"create-view.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
-            .contains(CreateViewGeneratorSpanner.CREATE_VIEW_VALIDATION_ERROR);
       }
     }
-    assertThat(mockAdmin.getRequests()).isEmpty();
+    assertThat(mockAdmin.getRequests()).hasSize(1);
+    assertThat(mockAdmin.getRequests().get(0)).isInstanceOf(UpdateDatabaseDdlRequest.class);
+    UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
+    assertThat(request.getStatementsList()).hasSize(1);
+    assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
+  }
+
+  @Test
+  void testCreateOrReplaceViewFromYaml() throws Exception {
+    String expectedSql = "CREATE OR REPLACE VIEW V_Singers SQL SECURITY INVOKER AS SELECT s.SingerId AS SingerId, s.FirstName AS FirstName, s.LastName AS LastName FROM Singers s ORDER BY s.LastName, s.FirstName, s.SingerId";
+    addUpdateDdlStatementsResponse(expectedSql);
+
+    for (String file : new String[] {"create-or-replace-view.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.update(new Contexts("test"));
+      }
+    }
+    assertThat(mockAdmin.getRequests()).hasSize(1);
+    assertThat(mockAdmin.getRequests().get(0)).isInstanceOf(UpdateDatabaseDdlRequest.class);
+    UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
+    assertThat(request.getStatementsList()).hasSize(1);
+    assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
   @Test
   void testDropViewFromYaml() throws Exception {
+    String expectedSql = "DROP VIEW V_Singers";
+    addUpdateDdlStatementsResponse(expectedSql);
+
     for (String file : new String[] {"drop-view.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
-            .contains(DropViewGeneratorSpanner.DROP_VIEW_VALIDATION_ERROR);
       }
     }
-    assertThat(mockAdmin.getRequests()).isEmpty();
+    assertThat(mockAdmin.getRequests()).hasSize(1);
+    assertThat(mockAdmin.getRequests().get(0)).isInstanceOf(UpdateDatabaseDdlRequest.class);
+    UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
+    assertThat(request.getStatementsList()).hasSize(1);
+    assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
   @Test

@@ -376,7 +376,7 @@ public abstract class AbstractMockServerTest {
     return liquibase;
   }
 
-  static void addUpdateDdlStatementsResponse(String statement) {
+  protected static void addUpdateDdlStatementsResponse(String statement) {
     addUpdateDdlStatementsResponse(ImmutableList.of(statement));
   }
 

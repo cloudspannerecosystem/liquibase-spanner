@@ -884,4 +884,64 @@ public class LiquibaseTests {
     }
     return false;
   }
+
+  @Disabled("The emulator does not yet support VIEWs")
+  @Test
+  void doEmulatorCreateViewTest() throws Exception {
+    doCreateViewTest(getSpannerEmulator());
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerCreateViewTest() throws Exception {
+    doCreateViewTest(getSpannerReal());
+  }
+
+  void doCreateViewTest(TestHarness.Connection testHarness) throws Exception {
+    try (Connection con = DriverManager.getConnection(testHarness.getConnectionUrl())) {
+      try (Statement statement = con.createStatement()) {
+        statement.execute("START BATCH DDL");
+        statement.execute(
+            "CREATE TABLE Singers (SingerId INT64, FirstName STRING(100), LastName STRING(100)) PRIMARY KEY (SingerId)");
+        statement.execute("RUN BATCH");
+        Object[][] singers = new Object[][] {{1L, "FirstName1", "c LastName1"},
+            {2L, "FirstName2", "b LastName2"}, {3L, "FirstName3", "a LastName3"},};
+        statement.execute("BEGIN");
+        try (PreparedStatement ps = con.prepareStatement(
+            "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES (?, ?, ?)")) {
+          for (Object[] singer : singers) {
+            for (int p = 0; p < singer.length; p++) {
+              // JDBC param index is 1-based.
+              ps.setObject(p + 1, singer[p]);
+            }
+            ps.addBatch();
+          }
+          ps.executeBatch();
+        }
+        statement.execute("COMMIT");
+
+        char[] prefixes = new char[] {'a', 'b', 'c'};
+        try {
+          Liquibase liquibase =
+              getLiquibase(testHarness, "create-or-replace-view.spanner.yaml");
+          liquibase.update(new Contexts("test"));
+
+          // TODO: Investigate why the ORDER BY clause in the view itself is not respected.
+          try (ResultSet rs = statement.executeQuery("SELECT * FROM V_Singers ORDER BY LastName")) {
+            for (int i = 1; i <= singers.length; i++) {
+              assertThat(rs.next()).isTrue();
+              assertThat(rs.getString("LastName"))
+                  .startsWith(String.format("%s LastName", prefixes[i-1]));
+            }
+            assertThat(rs.next()).isFalse();
+          }
+        } finally {
+          statement.execute("START BATCH DDL");
+          statement.execute("DROP VIEW V_Singers");
+          statement.execute("DROP TABLE Singers");
+          statement.execute("RUN BATCH");
+        }
+      }
+    }
+  }
 }
