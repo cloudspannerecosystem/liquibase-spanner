@@ -13,24 +13,38 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import java.util.ArrayList;
+import java.util.List;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
+import liquibase.sql.Sql;
+import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateViewGenerator;
 import liquibase.statement.core.CreateViewStatement;
 
 public class CreateViewGeneratorSpanner extends CreateViewGenerator {
-  static final String CREATE_VIEW_VALIDATION_ERROR =
-      "Cloud Spanner does not support creating views";
 
   @Override
-  public ValidationErrors validate(
-      CreateViewStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-    ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(CREATE_VIEW_VALIDATION_ERROR);
-    return errors;
+  public Sql[] generateSql(CreateViewStatement statement, Database database,
+      SqlGeneratorChain sqlGeneratorChain) {
+    StringBuilder sql = new StringBuilder();
+    if (!statement.isFullDefinition()) {
+      sql.append("CREATE ");
+      if (statement.isReplaceIfExists()) {
+        sql.append("OR REPLACE ");
+      }
+      sql.append("VIEW ")
+          .append(
+              database.escapeViewName(
+                  statement.getCatalogName(), statement.getSchemaName(), statement.getViewName()))
+          .append(" SQL SECURITY INVOKER AS ");
+    }
+    sql.append(statement.getSelectQuery());
+
+    return new Sql[] { new UnparsedSql(sql.toString(), getAffectedView(statement)) };
   }
 
   @Override
