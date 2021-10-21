@@ -7,6 +7,10 @@ Cloud Spanner database.
 
 ## Release Notes
 
+#### 4.5.0
+* Requires Liquibase 4.5.0
+* Adds support for `CREATE [OR REPLACE] VIEW` and `DROP VIEW` [statements](https://cloud.google.com/spanner/docs/data-definition-language#view_statements)
+
 #### 4.4.3
 * Requires Liquibase 4.4.3.
 * The version of this library now mirrors the version number of the Liquibase version that it requires.
