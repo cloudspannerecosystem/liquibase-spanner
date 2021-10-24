@@ -25,6 +25,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.InsertGenerator;
 import liquibase.statement.DatabaseFunction;
 import liquibase.statement.core.InsertStatement;
+import liquibase.ext.spanner.ICloudSpanner;
 
 /** Generator for INSERT statements in the form 'INSERT INTO FOO (..) SELECT ...'. */
 public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
@@ -33,6 +34,11 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
   public int getPriority() {
     // This generator should only be used manually.
     return 0;
+  }
+
+  @Override
+  public boolean supports(InsertStatement statement, Database database) {
+    return (database instanceof ICloudSpanner);
   }
 
   @Override

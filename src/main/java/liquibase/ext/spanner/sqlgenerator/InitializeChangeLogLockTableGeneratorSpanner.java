@@ -23,6 +23,7 @@ import liquibase.statement.SqlStatement;
 import liquibase.statement.core.DeleteStatement;
 import liquibase.statement.core.InitializeDatabaseChangeLogLockTableStatement;
 import liquibase.statement.core.InsertStatement;
+import liquibase.ext.spanner.ICloudSpanner;
 
 public class InitializeChangeLogLockTableGeneratorSpanner
     extends AbstractSqlGenerator<InitializeDatabaseChangeLogLockTableStatement> {
@@ -62,4 +63,10 @@ public class InitializeChangeLogLockTableGeneratorSpanner
             },
             database);
   }
+
+  @Override
+  public boolean supports(InitializeDatabaseChangeLogLockTableStatement statement, Database database) {
+    return (database instanceof ICloudSpanner);
+  }
+  
 }

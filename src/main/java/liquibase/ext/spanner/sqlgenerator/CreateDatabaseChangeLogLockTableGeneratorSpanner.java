@@ -6,6 +6,7 @@ import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateDatabaseChangeLogLockTableGenerator;
 import liquibase.statement.core.CreateDatabaseChangeLogLockTableStatement;
+import liquibase.ext.spanner.ICloudSpanner;
 
 public class CreateDatabaseChangeLogLockTableGeneratorSpanner
     extends CreateDatabaseChangeLogLockTableGenerator {
@@ -30,5 +31,10 @@ public class CreateDatabaseChangeLogLockTableGeneratorSpanner
   @Override
   public int getPriority() {
     return PRIORITY_DATABASE;
+  }
+
+  @Override
+  public boolean supports(CreateDatabaseChangeLogLockTableStatement statement, Database database) {
+    return (database instanceof ICloudSpanner);
   }
 }

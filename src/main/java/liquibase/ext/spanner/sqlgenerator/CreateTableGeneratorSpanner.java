@@ -21,6 +21,7 @@ import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateTableGenerator;
 import liquibase.statement.core.CreateTableStatement;
 import liquibase.structure.DatabaseObject;
+import liquibase.ext.spanner.ICloudSpanner;
 
 public class CreateTableGeneratorSpanner extends CreateTableGenerator {
 
@@ -74,5 +75,10 @@ public class CreateTableGeneratorSpanner extends CreateTableGenerator {
   @Override
   public int getPriority() {
     return PRIORITY_DATABASE;
+  }
+
+  @Override
+  public boolean supports(CreateTableStatement statement, Database database) {
+    return (database instanceof ICloudSpanner);
   }
 }
