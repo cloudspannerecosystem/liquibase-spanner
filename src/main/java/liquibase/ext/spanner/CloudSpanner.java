@@ -83,7 +83,14 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
     }
     return null;
   }
-  
+
+  protected String getConnectionSchemaName() {
+    if (getConnection() == null) {
+      return null;
+    }
+    return defaultSchemaName;
+  }
+
   @Override
   public void setConnection(final DatabaseConnection conn) {
     DatabaseConnection connectionToUse = conn;
@@ -128,7 +135,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public int getPriority() {
-    return 2;
+    return PRIORITY_DATABASE;
   }
 
   @Override

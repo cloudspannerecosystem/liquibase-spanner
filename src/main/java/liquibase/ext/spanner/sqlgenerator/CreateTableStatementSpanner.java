@@ -49,8 +49,18 @@ public class CreateTableStatementSpanner extends CreateTableStatement {
     }
     return statement;
   }
-  
-  private boolean containsNotNullConstraintForColumn(String column, ColumnConstraint... constraints) {
+
+  @Override
+  public CreateTableStatement addPrimaryKeyColumn(String columnName, LiquibaseDataType columnType, Object defaultValue,
+      Boolean validate, boolean deferrable, boolean initiallyDeferred, String keyName, String tablespace, ColumnConstraint... constraints) {
+    CreateTableStatement statement = super.addPrimaryKeyColumn(columnName, columnType, defaultValue, validate, deferrable, initiallyDeferred, keyName, tablespace, constraints);
+    if (!containsNotNullConstraintForColumn(columnName, constraints)) {
+      getNotNullColumns().remove(columnName);
+    }
+    return statement;
+  }
+
+    private boolean containsNotNullConstraintForColumn(String column, ColumnConstraint... constraints) {
     for (ColumnConstraint constraint : constraints) {
       if (constraint instanceof NotNullConstraint) {
         NotNullConstraint nn = (NotNullConstraint) constraint;
