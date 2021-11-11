@@ -7,6 +7,11 @@ Cloud Spanner database.
 
 ## Release Notes
 
+#### 4.6.1
+* Requires Liquibase 4.6.1
+* Fixes a bug where statements could be generated in the Spanner dialect when multiple different databases had been configured, and
+  the Spanner library was included in the build. See also [#102](https://github.com/cloudspannerecosystem/liquibase-spanner/pull/102)
+
 #### 4.5.0
 * Requires Liquibase 4.5.0
 * Adds support for `CREATE [OR REPLACE] VIEW` and `DROP VIEW` [statements](https://cloud.google.com/spanner/docs/data-definition-language#view_statements)
