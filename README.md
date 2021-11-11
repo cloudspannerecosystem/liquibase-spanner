@@ -7,6 +7,11 @@ Cloud Spanner database.
 
 ## Release Notes
 
+#### 4.6.1
+* Requires Liquibase 4.6.1
+* Fixes a bug where statements could be generated in the Spanner dialect when multiple different databases had been configured, and
+  the Spanner library was included in the build. See also [#102](https://github.com/cloudspannerecosystem/liquibase-spanner/pull/102)
+
 #### 4.5.0
 * Requires Liquibase 4.5.0
 * Adds support for `CREATE [OR REPLACE] VIEW` and `DROP VIEW` [statements](https://cloud.google.com/spanner/docs/data-definition-language#view_statements)
@@ -89,10 +94,10 @@ See the samples directory for specific integrations with other frameworks, such 
 ## Supported Features
 
 The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:<br/>
-createTable, dropTable, addColumn, modifyDataType, addNotNullConstraint, dropColumn, createIndex, dropIndex, addForeignKeyConstraint, dropForeignKeyConstraint, dropAllForeignKeyConstraints, addLookupTable
+createTable, dropTable, addColumn, modifyDataType, addNotNullConstraint, dropColumn, createIndex, dropIndex, addForeignKeyConstraint, dropForeignKeyConstraint, dropAllForeignKeyConstraints, addLookupTable, createView, dropView
 
 The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are not allowed with Cloud Spanner:<br/>
-addAutoIncrement, addDefaultValue, addPrimaryKey, addUniqueConstraint, dropUniqueConstraint, createProcedure, createSequence, createView, dropDefaultValue, dropNotNullConstraint, dropPrimaryKey, dropProcedure, dropSequence, dropView, renameColumn, renameSequence, renameTable, renameView, setColumnRemarks, setTableRemarks, alterSequence
+addAutoIncrement, addDefaultValue, addPrimaryKey, addUniqueConstraint, dropUniqueConstraint, createProcedure, createSequence, dropDefaultValue, dropNotNullConstraint, dropPrimaryKey, dropProcedure, dropSequence, renameColumn, renameSequence, renameTable, renameView, setColumnRemarks, setTableRemarks, alterSequence
 
 The following data DML [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:<br/>
 insert, update, loadData, loadUpdateData
@@ -130,7 +135,7 @@ delete.
 
 ### Unsupported Spanner Features
 
-There are a number of features that Spanner does not have such as views and stored procedures. The Liquibase extension will
+There are a number of features that Spanner does not have such as sequences and stored procedures. The Liquibase extension will
 throw an exception during analysis of the changeSet in most cases, but not all. For example, a DELETE without a WHERE clause
 will fail in Spanner but not in the Liquibase extension.
 

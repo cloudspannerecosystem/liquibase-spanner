@@ -24,7 +24,6 @@ The following database features are not supported by Cloud Spanner, and trying t
 - Default value definition for a column
 - Unique constraints: Use `UNIQUE INDEX` instead of `UNIQUE CONSTRAINT`
 - Stored procedures
-- Views
 - Table and column remarks
 
 ## Liquibase change types with no Cloud Spanner support
