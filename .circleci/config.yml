@@ -8,7 +8,7 @@ jobs:
   # Only execute unit tests
   execute_unit_tests:
     machine:
-       image: cimg/openjdk:15.0
+       image: ubuntu-2004:current
     steps:
       - checkout
       - run:
@@ -22,7 +22,7 @@ jobs:
   build_and_test:
     machine:
        # Due to test containers
-       image: cimg/openjdk:15.0
+       image: ubuntu-2004:current
     steps:
       - checkout
       - run:
