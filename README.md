@@ -7,6 +7,12 @@ Cloud Spanner database.
 
 ## Release Notes
 
+#### 4.7.0
+* Requires Liquibase 4.7.0
+
+#### 4.6.2
+* Requires Liquibase 4.6.2
+
 #### 4.6.1
 * Requires Liquibase 4.6.1
 * Fixes a bug where statements could be generated in the Spanner dialect when multiple different databases had been configured, and
