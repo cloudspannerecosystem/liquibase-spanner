@@ -206,7 +206,6 @@ public class LiquibaseTests {
     }
   }
 
-  @Disabled("The emulator erroneously requires the optional COLUMN keyword to be included in ALTER TABLE <table> ADD [COLUMN] ...")
   @Test
   void doEmulatorMergeColumnsTest() throws Exception {
     doMergeColumnsTest(getSpannerEmulator());
