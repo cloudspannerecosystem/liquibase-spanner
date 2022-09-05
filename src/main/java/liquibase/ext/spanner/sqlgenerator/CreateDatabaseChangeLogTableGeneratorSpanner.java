@@ -24,9 +24,10 @@ import liquibase.statement.core.CreateDatabaseChangeLogTableStatement;
 
 public class CreateDatabaseChangeLogTableGeneratorSpanner
     extends CreateDatabaseChangeLogTableGenerator {
+
   final String createTableSql =
       ""
-          + "CREATE TABLE DATABASECHANGELOG\n"
+          + "CREATE TABLE __DATABASECHANGELOG__\n"
           + "(\n"
           + "    id            string(MAX) not null,\n"
           + "    author        string(MAX) not null,\n"
@@ -62,7 +63,17 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
       CreateDatabaseChangeLogTableStatement statement,
       Database database,
       SqlGeneratorChain sqlGeneratorChain) {
+    String databaseChangeLogTableName = getDatabaseChangeLogTableNameFrom(database);
+    String createTableSql = this.createTableSql.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);
     return new Sql[] {new UnparsedSql(createTableSql)};
+  }
+
+  private String getDatabaseChangeLogTableNameFrom(Database database) {
+    String databaseChangeLogTableName = database.getDatabaseChangeLogTableName();
+    if( databaseChangeLogTableName == null ) {
+      databaseChangeLogTableName = "DATABASECHANGELOG";
+    }
+    return databaseChangeLogTableName;
   }
 
   @Override
