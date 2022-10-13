@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloudspannerecosystem</groupId>
   <artifactId>liquibase-spanner</artifactId>
-  <version>4.10.1</version>
+  <version>${liquibase.version}</version>
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Liquibase Integeration</name>
   <description>Liquibase extension for Google Cloud Spanner</description>
@@ -52,7 +52,7 @@
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <liquibase.version>4.10.0</liquibase.version>
+    <liquibase.version>4.11.0</liquibase.version>
     <snakeyaml.version>1.26</snakeyaml.version>
 
     <gax-grpc.version>2.4.0</gax-grpc.version>
