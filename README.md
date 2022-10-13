@@ -7,6 +7,10 @@ Cloud Spanner database.
 
 ## Release Notes
 
+#### 4.10.1
+* #121 Added support for configured databasechangelog/lock table names. by @cbuschka in #122
+* Requires Liquibase 4.10.0
+
 #### 4.10.0
 * Requires Liquibase 4.10.0
 
