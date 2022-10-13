@@ -7,6 +7,9 @@ Cloud Spanner database.
 
 ## Release Notes
 
+#### 4.12.0
+* Requires Liquibase 4.12.0
+
 #### 4.11.0
 * Requires Liquibase 4.11.0
 
