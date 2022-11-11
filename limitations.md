@@ -21,7 +21,6 @@ The following database features are not supported by Cloud Spanner, and trying t
 
 - Auto increment columns
 - Sequences
-- Default value definition for a column
 - Unique constraints: Use `UNIQUE INDEX` instead of `UNIQUE CONSTRAINT`
 - Stored procedures
 - Table and column remarks
