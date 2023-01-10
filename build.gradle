@@ -17,9 +17,9 @@
 plugins {
     id "java"
     id "groovy"
-    id "com.google.cloud.tools.jib" version "2.7.0"
-    id "com.github.johnrengelman.shadow" version "6.0.0"
-    id "com.github.harbby.gradle.serviceloader" version "1.1.2"
+    id "com.google.cloud.tools.jib" version "3.3.1"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "com.github.harbby.gradle.serviceloader" version "1.1.5"
 }
 
 
@@ -67,37 +67,37 @@ serviceLoader {
 dependencies {
 
     // Cloud Spanner related
-    implementation platform('com.google.cloud:libraries-bom:23.1.0')
+    implementation platform('com.google.cloud:libraries-bom:24.3.0')
     implementation("com.google.cloud:google-cloud-spanner-jdbc")
 
     // Liquibase Core - needed for testing and docker container
-    implementation("org.liquibase:liquibase-core:4.17.0")
-    implementation("org.yaml:snakeyaml:1.26")
-    implementation("org.apache.commons:commons-lang3:3.11")
+    implementation("org.liquibase:liquibase-core:4.17.2")
+    implementation("org.yaml:snakeyaml:1.33")
+    implementation("org.apache.commons:commons-lang3:3.12.0")
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
-    testImplementation("org.testcontainers:testcontainers:1.15.3")
-    testImplementation("net.java.dev.jna:jna:5.8.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
-    testImplementation("com.google.truth:truth:1.0.1")
-    testImplementation("org.mockito:mockito-core:1.10.19")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
+    testImplementation("org.testcontainers:testcontainers:1.17.6")
+    testImplementation("net.java.dev.jna:jna:5.12.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
+    testImplementation("com.google.truth:truth:1.1.3")
+    testImplementation("org.mockito:mockito-core:3.12.4")
 
     // For using the Liquibase test harness
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.liquibase:liquibase-test-harness:1.0.0'
-    testImplementation('org.codehaus.groovy:groovy-all:2.5.7') {
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.liquibase:liquibase-test-harness:1.0.7'
+    testImplementation('org.codehaus.groovy:groovy-all:2.5.20') {
         exclude module: 'org.codehaus.groovy:groovy-testng'
         exclude module: 'org.codehaus.groovy:groovy-swing'
     }
-    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-2.5'
 
     // For testing runtime
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
     
     // For Spanner mock server testing
     testImplementation(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
-    testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '2.4.0', classifier: 'testlib')
+    testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '2.20.1', classifier: 'testlib')
 }
 
 
@@ -173,4 +173,3 @@ jib {
         mainClass = 'liquibase.integration.commandline.Main'
     }
 }
-

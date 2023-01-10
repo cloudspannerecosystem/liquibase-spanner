@@ -143,7 +143,7 @@ public class TestHarness {
     if (spannerEmulatorHost == null) {
 
       // Create the container
-      final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:1.2.0";
+      final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:1.4.8";
       testContainer =
           new GenericContainer<>(SPANNER_EMULATOR_IMAGE)
               .withCommand()

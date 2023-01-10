@@ -11,3 +11,8 @@ bin/
 .vscode/
 target/
 liquibase-spanner.iml
+.DS_Store
+
+*.log
+Dockerfile
+docker_run.sh
