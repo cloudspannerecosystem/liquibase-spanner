@@ -14,28 +14,17 @@
 
 package liquibase.ext.spanner.snapshotgenerator;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.sql.SQLException;
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyFactory;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.Database;
 import liquibase.database.core.*;
 import liquibase.diff.compare.DatabaseObjectComparatorFactory;
 import liquibase.exception.DatabaseException;
 import liquibase.ext.spanner.ICloudSpanner;
-import liquibase.serializer.LiquibaseSerializable;
 import liquibase.snapshot.CachedRow;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.InvalidExampleException;
 import liquibase.snapshot.JdbcDatabaseSnapshot;
-import liquibase.snapshot.JdbcDatabaseSnapshot.CachingDatabaseMetaData;
-import liquibase.snapshot.SnapshotControl;
 import liquibase.snapshot.jvm.IndexSnapshotGenerator;
-import liquibase.snapshot.jvm.JdbcSnapshotGenerator;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.*;
 import liquibase.util.StringUtil;
