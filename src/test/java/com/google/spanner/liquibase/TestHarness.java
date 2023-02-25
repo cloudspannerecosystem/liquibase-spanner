@@ -143,13 +143,12 @@ public class TestHarness {
     if (spannerEmulatorHost == null) {
 
       // Create the container
-      final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:1.2.0";
+      final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:latest";
       testContainer =
           new GenericContainer<>(SPANNER_EMULATOR_IMAGE)
               .withCommand()
               .withExposedPorts(9010, 9020)
-              .withStartupTimeout(Duration.ofSeconds(10))
-              .waitingFor(Wait.forHttp("/").forStatusCode(404));
+              .waitingFor(Wait.forListeningPort());
 
       // Start the container
       testContainer.start();
