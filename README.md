@@ -5,6 +5,18 @@ A Liquibase extension adding support for Google Cloud Spanner. Include this in y
 application project to run Liquibase database migration scripts against a Google
 Cloud Spanner database.
 
+## Performance Recommendations
+Executing multiple small DDL statements on Cloud Spanner can take a very long time. This means that
+the standard recommendation to use as small changesets as possible with Liquibase is not always the
+best choice when working with Cloud Spanner. Instead, it is recommended to create changesets that
+group multiple DDL statements into one DDL batch. Use [SQL change](https://docs.liquibase.com/change-types/community/sql.html)
+and batch the DDL using [batch statements](https://cloud.google.com/spanner/docs/jdbc-session-mgmt-commands#batch_statements).
+
+You can also create a single change set that contains multiple Liquibase changes (e.g. `createTable`)
+and create these in a batch by adding a SQL command before and after the changes. See
+[create-multiple-tables.spanner.yaml](src/test/resources/create-multiple-tables.spanner.yaml) for
+an example.
+
 ## Release Notes
 
 #### 4.17.0
@@ -169,7 +181,7 @@ of doing this.
 
 In order to [limit the number of schema updates in a 7-day period](https://cloud.google.com/spanner/docs/schema-updates#week-window), run
 Liquibase with small changeSets. Alternatively, use [SQL change](https://docs.liquibase.com/change-types/community/sql.html) and batch the DDL
-using [batch statements](https://cloud.google.com/spanner/docs/use-oss-jdbc#batch_statements).
+using [batch statements](https://cloud.google.com/spanner/docs/jdbc-session-mgmt-commands#batch_statements).
 
 ### DML Limits
 
