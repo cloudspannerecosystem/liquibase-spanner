@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 public class TestHarness {
   private static final Logger logger = LoggerFactory.getLogger(TestHarness.class);
@@ -143,13 +142,12 @@ public class TestHarness {
     if (spannerEmulatorHost == null) {
 
       // Create the container
-      final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:1.2.0";
+      final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:latest";
       testContainer =
           new GenericContainer<>(SPANNER_EMULATOR_IMAGE)
               .withCommand()
               .withExposedPorts(9010, 9020)
-              .withStartupTimeout(Duration.ofSeconds(10))
-              .waitingFor(Wait.forHttp("/").forStatusCode(404));
+              .withStartupTimeout(Duration.ofSeconds(10));
 
       // Start the container
       testContainer.start();
