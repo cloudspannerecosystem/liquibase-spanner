@@ -67,7 +67,7 @@ serviceLoader {
 dependencies {
 
     // Cloud Spanner related
-    implementation platform('com.google.cloud:libraries-bom:26.3.0')
+    implementation platform('com.google.cloud:libraries-bom:26.9.0')
     implementation("com.google.cloud:google-cloud-spanner-jdbc")
 
     // Liquibase Core - needed for testing and docker container
