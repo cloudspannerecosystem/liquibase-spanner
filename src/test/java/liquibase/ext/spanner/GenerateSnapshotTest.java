@@ -14,10 +14,14 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
 import java.util.Set;
+import liquibase.ext.spanner.JdbcMetadataQueries.IndexMetaData;
+import liquibase.structure.core.Index;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -103,7 +107,10 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                 .bind("p5")
                 .to("%") // Unique
                 .build(),
-            JdbcMetadataQueries.createGetIndexInfoResultSet(ImmutableList.of())));
+            JdbcMetadataQueries.createGetIndexInfoResultSet(ImmutableList.of(
+                new IndexMetaData("Singers", false, "Idx_Singers_FirstName", false, 1, "FirstName", true),
+                new IndexMetaData("Singers", false, "Idx_Singers_FirstName", false, null, "LastName", null)
+            ))));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_COLUMNS)
@@ -151,6 +158,11 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
       assertThat(singers.getColumn("FirstName").getType().toString()).isEqualTo("STRING(100)");
       assertThat(singers.getColumn("LastName").getType().getTypeName()).isEqualTo("STRING(200)");
       assertThat(singers.getColumn("LastName").getType().toString()).isEqualTo("STRING(200)");
+
+      Set<Index> indexes = snapshot.get(Index.class);
+      assertEquals(1, indexes.size());
+      Index index = indexes.iterator().next();
+      assertEquals("Idx_Singers_FirstName", index.getName());
     }
   }
 }

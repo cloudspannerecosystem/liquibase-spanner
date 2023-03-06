@@ -56,8 +56,8 @@
     <snakeyaml.version>1.33</snakeyaml.version>
 
     <gax-grpc.version>2.4.0</gax-grpc.version>
-    <jupiter.version>5.6.2</jupiter.version>
-    <testcontainers.version>1.17.5</testcontainers.version>
+    <jupiter.version>5.9.2</jupiter.version>
+    <testcontainers.version>1.17.6</testcontainers.version>
     <truth.version>1.0.1</truth.version>
     <mockito.version>1.10.19</mockito.version>
     <groovy.version>2.4.17</groovy.version>
@@ -145,7 +145,7 @@
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>5.8.0</version>
+      <version>5.13.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
