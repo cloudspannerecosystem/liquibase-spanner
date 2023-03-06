@@ -486,18 +486,18 @@ class JdbcMetadataQueries {
     final boolean unique;
     final String name;
     final boolean primaryKey;
-    final int ordinalPosition;
+    final Integer ordinalPosition;
     final String column;
-    final boolean ascending;
+    final Boolean ascending;
 
     IndexMetaData(
         String table,
         boolean unique,
         String name,
         boolean primaryKey,
-        int ordinalPosition,
+        Integer ordinalPosition,
         String column,
-        boolean ascending) {
+        Boolean ascending) {
       this.table = table;
       this.unique = unique;
       this.name = name;
@@ -520,9 +520,13 @@ class JdbcMetadataQueries {
               .addValues(Value.newBuilder().setStringValue(""))
               .addValues(Value.newBuilder().setStringValue(index.name))
               .addValues(Value.newBuilder().setStringValue(index.primaryKey ? "1" : "2"))
-              .addValues(Value.newBuilder().setStringValue(String.valueOf(index.ordinalPosition)))
+              .addValues(index.ordinalPosition == null
+                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                  : Value.newBuilder().setStringValue(String.valueOf(index.ordinalPosition)))
               .addValues(Value.newBuilder().setStringValue(index.column))
-              .addValues(Value.newBuilder().setStringValue(index.ascending ? "A" : "D"))
+              .addValues(index.ascending == null
+                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                  : Value.newBuilder().setStringValue(index.ascending ? "A" : "D"))
               .addValues(Value.newBuilder().setStringValue("-1"))
               .addValues(Value.newBuilder().setStringValue("-1"))
           );
