@@ -18,19 +18,15 @@ package com.google.spanner.liquibase;
 
 import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.connection.ConnectionOptions;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.time.Duration;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 public class TestHarness {
   private static final Logger logger = LoggerFactory.getLogger(TestHarness.class);
@@ -45,11 +41,6 @@ public class TestHarness {
 
     // Stop() stops the test Spanner database and does any needed cleanup.
     void stop() throws SQLException;
-  }
-
-  public static String readResource(String resource) {
-    InputStream is = TestHarness.class.getClassLoader().getResourceAsStream(resource);
-    return new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
   }
 
   private static void createInstance(Spanner service, String instanceId) throws SQLException {
@@ -104,7 +95,7 @@ public class TestHarness {
       // Create the database
       service
           .getDatabaseAdminClient()
-          .createDatabase(instanceId, databaseId, Arrays.asList())
+          .createDatabase(instanceId, databaseId, Collections.emptyList())
           .get();
 
     } catch (ExecutionException | InterruptedException e) {
@@ -147,7 +138,7 @@ public class TestHarness {
           new GenericContainer<>(SPANNER_EMULATOR_IMAGE)
               .withCommand()
               .withExposedPorts(9010, 9020)
-              .withStartupTimeout(Duration.ofSeconds(10));
+              .waitingFor(Wait.forListeningPort());
 
       // Start the container
       testContainer.start();
