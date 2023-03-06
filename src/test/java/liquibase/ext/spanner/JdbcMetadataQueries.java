@@ -1,6 +1,7 @@
 package liquibase.ext.spanner;
 
-import com.google.cloud.spanner.connection.StatementParser;
+import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.connection.AbstractStatementParser;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
@@ -18,25 +19,27 @@ import java.sql.DatabaseMetaData;
 import java.util.Scanner;
 
 class JdbcMetadataQueries {
+  private static final AbstractStatementParser PARSER = AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL);
+
   static final String GET_TABLES =
       convertPositionalParametersToNamedParameters(
-          StatementParser.removeCommentsAndTrim(
+          PARSER.removeCommentsAndTrim(
               readMetaDataSqlFromFile("DatabaseMetaData_GetTables.sql")));
   static final String GET_COLUMNS =
       convertPositionalParametersToNamedParameters(
-          StatementParser.removeCommentsAndTrim(
+          PARSER.removeCommentsAndTrim(
               readMetaDataSqlFromFile("DatabaseMetaData_GetColumns.sql")));
   static final String GET_INDEX_INFO =
       convertPositionalParametersToNamedParameters(
-          StatementParser.removeCommentsAndTrim(
+          PARSER.removeCommentsAndTrim(
               readMetaDataSqlFromFile("DatabaseMetaData_GetIndexInfo.sql")));
   static final String GET_PRIMARY_KEYS =
       convertPositionalParametersToNamedParameters(
-          StatementParser.removeCommentsAndTrim(
+          PARSER.removeCommentsAndTrim(
               readMetaDataSqlFromFile("DatabaseMetaData_GetPrimaryKeys.sql")));
   static final String GET_IMPORTED_KEYS =
       convertPositionalParametersToNamedParameters(
-          StatementParser.removeCommentsAndTrim(
+          PARSER.removeCommentsAndTrim(
               readMetaDataSqlFromFile("DatabaseMetaData_GetImportedKeys.sql")));
 
   static final ResultSetMetadata GET_TABLES_METADATA =
