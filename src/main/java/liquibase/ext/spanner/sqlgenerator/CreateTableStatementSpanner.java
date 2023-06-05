@@ -26,8 +26,8 @@ import liquibase.statement.core.CreateTableStatement;
  */
 public class CreateTableStatementSpanner extends CreateTableStatement {
 
-  public CreateTableStatementSpanner(String catalogName, String schemaName, String tableName, String remarks) {
-    super(catalogName, schemaName, tableName, remarks);
+  public CreateTableStatementSpanner(String catalogName, String schemaName, String tableName, String remarks, String tableType) {
+    super(catalogName, schemaName, tableName, remarks, tableType);
   }
   
   @Override

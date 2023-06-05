@@ -20,7 +20,7 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,7 +97,7 @@ public class CreateDropViewTest extends AbstractMockServerTest {
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
+      } catch (CommandExecutionException e) {
         assertThat(e.getMessage())
             .contains(RenameViewGeneratorSpanner.RENAME_VIEW_VALIDATION_ERROR);
       }

@@ -19,7 +19,7 @@ import static org.junit.Assert.fail;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class AddDropUniqueConstraintTest extends AbstractMockServerTest {
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
+      } catch (CommandExecutionException e) {
         assertThat(e.getMessage())
             .contains(AddUniqueConstraintGeneratorSpanner.ADD_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
       }
@@ -57,7 +57,7 @@ public class AddDropUniqueConstraintTest extends AbstractMockServerTest {
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
+      } catch (CommandExecutionException e) {
         assertThat(e.getMessage())
             .contains(DropUniqueConstraintGeneratorSpanner.DROP_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
       }

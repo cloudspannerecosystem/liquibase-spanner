@@ -59,7 +59,7 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
-import liquibase.integration.commandline.Main;
+import liquibase.integration.commandline.LiquibaseCommandLine;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.SnapshotControl;
@@ -598,9 +598,10 @@ public class LiquibaseTests {
       // Generate an initial changelog for the database.
       File changeLogFile = File.createTempFile("test-changelog", ".xml");
       changeLogFile.deleteOnExit();
-      Main.run(new String[] {"--overwriteOutputFile=true",
+      int returnCode = new LiquibaseCommandLine().execute(new String[] {"--overwriteOutputFile=true",
           String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
           String.format("--url=%s", testHarness.getConnectionUrl()), "generateChangeLog"});
+      assertThat(returnCode).isEqualTo(0);
       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
       Document document = builder.parse(changeLogFile);
@@ -642,9 +643,10 @@ public class LiquibaseTests {
           // Generate an initial changelog for the database.
           File changeLogFile = File.createTempFile("test-changelog", ".xml");
           changeLogFile.deleteOnExit();
-          Main.run(new String[] {"--overwriteOutputFile=true",
+          int returnCode = new LiquibaseCommandLine().execute(new String[] {"--overwriteOutputFile=true",
               String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
               String.format("--url=%s", testHarness.getConnectionUrl()), "generateChangeLog"});
+          assertThat(returnCode).isEqualTo(0);
 
           // Verify that the generated change log only includes one foreign key.
           DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();

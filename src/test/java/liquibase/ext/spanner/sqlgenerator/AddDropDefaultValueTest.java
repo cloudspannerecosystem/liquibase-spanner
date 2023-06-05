@@ -22,7 +22,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 
 @Execution(ExecutionMode.SAME_THREAD)
@@ -41,7 +41,7 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
+      } catch (CommandExecutionException e) {
         assertThat(e.getMessage())
             .contains(AddDefaultValueGeneratorSpanner.ADD_DEFAULT_VALUE_VALIDATION_ERROR);
       }
@@ -56,7 +56,7 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
+      } catch (CommandExecutionException e) {
         assertThat(e.getMessage())
             .contains(DropDefaultValueGeneratorSpanner.DROP_DEFAULT_VALUE_VALIDATION_ERROR);
       }

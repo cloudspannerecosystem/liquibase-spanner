@@ -10,7 +10,7 @@ import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -95,7 +95,7 @@ public class CreateTableTest extends AbstractMockServerTest {
       try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"));
         fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
+      } catch (CommandExecutionException e) {
         assertThat(e.getMessage()).contains("primary key is required");
       }
     }

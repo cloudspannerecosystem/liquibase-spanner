@@ -19,7 +19,7 @@ import static org.junit.Assert.fail;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -41,7 +41,7 @@ public class SetRemarksTest extends AbstractMockServerTest {
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
+      } catch (CommandExecutionException e) {
         assertThat(e.getMessage())
             .contains("setTableRemarks is not supported");
       }
@@ -56,7 +56,7 @@ public class SetRemarksTest extends AbstractMockServerTest {
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
         fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
+      } catch (CommandExecutionException e) {
         assertThat(e.getMessage())
             .contains("setColumnRemarks is not supported");
       }
