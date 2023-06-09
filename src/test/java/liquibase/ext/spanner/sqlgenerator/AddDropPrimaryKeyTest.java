@@ -14,12 +14,13 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,13 +38,13 @@ public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
 
   @Test
   void testAddPrimaryKeySingersFromYaml() throws Exception {
-    for (String file : new String[] {"add-primary-key-singers.spanner.yaml"}) {
+    for (String file : new String[]{"add-primary-key-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage()).contains(AddPrimaryKeyGeneratorSpanner.ADD_PK_VALIDATION_ERROR);
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage()).contains(
+            AddPrimaryKeyGeneratorSpanner.ADD_PK_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -51,13 +52,12 @@ public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
 
   @Test
   void testDropPrimaryKeySingersFromYaml() throws Exception {
-    for (String file : new String[] {"drop-primary-key-singers.spanner.yaml"}) {
+    for (String file : new String[]{"drop-primary-key-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
             .contains(DropPrimaryKeyGeneratorSpanner.DROP_PK_VALIDATION_ERROR);
       }
     }

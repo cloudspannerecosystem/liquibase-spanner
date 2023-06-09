@@ -14,12 +14,13 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,13 +38,13 @@ public class AddDropUniqueConstraintTest extends AbstractMockServerTest {
 
   @Test
   void testAddUniqueConstraintSingersFromYaml() throws Exception {
-    for (String file : new String[] {"add-unique-constraint-singers.spanner.yaml"}) {
+    for (String file : new String[]{"add-unique-constraint-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
+        CommandExecutionException exception = assertThrows(
+            CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
             .contains(AddUniqueConstraintGeneratorSpanner.ADD_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
       }
     }
@@ -52,13 +53,12 @@ public class AddDropUniqueConstraintTest extends AbstractMockServerTest {
 
   @Test
   void testDropUniqueConstraintSingersFromYaml() throws Exception {
-    for (String file : new String[] {"drop-unique-constraint-singers.spanner.yaml"}) {
+    for (String file : new String[]{"drop-unique-constraint-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
             .contains(DropUniqueConstraintGeneratorSpanner.DROP_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
       }
     }

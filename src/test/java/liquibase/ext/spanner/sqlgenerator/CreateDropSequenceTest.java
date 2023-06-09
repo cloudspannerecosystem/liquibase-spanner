@@ -14,12 +14,13 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,14 +38,12 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
 
   @Test
   void testCreateSequenceFromYaml() throws Exception {
-    for (String file : new String[] {"create-sequence.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
-            .contains(CreateSequenceGeneratorSpanner.CREATE_SEQUENCE_VALIDATION_ERROR);
+    for (String file : new String[]{"create-sequence.spanner.yaml"}) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage()).contains(
+            CreateSequenceGeneratorSpanner.CREATE_SEQUENCE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -52,14 +51,12 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
 
   @Test
   void testDropSequenceFromYaml() throws Exception {
-    for (String file : new String[] {"drop-sequence.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
-            .contains(DropSequenceGeneratorSpanner.DROP_SEQUENCE_VALIDATION_ERROR);
+    for (String file : new String[]{"drop-sequence.spanner.yaml"}) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test")));
+        assertThat(exception.getMessage()).contains(
+            DropSequenceGeneratorSpanner.DROP_SEQUENCE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -67,14 +64,12 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
 
   @Test
   void testRenameSequenceFromYaml() throws Exception {
-    for (String file : new String[] {"rename-sequence.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
-            .contains(RenameSequenceGeneratorSpanner.RENAME_SEQUENCE_VALIDATION_ERROR);
+    for (String file : new String[]{"rename-sequence.spanner.yaml"}) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage()).contains(
+            RenameSequenceGeneratorSpanner.RENAME_SEQUENCE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

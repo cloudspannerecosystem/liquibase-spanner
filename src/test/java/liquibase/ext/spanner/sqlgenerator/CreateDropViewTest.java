@@ -14,13 +14,14 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,9 +42,8 @@ public class CreateDropViewTest extends AbstractMockServerTest {
     String expectedSql = "CREATE VIEW V_Singers SQL SECURITY INVOKER AS SELECT * FROM Singers WHERE SingerId > 10";
     addUpdateDdlStatementsResponse(expectedSql);
 
-    for (String file : new String[] {"create-view.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+    for (String file : new String[]{"create-view.spanner.yaml"}) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -59,9 +59,8 @@ public class CreateDropViewTest extends AbstractMockServerTest {
     String expectedSql = "CREATE OR REPLACE VIEW V_Singers SQL SECURITY INVOKER AS SELECT s.SingerId AS SingerId, s.FirstName AS FirstName, s.LastName AS LastName FROM Singers s ORDER BY s.LastName, s.FirstName, s.SingerId LIMIT 2";
     addUpdateDdlStatementsResponse(expectedSql);
 
-    for (String file : new String[] {"create-or-replace-view.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+    for (String file : new String[]{"create-or-replace-view.spanner.yaml"}) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -77,9 +76,8 @@ public class CreateDropViewTest extends AbstractMockServerTest {
     String expectedSql = "DROP VIEW V_Singers";
     addUpdateDdlStatementsResponse(expectedSql);
 
-    for (String file : new String[] {"drop-view.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
+    for (String file : new String[]{"drop-view.spanner.yaml"}) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -92,14 +90,12 @@ public class CreateDropViewTest extends AbstractMockServerTest {
 
   @Test
   void testRenameViewFromYaml() throws Exception {
-    for (String file : new String[] {"rename-view.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
-            .contains(RenameViewGeneratorSpanner.RENAME_VIEW_VALIDATION_ERROR);
+    for (String file : new String[]{"rename-view.spanner.yaml"}) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage()).contains(
+            RenameViewGeneratorSpanner.RENAME_VIEW_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
