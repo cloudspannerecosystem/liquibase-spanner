@@ -52,7 +52,7 @@
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <liquibase.version>4.17.2</liquibase.version>
+    <liquibase.version>4.18.0</liquibase.version>
     <snakeyaml.version>1.33</snakeyaml.version>
 
     <gax-grpc.version>2.4.0</gax-grpc.version>
@@ -69,7 +69,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>26.9.0</version>
+        <version>26.16.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
