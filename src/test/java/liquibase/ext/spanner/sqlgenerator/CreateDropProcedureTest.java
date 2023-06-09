@@ -14,13 +14,13 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.LiquibaseException;
-import liquibase.exception.ValidationFailedException;
+import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,13 +38,13 @@ public class CreateDropProcedureTest extends AbstractMockServerTest {
 
   @Test
   void testCreateProcedureFromYaml() throws Exception {
-    for (String file : new String[] {"create-procedure.spanner.yaml"}) {
+    for (String file : new String[]{"create-procedure.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (LiquibaseException e) {
-        assertThat(e.getMessage()).contains(CreateProcedureGeneratorSpanner.CREATE_PROCEDURE_VALIDATION_ERROR);
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage()).contains(
+            CreateProcedureGeneratorSpanner.CREATE_PROCEDURE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -52,13 +52,12 @@ public class CreateDropProcedureTest extends AbstractMockServerTest {
 
   @Test
   void testDropProcedureFromYaml() throws Exception {
-    for (String file : new String[] {"drop-procedure.spanner.yaml"}) {
+    for (String file : new String[]{"drop-procedure.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (ValidationFailedException e) {
-        assertThat(e.getMessage())
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
             .contains(DropProcedureGeneratorSpanner.DROP_PROCEDURE_VALIDATION_ERROR);
       }
     }
