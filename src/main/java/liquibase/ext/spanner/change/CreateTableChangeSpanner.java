@@ -31,7 +31,7 @@ public class CreateTableChangeSpanner extends CreateTableChange {
   
   @Override
   protected CreateTableStatementSpanner generateCreateTableStatement() {
-    return new CreateTableStatementSpanner(getCatalogName(), getSchemaName(), getTableName(), getRemarks());
+    return new CreateTableStatementSpanner(getCatalogName(), getSchemaName(), getTableName(), getRemarks(), getTableType());
   }
 
 }
