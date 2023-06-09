@@ -62,7 +62,7 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
-import liquibase.integration.commandline.Main;
+import liquibase.integration.commandline.LiquibaseCommandLine;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.SnapshotControl;

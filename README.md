@@ -19,6 +19,10 @@ an example.
 
 ## Release Notes
 
+#### 4.21.1
+* Requires SnakeYAML 2.0 (fixes CVE-2022-1471)
+* Requires Liquibase 4.21.1 (uses SnakeYAML 2.0 API)
+
 #### 4.21.0
 * Requires Liquibase 4.21.0
  
