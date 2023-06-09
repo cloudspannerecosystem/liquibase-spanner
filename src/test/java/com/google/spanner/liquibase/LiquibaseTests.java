@@ -22,6 +22,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.io.File;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -39,6 +41,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import liquibase.integration.commandline.LiquibaseCommandLine;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
@@ -66,6 +69,7 @@ import liquibase.snapshot.SnapshotControl;
 import liquibase.snapshot.SnapshotGeneratorFactory;
 import liquibase.structure.core.Column;
 import liquibase.structure.core.Table;
+import org.xml.sax.SAXException;
 
 // As these are forms of integration tests -- against an external emulator or a real Spanner
 // instance --
@@ -598,9 +602,10 @@ public class LiquibaseTests {
       // Generate an initial changelog for the database.
       File changeLogFile = File.createTempFile("test-changelog", ".xml");
       changeLogFile.deleteOnExit();
-      Main.run(new String[] {"--overwriteOutputFile=true",
+      int returnCode = new LiquibaseCommandLine().execute(new String[] {"--overwriteOutputFile=true",
           String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
           String.format("--url=%s", testHarness.getConnectionUrl()), "generateChangeLog"});
+      assertThat(returnCode).isEqualTo(0);
       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
       Document document = builder.parse(changeLogFile);
@@ -642,9 +647,10 @@ public class LiquibaseTests {
           // Generate an initial changelog for the database.
           File changeLogFile = File.createTempFile("test-changelog", ".xml");
           changeLogFile.deleteOnExit();
-          Main.run(new String[] {"--overwriteOutputFile=true",
+          int returnCode = new LiquibaseCommandLine().execute(new String[] {"--overwriteOutputFile=true",
               String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
               String.format("--url=%s", testHarness.getConnectionUrl()), "generateChangeLog"});
+          assertThat(returnCode).isEqualTo(0);
 
           // Verify that the generated change log only includes one foreign key.
           DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
