@@ -19,8 +19,11 @@ an example.
 
 ## Release Notes
 
+#### 4.17.2
+* Requires Liquibase 4.17.2
+
 #### 4.17.1
-* Requires Liquibase 4.17.0
+* Requires Liquibase 4.17.1
 * Updated Google Cloud dependencies to latest version (26.9.0)
 * Fixed #159: NullPointerException caused by index
 
