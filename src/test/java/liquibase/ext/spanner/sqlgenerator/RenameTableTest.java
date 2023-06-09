@@ -14,8 +14,9 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -37,14 +38,12 @@ public class RenameTableTest extends AbstractMockServerTest {
 
   @Test
   void testRenameTableSingersFromYaml() throws Exception {
-    for (String file : new String[] {"rename-table-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (CommandExecutionException e) {
-        assertThat(e.getMessage())
-            .contains(RenameTableGeneratorSpanner.RENAME_TABLE_VALIDATION_ERROR);
+    for (String file : new String[]{"rename-table-singers.spanner.yaml"}) {
+      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage()).contains(
+            RenameTableGeneratorSpanner.RENAME_TABLE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

@@ -14,16 +14,18 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class AddDropDefaultValueTest extends AbstractMockServerTest {
@@ -36,13 +38,12 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
 
   @Test
   void testAddDefaultValueSingersFromYaml() throws Exception {
-    for (String file : new String[] {"add-default-value-singers.spanner.yaml"}) {
+    for (String file : new String[]{"add-default-value-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (CommandExecutionException e) {
-        assertThat(e.getMessage())
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
             .contains(AddDefaultValueGeneratorSpanner.ADD_DEFAULT_VALUE_VALIDATION_ERROR);
       }
     }
@@ -51,13 +52,12 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
 
   @Test
   void testDropDefaultValueSingersFromYaml() throws Exception {
-    for (String file : new String[] {"drop-default-value-singers.spanner.yaml"}) {
+    for (String file : new String[]{"drop-default-value-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (CommandExecutionException e) {
-        assertThat(e.getMessage())
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
             .contains(DropDefaultValueGeneratorSpanner.DROP_DEFAULT_VALUE_VALIDATION_ERROR);
       }
     }

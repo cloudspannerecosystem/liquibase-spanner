@@ -23,6 +23,25 @@ an example.
 * Requires SnakeYAML 2.0 (fixes CVE-2022-1471)
 * Requires Liquibase 4.21.1 (uses SnakeYAML 2.0 API)
 
+#### 4.21.0
+* Requires Liquibase 4.21.0
+ 
+#### 4.20.0
+* Requires Liquibase 4.20.0
+
+#### 4.19.1
+* Requires Liquibase 4.19.1
+
+#### 4.19.0
+* Requires Liquibase 4.19.0
+
+#### 4.18.0
+* Requires Liquibase 4.18.0
+* Updated Google Cloud dependencies to latest version (26.16.0)
+
+#### 4.17.2
+* Requires Liquibase 4.17.2
+
 #### 4.17.1
 * Requires Liquibase 4.17.1
 * Updated Google Cloud dependencies to latest version (26.9.0)

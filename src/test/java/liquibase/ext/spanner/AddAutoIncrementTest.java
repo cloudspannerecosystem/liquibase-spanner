@@ -14,8 +14,9 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -36,13 +37,12 @@ public class AddAutoIncrementTest extends AbstractMockServerTest {
 
   @Test
   void testAddAutoIncrementSingersFromYaml() throws Exception {
-    for (String file : new String[] {"add-auto-increment-singers.spanner.yaml"}) {
+    for (String file : new String[]{"add-auto-increment-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-        fail("missing expected validation exception");
-      } catch (CommandExecutionException e) {
-        assertThat(e.getMessage()).contains("addAutoIncrement is not supported");
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage()).contains("addAutoIncrement is not supported");
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
