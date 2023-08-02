@@ -28,7 +28,7 @@ public class StandardChangeLogHistoryServiceSpanner extends StandardChangeLogHis
 
   @Override
   public int getPriority() {
-    return PRIORITY_DATABASE;
+    return PRIORITY_SPECIALIZED;
   }
 
   @Override
