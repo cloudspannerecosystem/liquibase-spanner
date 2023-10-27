@@ -71,7 +71,7 @@ dependencies {
     implementation("com.google.cloud:google-cloud-spanner-jdbc")
 
     // Liquibase Core - needed for testing and docker container
-    implementation("org.liquibase:liquibase-core:4.23.2")
+    implementation("org.liquibase:liquibase-core:4.24.0")
     implementation("org.yaml:snakeyaml:2.0")
     implementation("org.apache.commons:commons-lang3:3.11")
 
