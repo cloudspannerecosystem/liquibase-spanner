@@ -19,6 +19,9 @@ an example.
 
 ## Release Notes
 
+#### 4.23.1
+* Requires Liquibase 4.23.1
+
 #### 4.23.0
 * Requires Liquibase 4.23.0
 * NOTE: Liquibase removed version 4.22.0. There will therefore be no release 4.22.0 for this library.
