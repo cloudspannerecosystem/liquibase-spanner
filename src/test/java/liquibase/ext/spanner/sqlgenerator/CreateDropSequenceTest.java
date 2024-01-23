@@ -15,7 +15,10 @@ package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.common.collect.ImmutableList;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
@@ -38,28 +41,49 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
 
   @Test
   void testCreateSequenceFromYaml() throws Exception {
+    ImmutableList<String> expectedSql = ImmutableList.of("CREATE SEQUENCE IdSequence " 
+        + "OPTIONS (sequence_kind='bit_reversed_positive', "
+        + "skip_range_min = 900000, "
+        + "skip_range_max = 999999, " 
+        + "start_with_counter = 100000)",
+        "CREATE SEQUENCE MinimalSequence OPTIONS (sequence_kind='bit_reversed_positive')");
+    addUpdateDdlStatementsResponse(expectedSql.get(0));
+    addUpdateDdlStatementsResponse(expectedSql.get(1));
+    
     for (String file : new String[]{"create-sequence.spanner.yaml"}) {
       try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
-        assertThat(exception.getMessage()).contains(
-            CreateSequenceGeneratorSpanner.CREATE_SEQUENCE_VALIDATION_ERROR);
+        liquibase.update(new Contexts("test"));
       }
     }
-    assertThat(mockAdmin.getRequests()).isEmpty();
+    
+    assertEquals(2, mockAdmin.getRequests().size());
+    
+    assertEquals(UpdateDatabaseDdlRequest.class, mockAdmin.getRequests().get(0).getClass());
+    UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
+    assertEquals(1, request.getStatementsCount());
+    assertEquals(expectedSql.get(0), request.getStatementsList().get(0));
+    
+    assertEquals(UpdateDatabaseDdlRequest.class, mockAdmin.getRequests().get(0).getClass());
+    request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(1);
+    assertEquals(1, request.getStatementsCount());
+    assertEquals(expectedSql.get(1), request.getStatementsList().get(0));
   }
 
   @Test
   void testDropSequenceFromYaml() throws Exception {
+    String expectedSql = "DROP SEQUENCE IdSequence";
+    addUpdateDdlStatementsResponse(expectedSql);
+    
     for (String file : new String[]{"drop-sequence.spanner.yaml"}) {
       try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test")));
-        assertThat(exception.getMessage()).contains(
-            DropSequenceGeneratorSpanner.DROP_SEQUENCE_VALIDATION_ERROR);
+        liquibase.update(new Contexts("test"));
       }
     }
-    assertThat(mockAdmin.getRequests()).isEmpty();
+    
+    assertEquals(1, mockAdmin.getRequests().size());
+    UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
+    assertEquals(1, request.getStatementsCount());
+    assertEquals(expectedSql, request.getStatementsList().get(0));
   }
 
   @Test

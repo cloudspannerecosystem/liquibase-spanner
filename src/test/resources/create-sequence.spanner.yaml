@@ -24,6 +24,9 @@ databaseChangeLog:
        - createSequence:
           sequenceName: IdSequence
           startValue:   100000
+          # minValue and maxValue are translated to skip_range_min and skip_range_max
+          minValue:     900000
           maxValue:     999999
           incrementBy:  1
-          cycle:        true
+       - createSequence:
+           sequenceName: MinimalSequence
