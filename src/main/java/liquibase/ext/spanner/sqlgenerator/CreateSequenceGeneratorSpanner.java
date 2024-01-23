@@ -13,24 +13,57 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import java.math.BigInteger;
+import java.util.Objects;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
+import liquibase.ext.spanner.CloudSpanner;
 import liquibase.ext.spanner.ICloudSpanner;
+import liquibase.sql.Sql;
+import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateSequenceGenerator;
 import liquibase.statement.core.CreateSequenceStatement;
 
 public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
-  static final String CREATE_SEQUENCE_VALIDATION_ERROR =
-      "Cloud Spanner does not support creating sequences";
 
   @Override
   public ValidationErrors validate(
       CreateSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(CREATE_SEQUENCE_VALIDATION_ERROR);
+    errors.checkDisallowedField("cacheSize", statement.getCacheSize(), database, CloudSpanner.class);
+    errors.checkDisallowedField("ordered", statement.getOrdered(), database, CloudSpanner.class);
+    errors.checkDisallowedField("cycle", statement.getCycle(), database, CloudSpanner.class);
+    errors.checkDisallowedField("dataType", statement.getDataType(), database, CloudSpanner.class);
+    // Allow setting incrementBy to 1.
+    if (!Objects.equals(BigInteger.ONE, statement.getIncrementBy())) {
+      errors.checkDisallowedField("incrementBy", statement.getIncrementBy(), database,
+          CloudSpanner.class);
+    }
+    
     return errors;
+  }
+
+  @Override
+  public Sql[] generateSql(CreateSequenceStatement statement, Database database,
+      SqlGeneratorChain sqlGeneratorChain) {
+    StringBuilder queryStringBuilder = new StringBuilder();
+    queryStringBuilder.append("CREATE SEQUENCE ");
+    queryStringBuilder.append(database.escapeSequenceName(statement.getCatalogName(), statement.getSchemaName(), statement.getSequenceName()));
+    queryStringBuilder.append(" OPTIONS (sequence_kind='bit_reversed_positive'");
+    if (statement.getMinValue() != null) {
+      queryStringBuilder.append(", skip_range_min = ").append(statement.getMinValue());
+    }
+    if (statement.getMaxValue() != null) {
+      queryStringBuilder.append(", skip_range_max = ").append(statement.getMaxValue());
+    }
+    if (statement.getStartValue() != null) {
+      queryStringBuilder.append(", start_with_counter = ").append(statement.getStartValue());
+    }
+    queryStringBuilder.append(")");
+
+    return new Sql[]{new UnparsedSql(queryStringBuilder.toString(), getAffectedSequence(statement))};
   }
 
   @Override

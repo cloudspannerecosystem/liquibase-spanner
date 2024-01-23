@@ -22,16 +22,6 @@ import liquibase.sqlgenerator.core.DropSequenceGenerator;
 import liquibase.statement.core.DropSequenceStatement;
 
 public class DropSequenceGeneratorSpanner extends DropSequenceGenerator {
-  static final String DROP_SEQUENCE_VALIDATION_ERROR =
-      "Cloud Spanner does not support dropping sequences";
-
-  @Override
-  public ValidationErrors validate(
-      DropSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-    ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(DROP_SEQUENCE_VALIDATION_ERROR);
-    return errors;
-  }
 
   @Override
   public int getPriority() {
