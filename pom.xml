@@ -55,14 +55,14 @@
     <liquibase.version>4.25.1</liquibase.version>
     <snakeyaml.version>2.2</snakeyaml.version>
 
-    <gax-grpc.version>2.36.0</gax-grpc.version>
+    <gax-grpc.version>2.49.0</gax-grpc.version>
     <jupiter.version>5.9.2</jupiter.version>
     <testcontainers.version>1.17.6</testcontainers.version>
     <truth.version>1.4.2</truth.version>
     <mockito.version>1.10.19</mockito.version>
     <groovy.version>2.4.17</groovy.version>
     <dependency.spock.version>1.3-groovy-2.4</dependency.spock.version>
-    <picocli.version>4.7.3</picocli.version>
+    <picocli.version>4.7.6</picocli.version>
   </properties>
 
   <dependencyManagement>
@@ -225,12 +225,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.3.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.1.1</version>
+          <version>3.7.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
