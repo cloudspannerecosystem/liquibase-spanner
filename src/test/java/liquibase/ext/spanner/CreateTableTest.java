@@ -29,7 +29,7 @@ public class CreateTableTest extends AbstractMockServerTest {
   @Test
   void testCreateSingersTableFromYaml() throws Exception {
     String expectedSql =
-        "CREATE TABLE Singers (SingerId INT64, FirstName STRING(255), LastName STRING(255) NOT NULL, SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)";
+        "CREATE TABLE Singers (SingerId INT64, FirstName STRING(255), LastName STRING(255) NOT NULL, SingerInfo BYTES(MAX), `hash\\`s` STRING(40)) PRIMARY KEY (SingerId)";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[]{"create-singers-table.spanner.yaml"}) {
