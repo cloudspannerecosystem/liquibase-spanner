@@ -46,3 +46,6 @@ databaseChangeLog:
             -  column:
                 name:    SingerInfo
                 type:    BLOB
+            - column:
+                name: hash`s
+                type: VARCHAR(40)

@@ -199,6 +199,21 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   }
 
   @Override
+  protected String getQuotingStartCharacter() {
+    return "`";
+  }
+
+  @Override
+  protected String getQuotingEndCharacter() {
+    return "`";
+  }
+
+  @Override
+  protected String getQuotingEndReplacement() {
+    return "\\`";
+  }
+
+  @Override
   public String escapeStringForDatabase(String string) {
     return string == null ? null : string.replace("'", "\\'");
   }
