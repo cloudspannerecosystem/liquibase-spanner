@@ -19,6 +19,12 @@ an example.
 
 ## Release Notes
 
+#### 4.26.0
+* Requires Liquibase 4.26.0
+* Updated Google Cloud dependencies to latest version (26.41.0)
+* Adds support for creating bit-reversed sequences using the `createSequence` change type
+* Fixes #230
+
 #### 4.25.1
 * Requires Liquibase 4.25.1
 
@@ -205,7 +211,7 @@ The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/ho
 createTable, dropTable, addColumn, modifyDataType, addNotNullConstraint, dropColumn, createIndex, dropIndex, addForeignKeyConstraint, dropForeignKeyConstraint, dropAllForeignKeyConstraints, addLookupTable, createView, dropView
 
 The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are not allowed with Cloud Spanner:<br/>
-addAutoIncrement, addDefaultValue, addPrimaryKey, addUniqueConstraint, dropUniqueConstraint, createProcedure, createSequence, dropDefaultValue, dropNotNullConstraint, dropPrimaryKey, dropProcedure, dropSequence, renameColumn, renameSequence, renameTable, renameView, setColumnRemarks, setTableRemarks, alterSequence
+addAutoIncrement, addDefaultValue, addPrimaryKey, addUniqueConstraint, dropUniqueConstraint, createProcedure, dropDefaultValue, dropNotNullConstraint, dropPrimaryKey, dropProcedure, renameColumn, renameSequence, renameTable, renameView, setColumnRemarks, setTableRemarks, alterSequence
 
 The following data DML [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:<br/>
 insert, update, loadData, loadUpdateData

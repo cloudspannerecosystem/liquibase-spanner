@@ -52,7 +52,7 @@
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <liquibase.version>4.25.1</liquibase.version>
+    <liquibase.version>4.26.0</liquibase.version>
     <snakeyaml.version>2.2</snakeyaml.version>
 
     <gax-grpc.version>2.49.0</gax-grpc.version>
