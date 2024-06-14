@@ -499,6 +499,39 @@ public class LiquibaseTests {
   }
 
   @Test
+  void doEmulatorCreateSequenceTest() throws Exception {
+    doLiquibaseCreateSequenceTest(getSpannerEmulator());
+  }
+
+  @Test
+  @Tag("integration")
+  void doRealSpannerCreateSequenceTest() throws Exception {
+    doLiquibaseCreateSequenceTest(getSpannerReal());
+  }
+
+  void doLiquibaseCreateSequenceTest(TestHarness.Connection testHarness) throws Exception {
+    try (Liquibase liquibase = getLiquibase(testHarness, "create-sequence.spanner.yaml")) {
+      // Verify that there is no sequence in the database.
+      String sql = "select name from information_schema.sequences where catalog='' and schema='' and name='IdSequence'";
+      Connection connection =
+          ((JdbcConnection) liquibase.getDatabase().getConnection()).getUnderlyingConnection();
+      try (ResultSet sequences = connection.createStatement().executeQuery(sql)) {
+        assertThat(sequences.next()).isFalse();
+      }
+
+      // Run a change set that creates a sequence.
+      liquibase.update(null, new LabelExpression("test-create-sequence"));
+
+      // Verify that the sequence was created.
+      try (ResultSet sequences = connection.createStatement().executeQuery(sql)) {
+        assertThat(sequences.next()).isTrue();
+        assertThat(sequences.getString(1)).isEqualTo("IdSequence");
+        assertThat(sequences.next()).isFalse();
+      }
+    }
+  }
+
+  @Test
   void doEmulatorSpannerCreateAndRollbackTest() throws Exception {
     doLiquibaseCreateAndRollbackTest("create_table.spanner.sql", getSpannerEmulator());
     doLiquibaseCreateAndRollbackTest("create_table.spanner.yaml", getSpannerEmulator());
