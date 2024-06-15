@@ -15,4 +15,4 @@ jobs:
           distribution: zulu
           java-version: ${{matrix.java}}
       - run: java -version
-      - run: ./gradlew clean build -x test
+      - run: ./gradlew clean build
