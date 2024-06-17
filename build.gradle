@@ -87,10 +87,10 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.11")
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
     testImplementation("org.testcontainers:testcontainers:1.17.6")
     testImplementation("net.java.dev.jna:jna:5.14.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
     testImplementation("com.google.truth:truth:1.4.2") {
         exclude group: 'com.google.guava', module: 'guava'
     }
@@ -106,7 +106,7 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
 
     // For testing runtime
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
     
     // For Spanner mock server testing
     testImplementation(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
