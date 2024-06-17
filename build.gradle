@@ -88,7 +88,7 @@ dependencies {
 
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testImplementation("org.testcontainers:testcontainers:1.17.6")
+    testImplementation("org.testcontainers:testcontainers:1.19.8")
     testImplementation("net.java.dev.jna:jna:5.14.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
     testImplementation("com.google.truth:truth:1.4.2") {
