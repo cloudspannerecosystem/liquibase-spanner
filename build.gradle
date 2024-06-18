@@ -99,7 +99,7 @@ dependencies {
     // For using the Liquibase test harness
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.liquibase:liquibase-test-harness:1.0.0'
-    testImplementation('org.codehaus.groovy:groovy-all:2.5.23') {
+    testImplementation('org.codehaus.groovy:groovy-all:3.0.21') {
         exclude module: 'org.codehaus.groovy:groovy-testng'
         exclude module: 'org.codehaus.groovy:groovy-swing'
     }
