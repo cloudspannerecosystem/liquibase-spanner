@@ -103,7 +103,7 @@ dependencies {
         exclude module: 'org.codehaus.groovy:groovy-testng'
         exclude module: 'org.codehaus.groovy:groovy-swing'
     }
-    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
 
     // For testing runtime
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
