@@ -11,3 +11,4 @@ bin/
 .vscode/
 target/
 liquibase-spanner.iml
+.DS_Store
