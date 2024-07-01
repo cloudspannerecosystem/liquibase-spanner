@@ -56,7 +56,7 @@
     <snakeyaml.version>2.2</snakeyaml.version>
 
     <gax-grpc.version>2.50.0</gax-grpc.version>
-    <jupiter.version>5.10.2</jupiter.version>
+    <jupiter.version>5.10.3</jupiter.version>
     <testcontainers.version>1.19.8</testcontainers.version>
     <truth.version>1.4.2</truth.version>
     <mockito.version>1.10.19</mockito.version>
