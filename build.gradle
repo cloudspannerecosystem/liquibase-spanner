@@ -83,7 +83,7 @@ dependencies {
 
     // Liquibase Core - needed for testing and docker container
     implementation("org.liquibase:liquibase-core:4.29.0")
-    implementation("org.yaml:snakeyaml:2.2")
+    implementation("org.yaml:snakeyaml:2.3")
     implementation("org.apache.commons:commons-lang3:3.17.0")
 
     // Testing
