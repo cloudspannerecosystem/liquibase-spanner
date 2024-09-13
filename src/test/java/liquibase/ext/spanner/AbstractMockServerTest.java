@@ -133,7 +133,9 @@ public abstract class AbstractMockServerTest {
             // database drivers try to execute a query to check whether the
             // backend is the 'right' database, instead of at least checking the driver first...
             if (!(call.getMethodDescriptor().getFullMethodName()
-                .equals("google.spanner.v1.Spanner/BatchCreateSessions")
+                    .equals("google.spanner.v1.Spanner/BatchCreateSessions")
+                || call.getMethodDescriptor().getFullMethodName()
+                    .equals("google.spanner.v1.Spanner/CreateSession")
                 || call.getMethodDescriptor().getFullMethodName()
                     .equals("google.spanner.v1.Spanner/ExecuteStreamingSql")
                 || call.getMethodDescriptor().getFullMethodName()
@@ -154,134 +156,136 @@ public abstract class AbstractMockServerTest {
   }
 
   private static void registerDefaultResults() {
-    // Register metadata results for Liquibase tables.
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
-                .bind("p1")
-                .to("") // Catalog
-                .bind("p2")
-                .to("") // Schema
-                .bind("p3")
-                .to("DATABASECHANGELOG")
-                .bind("p4")
-                .to("TABLE") // Liquibase searches for tables
-                .bind("p5")
-                .to("NON_EXISTENT_TYPE") // This is a trick in the JDBC driver to simplify the query
-                .build(),
-            JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of("DATABASECHANGELOG"))));
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_COLUMNS)
-                .bind("p1")
-                .to("") // Catalog
-                .bind("p2")
-                .to("") // Schema
-                .bind("p3")
-                .to("DATABASECHANGELOG")
-                .bind("p4")
-                .to("%") // All column names
-                .build(),
-            JdbcMetadataQueries.createGetColumnsResultSet(
-                ImmutableList.of(
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "ID",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "AUTHOR",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "FILENAME",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "DATEEXECUTED",
-                        Types.TIMESTAMP,
-                        "TIMESTAMP",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "ORDEREXECUTED",
-                        Types.BIGINT,
-                        "INT64",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "EXECTYPE",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "MD5SUM",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "DESCRIPTION",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "COMMENTS",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "TAG",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "LIQUIBASE",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "CONTEXTS",
-                        Types.NVARCHAR,
-                        "STRING",
-                        255,
-                        DatabaseMetaData.columnNullable),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "LABELS",
-                        Types.NVARCHAR,
-                        "STRING",
-                        255,
-                        DatabaseMetaData.columnNullable),
-                    new JdbcMetadataQueries.ColumnMetaData(
-                        "DATABASECHANGELOG",
-                        "DEPLOYMENT_ID",
-                        Types.NVARCHAR,
-                        "STRING",
-                        0,
-                        DatabaseMetaData.columnNoNulls)))));
+    for (String schemaAndCatalog : new String[] {"%", ""}) {
+      // Register metadata results for Liquibase tables.
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
+                  .bind("p1")
+                  .to(schemaAndCatalog) // Catalog
+                  .bind("p2")
+                  .to(schemaAndCatalog) // Schema
+                  .bind("p3")
+                  .to("DATABASECHANGELOG")
+                  .bind("p4")
+                  .to("TABLE") // Liquibase searches for tables
+                  .bind("p5")
+                  .to("NON_EXISTENT_TYPE") // This is a trick in the JDBC driver to simplify the query
+                  .build(),
+              JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of("DATABASECHANGELOG"))));
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.newBuilder(JdbcMetadataQueries.GET_COLUMNS)
+                  .bind("p1")
+                  .to(schemaAndCatalog) // Catalog
+                  .bind("p2")
+                  .to(schemaAndCatalog) // Schema
+                  .bind("p3")
+                  .to("DATABASECHANGELOG")
+                  .bind("p4")
+                  .to("%") // All column names
+                  .build(),
+              JdbcMetadataQueries.createGetColumnsResultSet(
+                  ImmutableList.of(
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "ID",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "AUTHOR",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "FILENAME",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "DATEEXECUTED",
+                          Types.TIMESTAMP,
+                          "TIMESTAMP",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "ORDEREXECUTED",
+                          Types.BIGINT,
+                          "INT64",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "EXECTYPE",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "MD5SUM",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "DESCRIPTION",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "COMMENTS",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "TAG",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "LIQUIBASE",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "CONTEXTS",
+                          Types.NVARCHAR,
+                          "STRING",
+                          255,
+                          DatabaseMetaData.columnNullable),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "LABELS",
+                          Types.NVARCHAR,
+                          "STRING",
+                          255,
+                          DatabaseMetaData.columnNullable),
+                      new JdbcMetadataQueries.ColumnMetaData(
+                          "DATABASECHANGELOG",
+                          "DEPLOYMENT_ID",
+                          Types.NVARCHAR,
+                          "STRING",
+                          0,
+                          DatabaseMetaData.columnNoNulls)))));
+    }
 
     // Register results for an empty Liquibase database.
     mockSpanner.putStatementResult(

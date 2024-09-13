@@ -264,6 +264,18 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <addMavenDescriptor>false</addMavenDescriptor>
+            <manifestEntries>
+              <Liquibase-Package>liquibase.ext.spanner</Liquibase-Package>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
         <artifactId>serviceloader-maven-plugin</artifactId>
         <configuration>

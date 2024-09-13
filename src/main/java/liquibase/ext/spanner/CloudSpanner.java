@@ -35,7 +35,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public java.lang.Integer getDefaultPort() {
-    return Integer.valueOf(9010);
+    return 9010;
   }
   
   @Override
@@ -84,6 +84,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
     return null;
   }
 
+  @Override
   protected String getConnectionSchemaName() {
     if (getConnection() == null) {
       return null;
