@@ -19,6 +19,9 @@ an example.
 
 ## Release Notes
 
+#### 4.29.2
+* Requires Liquibase 4.29.2
+
 #### 4.29.1
 * Requires Liquibase 4.29.1
 
