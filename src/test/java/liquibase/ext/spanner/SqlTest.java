@@ -44,6 +44,7 @@ public class SqlTest extends AbstractMockServerTest {
   
   @BeforeAll
   static void setupResults() {
+    mockSpanner.putStatementResult(StatementResult.update(Statement.of("UPDATE DATABASECHANGELOG SET MD5SUM = NULL WHERE true"), 0L));
     mockSpanner.putStatementResult(StatementResult.update(Statement.of(INSERT1), 1L));
     mockSpanner.putStatementResult(StatementResult.update(Statement.of(INSERT2), 1L));
   }
@@ -59,6 +60,7 @@ public class SqlTest extends AbstractMockServerTest {
     for (String file : new String[] {"sql.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.clearCheckSums();
         liquibase.update(new Contexts("test"));
       }
     }

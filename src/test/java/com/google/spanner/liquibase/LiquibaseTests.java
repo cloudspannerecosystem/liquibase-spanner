@@ -923,7 +923,6 @@ public class LiquibaseTests {
     return false;
   }
 
-  @Disabled("The emulator does not yet support VIEWs")
   @Test
   void doEmulatorCreateViewTest() throws Exception {
     doCreateViewTest(getSpannerEmulator());
@@ -963,9 +962,10 @@ public class LiquibaseTests {
         try {
           Liquibase liquibase =
               getLiquibase(testHarness, "create-or-replace-view.spanner.yaml");
+          liquibase.clearCheckSums();
           liquibase.update(new Contexts("test"));
 
-          try (ResultSet rs = statement.executeQuery("SELECT * FROM V_Singers")) {
+          try (ResultSet rs = statement.executeQuery("SELECT * FROM V_Singers ORDER BY LastName")) {
             for (char prefix : prefixes) {
               assertThat(rs.next()).isTrue();
               assertThat(rs.getString("LastName"))
