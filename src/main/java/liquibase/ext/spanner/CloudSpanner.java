@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
 
@@ -93,6 +94,11 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   }
 
   @Override
+  protected String getConnectionCatalogName() throws DatabaseException {
+    return null;
+  }
+
+  @Override
   public void setConnection(final DatabaseConnection conn) {
     DatabaseConnection connectionToUse = conn;
     // If a user creates a JDBC connection manually and then passes this manually into Liquibase,
@@ -161,11 +167,6 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public boolean supportsSequences() {
-    return false;
-  }
-
-  @Override
-  public boolean supportsCatalogs() {
     return false;
   }
 

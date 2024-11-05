@@ -45,11 +45,26 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
                 .bind("p1")
-                .to("") // Catalog
+                .to("%") // Catalog
                 .bind("p2")
-                .to("") // Schema
+                .to("%") // Schema
                 .bind("p3")
                 .to("%") // Table
+                .bind("p4")
+                .to("TABLE")
+                .bind("p5")
+                .to("NON_EXISTENT_TYPE") // This is a trick in the JDBC driver to simplify the query
+                .build(),
+            JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of("Singers"))));
+    mockSpanner.putStatementResult(
+       StatementResult.query(
+            Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
+                .bind("p1")
+                .to("%") // Catalog
+                .bind("p2")
+                .to("%") // Schema
+                .bind("p3")
+                .to("SINGERS") // Table
                 .bind("p4")
                 .to("TABLE")
                 .bind("p5")
@@ -60,9 +75,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
                 .bind("p1")
-                .to("") // Catalog
+                .to("%") // Catalog
                 .bind("p2")
-                .to("") // Schema
+                .to("%") // Schema
                 .bind("p3")
                 .to("%") // Table
                 .bind("p4")
@@ -75,9 +90,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_PRIMARY_KEYS)
                 .bind("p1")
-                .to("") // Catalog
+                .to("%") // Catalog
                 .bind("p2")
-                .to("") // Schema
+                .to("%") // Schema
                 .bind("p3")
                 .to("SINGERS") // Table
                 .build(),
@@ -86,9 +101,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_IMPORTED_KEYS)
                 .bind("p1")
-                .to("") // Catalog
+                .to("%") // Catalog
                 .bind("p2")
-                .to("") // Schema
+                .to("%") // Schema
                 .bind("p3")
                 .to("SINGERS") // Table
                 .build(),
@@ -97,9 +112,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_INDEX_INFO)
                 .bind("p1")
-                .to("") // Catalog
+                .to("%") // Catalog
                 .bind("p2")
-                .to("") // Schema
+                .to("%") // Schema
                 .bind("p3")
                 .to("SINGERS") // Table
                 .bind("p4")
@@ -115,9 +130,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_COLUMNS)
                 .bind("p1")
-                .to("") // Catalog
+                .to("%") // Catalog
                 .bind("p2")
-                .to("") // Schema
+                .to("%") // Schema
                 .bind("p3")
                 .to("%") // Table
                 .bind("p4")
