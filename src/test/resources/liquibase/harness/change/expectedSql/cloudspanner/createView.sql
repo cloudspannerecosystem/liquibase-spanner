@@ -1,1 +1,1 @@
-INVALID TEST Cloud Spanner does not support views
+CREATE VIEW test_view SQL SECURITY INVOKER AS select authors.id, authors.first_name, authors.last_name, authors.email from authors

@@ -1,1 +1,1 @@
-INVALID TEST Cloud Spanner does not support views
+INVALID TEST -- CloudSpanner doesn't support view rename

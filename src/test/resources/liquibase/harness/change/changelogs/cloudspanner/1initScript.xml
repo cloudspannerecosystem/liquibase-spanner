@@ -5,11 +5,9 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
     <changeSet id="1" author="spanner-liquibase-tests">
-        <createTable tableName="createTableDataTypeText">
-            <column name="id" type="int">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="textCol" type="text"/>
-        </createTable>
+        <sqlFile path="init.txt"
+                 relativeToChangelogFile="true"
+                 stripComments="true"/>
+        <rollback/>
     </changeSet>
 </databaseChangeLog>

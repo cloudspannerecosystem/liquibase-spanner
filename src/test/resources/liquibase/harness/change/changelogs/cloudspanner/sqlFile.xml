@@ -4,18 +4,19 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet id="sqlTest" author="kristyl">
+    <changeSet id="1" author="as">
         <comment>Creates a table and inserts values into the table with actual SQL</comment>
         <createTable tableName="sqltest">
             <column name="id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            insert into sqltest (id) values (1);
-            insert into sqltest (id) values (2);
-            insert into sqltest (id) values (3);
-        </sql>
+        <rollback/>
+    </changeSet>
+    <changeSet id="2" author="as">
+        <sqlFile path="sqlFile.txt"
+                 relativeToChangelogFile="true"
+                 stripComments="true"/>
         <rollback>
             <dropTable tableName="sqltest"/>
         </rollback>

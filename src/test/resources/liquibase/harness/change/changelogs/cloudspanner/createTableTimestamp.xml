@@ -5,11 +5,11 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
     <changeSet id="1" author="spanner-liquibase-tests">
-        <createTable tableName="createTableDataTypeText">
-            <column name="id" type="int">
+        <createTable tableName="lms_create_table_test">
+            <column name="lms_test_id" type="INTEGER">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="textCol" type="text"/>
+            <column name="lms_test_timestamp" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>
