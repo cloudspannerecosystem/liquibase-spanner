@@ -19,6 +19,9 @@ an example.
 
 ## Release Notes
 
+#### 4.30.0
+* Requires Liquibase 4.30.0
+* Updated Google Cloud dependencies to latest version (26.50.0)
 
 #### 4.29.2.1
 * Fixes an error when executing the `clear-checksums` command (https://github.com/cloudspannerecosystem/liquibase-spanner/pull/354)
