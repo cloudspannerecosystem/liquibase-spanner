@@ -17,12 +17,23 @@ import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.regex.Pattern;
+
+import liquibase.CatalogAndSchema;
+import liquibase.Scope;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
+import liquibase.executor.ExecutorService;
+import liquibase.statement.core.GetViewDefinitionStatement;
+import liquibase.statement.core.RawParameterizedSqlStatement;
+import liquibase.structure.core.Schema;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
+
+  private static final String CREATE_VIEW_AS_REGEX = "^CREATE\\s+.*?VIEW\\s+.*?\\s+AS(?:\\s+|(?=\\())";
+  private static final Pattern CREATE_VIEW_AS_PATTERN = Pattern.compile(CREATE_VIEW_AS_REGEX, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
   public CloudSpanner() {
     unmodifiableDataTypes.add(Type.Code.BOOL.name().toLowerCase());
@@ -38,7 +49,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   public java.lang.Integer getDefaultPort() {
     return 9010;
   }
-  
+
   @Override
   public boolean dataTypeIsNotModifiable(final String typeName) {
     // All data types are returned including the length by the JDBC driver
@@ -94,8 +105,13 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   }
 
   @Override
-  protected String getConnectionCatalogName() throws DatabaseException {
-    return null;
+  public String getDefaultSchemaName() {
+    return defaultSchemaName;
+  }
+
+  @Override
+  public String getDefaultCatalogName() {
+    return defaultCatalogName;
   }
 
   @Override
@@ -115,7 +131,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
     // even if the connection was not replaced it would have been closed by Liquibase at the same
     // moment.
     if (!(conn instanceof CloudSpannerConnection) && conn instanceof JdbcConnection
-        && ((JdbcConnection) conn)
+            && ((JdbcConnection) conn)
             .getUnderlyingConnection() instanceof CloudSpannerJdbcConnection) {
       // The underlying connection is a Spanner JDBC connection. Check whether it already included a
       // user-agent string.
@@ -124,7 +140,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
         // connection that will be used by Liquibase with the correct user-agent.
         try {
           connectionToUse = new CloudSpannerConnection(
-              DriverManager.getConnection(conn.getURL() + ";userAgent=sp-liq"), conn);
+                  DriverManager.getConnection(conn.getURL() + ";userAgent=sp-liq"), conn);
         } catch (SQLException e) {
           // Ignore and use the original connection. This could for example happen if the user is
           // using an older version of the Spanner JDBC driver that does not support this user-agent
@@ -219,4 +235,19 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   public String escapeStringForDatabase(String string) {
     return string == null ? null : string.replace("'", "\\'");
   }
+
+//  @Override
+//  public String getViewDefinition(CatalogAndSchema schema, String viewName) throws DatabaseException {
+//    String definition = Scope.getCurrentScope()
+//            .getSingleton(ExecutorService.class)
+//            .getExecutor("jdbc", this)
+//            .queryForObject(new GetViewDefinitionStatement(null, null, viewName), String.class);
+//
+//    if (definition == null) {
+//      return null;
+//    }
+//
+//    return CREATE_VIEW_AS_PATTERN.matcher(definition).replaceFirst("");
+//  }
 }
+

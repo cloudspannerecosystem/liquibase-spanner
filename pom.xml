@@ -386,7 +386,8 @@
             <configuration>
               <excludedGroups>integration</excludedGroups>
               <excludes>
-                <exclude>**/CloudSpannerHarnessTest.java</exclude>
+                <exclude>**/CloudSpannerHarnessTest.groovy</exclude>
+                <exclude>**/CloudSpannerAdvancedHarnessSuiteTest.groovy</exclude>
               </excludes>
             </configuration>
           </plugin>

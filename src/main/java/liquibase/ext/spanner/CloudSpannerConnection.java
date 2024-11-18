@@ -75,5 +75,4 @@ public class CloudSpannerConnection extends JdbcConnection {
     }
     super.open(url, driverObject, driverProperties);
   }
-
 }
