@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <spring-boot.version>2.7.18</spring-boot.version>
-    <spanner-liquibase.version>4.29.2.1</spanner-liquibase.version>
+    <spanner-liquibase.version>4.30.0.1</spanner-liquibase.version>
     <spanner-jdbc.version>2.1.0</spanner-jdbc.version>
     <testcontainers.version>1.20.3</testcontainers.version>
   </properties>
