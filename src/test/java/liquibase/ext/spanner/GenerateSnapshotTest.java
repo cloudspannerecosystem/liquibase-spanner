@@ -48,6 +48,11 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
   
   @BeforeAll
   static void setupResults() {
+    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(JdbcMetadataQueries.GET_SCHEMAS)
+                .bind("p1").to("%")
+            .bind("p2").to("%")
+            .build(),
+        JdbcMetadataQueries.createGetSchemasResultSet()));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)

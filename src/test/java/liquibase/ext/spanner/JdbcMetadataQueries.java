@@ -21,6 +21,10 @@ import java.util.Scanner;
 class JdbcMetadataQueries {
   private static final AbstractStatementParser PARSER = AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL);
 
+  static final String GET_SCHEMAS =
+      convertPositionalParametersToNamedParameters(
+          PARSER.removeCommentsAndTrim(
+              readMetaDataSqlFromFile("DatabaseMetaData_GetSchemas.sql")));
   static final String GET_TABLES =
       convertPositionalParametersToNamedParameters(
           PARSER.removeCommentsAndTrim(
@@ -41,6 +45,20 @@ class JdbcMetadataQueries {
       convertPositionalParametersToNamedParameters(
           PARSER.removeCommentsAndTrim(
               readMetaDataSqlFromFile("DatabaseMetaData_GetImportedKeys.sql")));
+
+  static final ResultSetMetadata GET_SCHEMAS_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TABLE_SCHEM")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("CATALOG_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING))))
+          .build();
 
   static final ResultSetMetadata GET_TABLES_METADATA =
       ResultSetMetadata.newBuilder()
@@ -87,6 +105,17 @@ class JdbcMetadataQueries {
                           .setName("REF_GENERATION")
                           .setType(Type.newBuilder().setCode(TypeCode.STRING))))
           .build();
+
+  static ResultSet createGetSchemasResultSet() {
+    ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_SCHEMAS_METADATA);
+    for (String name : new String[]{"", "INFORMATION_SCHEMA", "SPANNER_SYS"}) {
+      builder.addRows(
+          ListValue.newBuilder()
+              .addValues(Value.newBuilder().setStringValue(name))
+              .addValues(Value.newBuilder().setStringValue("")));
+    }
+    return builder.build();
+  }
 
   static ResultSet createGetTablesResultSet(Iterable<String> names) {
     ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_TABLES_METADATA);

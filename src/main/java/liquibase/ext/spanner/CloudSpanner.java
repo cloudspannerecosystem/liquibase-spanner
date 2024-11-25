@@ -17,8 +17,10 @@ import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import liquibase.Scope;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
+import liquibase.database.OfflineConnection;
 import liquibase.database.jvm.JdbcConnection;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
@@ -89,7 +91,18 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
     if (getConnection() == null) {
       return null;
     }
-    return defaultSchemaName;
+    if (getConnection() instanceof OfflineConnection) {
+      return ((OfflineConnection) getConnection()).getSchema();
+    }
+    if (!(getConnection() instanceof JdbcConnection)) {
+      return defaultSchemaName;
+    }
+    try {
+      return ((JdbcConnection) getConnection()).getUnderlyingConnection().getSchema();
+    } catch (SQLException e) {
+      Scope.getCurrentScope().getLog(getClass()).info("Error getting default schema", e);
+    }
+    return null;
   }
 
   @Override
@@ -166,6 +179,11 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public boolean supportsCatalogs() {
+    return true;
+  }
+
+  @Override
+  public boolean getOutputDefaultCatalog() {
     return false;
   }
 
@@ -176,6 +194,11 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public boolean supportsSchemas() {
+    return true;
+  }
+
+  @Override
+  public boolean getOutputDefaultSchema() {
     return false;
   }
 
