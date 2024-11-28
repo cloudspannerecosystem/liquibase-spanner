@@ -14,14 +14,21 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import liquibase.ext.spanner.JdbcMetadataQueries.IndexMetaData;
+import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Index;
+import liquibase.structure.core.Schema;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +48,11 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
   
   @BeforeAll
   static void setupResults() {
+    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(JdbcMetadataQueries.GET_SCHEMAS)
+                .bind("p1").to("%")
+            .bind("p2").to("%")
+            .build(),
+        JdbcMetadataQueries.createGetSchemasResultSet()));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
@@ -147,6 +159,11 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
       SnapshotControl control = new SnapshotControl(database);
       CatalogAndSchema schema = new CatalogAndSchema("", "");
       DatabaseSnapshot snapshot = factory.createSnapshot(schema, database, control);
+      Set<Schema> schemaSet = snapshot.get(Schema.class);
+      assertThat(schemaSet).hasSize(1);
+      Schema schemaCatalog = schemaSet.iterator().next();
+      // Recursively traverse all types in the snapshot
+      verifySnapshotIdsInDatabaseObjects(schemaCatalog, new HashSet<>());
       Set<Table> tables = snapshot.get(Table.class);
       assertThat(tables).hasSize(1);
       Table singers = tables.iterator().next();
@@ -163,6 +180,59 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
       assertEquals(1, indexes.size());
       Index index = indexes.iterator().next();
       assertEquals("Idx_Singers_FirstName", index.getName());
+    }
+  }
+
+  private void verifySnapshotIdsInDatabaseObjects(Object object, Set<Object> visited) throws NoSuchFieldException {
+    if (object == null) {
+      return; // Nothing to traverse
+    }
+    // Check if the object was already visited
+    if (visited.contains(object)) {
+      return;
+    }
+    // Mark the current object as visited
+    visited.add(object);
+
+    if (object instanceof DatabaseObject) {
+      DatabaseObject dbObject = (DatabaseObject) object;
+      //assertThat(dbObject.getSnapshotId()).isNotNull();
+      assertWithMessage("Object: " + dbObject.getClass() + " Should have snapshotId")
+          .that(dbObject.getSnapshotId()).isNotNull();
+      Set<String> attributesObj = dbObject.getAttributes();
+      for (String attribute : attributesObj) {
+        Object attributesField = dbObject.getAttribute(attribute, new Object());
+        if (attributesField instanceof DatabaseObject) {
+          verifySnapshotIdsInDatabaseObjects(attributesField, visited);
+        } else if (attributesField instanceof Map<?, ?>) {
+          if (!((Map<?, ?>) attributesField).isEmpty()) {
+            Map<?, ?> attributes = (Map<?, ?>) attributesField;
+            attributes.forEach((key, value) -> {
+              if (value instanceof Set<?>) {
+                ((Set<?>) value).forEach(setValue -> {
+                  if (setValue instanceof DatabaseObject) {
+                    try {
+                      verifySnapshotIdsInDatabaseObjects(setValue, visited);
+                    } catch (NoSuchFieldException ignored) {
+                    }
+                  }
+                });
+              }
+            });
+          }
+        } else if (attributesField instanceof List<?>) {
+          List<?> objectList = (List<?>) attributesField;
+          objectList.forEach((value) -> {
+            if (value instanceof DatabaseObject) {
+              try {
+                verifySnapshotIdsInDatabaseObjects(value, visited);
+              } catch (NoSuchFieldException ignored) {
+
+              }
+            }
+          });
+        }
+      }
     }
   }
 }
