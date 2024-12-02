@@ -16,3 +16,23 @@ jobs:
           java-version: ${{matrix.java}}
       - run: java -version
       - run: ./gradlew clean build
+  harness:
+    services:
+      emulator:
+        image: gcr.io/cloud-spanner-emulator/emulator:latest
+        ports:
+          - 9010:9010
+          - 9020:9020    
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 11
+      - run: java -version
+      - name: Liquibase Harness Tests
+        # Change the following line to what is needed to run the Liquibase Harness tests
+        run: ./gradlew clean build
+        env:
+          SPANNER_EMULATOR_HOST: localhost:9010
