@@ -1,0 +1,11 @@
+{
+  "snapshot": {
+    "objects": {
+      "liquibase.structure.core.Schema": [
+        {
+
+        }
+      ]
+    }
+  }
+}
