@@ -1,0 +1,1 @@
+INVALID TEST -- CloudSpanner does not support default values for columns

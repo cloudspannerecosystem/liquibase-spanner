@@ -1,0 +1,1 @@
+INVALID TEST -- Liquibase generates SQL without the Zulu timezone
