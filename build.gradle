@@ -117,7 +117,7 @@ dependencies {
 }
 
 
-/// Run unit tests (Spanner emulator and mock tests)
+// Run unit tests (Spanner emulator and mock tests)
 test {
     // serviceLoaderBuild is necessary for Liquibase to find the extensions
     dependsOn "serviceLoaderBuild"
@@ -137,6 +137,7 @@ tasks.register('liquibaseHarnessTest', Test) {
     useJUnitPlatform {
         include '**/CloudSpannerBaseHarnessSuiteTest*'
         include '**/CloudSpannerAdvancedHarnessSuiteTest*'
+        include '**/CloudSpannerFoundationalHarnessSuiteTest*'
     }
 }
 

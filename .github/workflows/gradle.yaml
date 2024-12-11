@@ -3,12 +3,6 @@ on:
 name: gradle build
 jobs:
   ubuntu:
-    services:
-      emulator:
-        image: gcr.io/cloud-spanner-emulator/emulator:latest
-        ports:
-          - 9010:9010
-          - 9020:9020
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

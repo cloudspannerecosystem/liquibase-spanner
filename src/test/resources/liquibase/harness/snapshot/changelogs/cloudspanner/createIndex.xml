@@ -4,5 +4,24 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-                       <!-- NOT SUPPORTED BY CLOUDSPANNER-->
+    <changeSet id="1" author="as">
+        <createTable tableName="test_table">
+            <column name="id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="String(1024)"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="test_table"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="2" author="as">
+        <createIndex indexName="idx_first_name" tableName="test_table">
+            <column name="first_name"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="test_table"
+                       indexName="idx_first_name"/>
+        </rollback>
+    </changeSet>
 </databaseChangeLog>
