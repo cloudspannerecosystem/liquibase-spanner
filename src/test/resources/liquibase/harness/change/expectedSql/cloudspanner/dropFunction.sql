@@ -1,1 +1,1 @@
-INVALID TEST -- CloudSpanner doesn't support functions
+INVALID TEST -- Cloud Spanner does not support user-defined functions

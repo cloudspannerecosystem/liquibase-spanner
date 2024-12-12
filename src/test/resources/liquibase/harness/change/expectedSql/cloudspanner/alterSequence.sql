@@ -1,1 +1,1 @@
-INVALID TEST  -- Extension liquibase CloudSpanner doesn't support triggers
+INVALID TEST  -- Not supported in the current version of the Cloud Spanner extension; it will be added in future releases.

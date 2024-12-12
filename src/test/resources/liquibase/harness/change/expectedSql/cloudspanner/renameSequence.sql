@@ -1,1 +1,1 @@
-INVALID TEST -- CloudSpanner doesn't support sequences
+INVALID TEST -- CloudSpanner doesn't support rename sequences

@@ -1,1 +1,1 @@
-INVALID TEST -- CloudSpanner need pro version
+INVALID TEST -- CloudSpanner doesn't support create packages

@@ -1,1 +1,1 @@
-INVALID TEST Cloud Spanner does not support renaming tables
+INVALID TEST --Not supported in the current version of the Cloud Spanner extension; it will be added in future releases

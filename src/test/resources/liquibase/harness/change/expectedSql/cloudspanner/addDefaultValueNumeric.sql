@@ -1,1 +1,1 @@
-INVALID TEST -- CloudSpanner does not support default values for columns
+INVALID TEST -- Not supported in the current version of the Cloud Spanner extension; it will be added in future releases.

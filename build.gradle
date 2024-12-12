@@ -119,14 +119,15 @@ dependencies {
 
 // Run unit tests (Spanner emulator and mock tests)
 test {
-    // serviceLoaderBuild is necessary for Liquibase to find the extensions
-    dependsOn "serviceLoaderBuild"
 
-    useJUnitPlatform {
-        excludeTags "integration"
-        exclude '**/CloudSpannerBaseHarnessSuiteTest*'
-        exclude '**/CloudSpannerAdvancedHarnessSuiteTest*'
-    }
+  // serviceLoaderBuild is necessary for Liquibase to find the extensions
+  dependsOn "serviceLoaderBuild"
+
+  useJUnitPlatform {
+    excludeTags "integration"
+    exclude '**/CloudSpannerBaseHarnessSuiteTest*'
+    exclude '**/CloudSpannerAdvancedHarnessSuiteTest*'
+  }
 }
 
 tasks.register('liquibaseHarnessTest', Test) {
@@ -147,32 +148,32 @@ tasks.register('liquibaseHarnessTest', Test) {
 // Also requires GOOGLE_APPLICATION_CREDENTIALS environment variable
 // if using a JSON key for authentication.
 tasks.register('integrationTest', Test) {
-    shouldRunAfter "test"
+  shouldRunAfter "test"
 
-    // serviceLoaderBuild is necessary for Liquibase to find the extensions
-    dependsOn "serviceLoaderBuild"
+  // serviceLoaderBuild is necessary for Liquibase to find the extensions
+  dependsOn "serviceLoaderBuild"
 
-    useJUnitPlatform {
-        includeTags "integration"
-    }
+  useJUnitPlatform {
+    includeTags "integration"
+  }
 }
 
 tasks.withType(Test).configureEach {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(8)
-    }
-    dependencies {
-        testImplementation("org.mockito:mockito-core:3.12.4")
-    }
+  javaLauncher = javaToolchains.launcherFor {
+      languageVersion = JavaLanguageVersion.of(8)
+  }
+  dependencies {
+      testImplementation("org.mockito:mockito-core:3.12.4")
+  }
 }
 
 tasks.named('liquibaseHarnessTest', Test).configure {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-    dependencies {
-        testImplementation("org.mockito:mockito-core:5.14.1")
-    }
+  javaLauncher = javaToolchains.launcherFor {
+      languageVersion = JavaLanguageVersion.of(11)
+  }
+  dependencies {
+      testImplementation("org.mockito:mockito-core:5.14.1")
+  }
 }
 
 build {

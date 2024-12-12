@@ -1,1 +1,1 @@
-INVALID TEST  -- Extension liquibase CloudSpanner doesn't support create function
+INVALID TEST  -- Cloud Spanner does not support user-defined functions

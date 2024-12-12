@@ -1,1 +1,1 @@
-INVALID TEST -- CloudSpanner doesn't support check constraints
+INVALID TEST -- CloudSpanner doesn't support disable check constraints
