@@ -4,22 +4,22 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet id="sqlTest" author="kristyl">
-        <comment>Creates a table and inserts values into the table with actual SQL</comment>
-        <createTable tableName="sqltest">
-            <column name="id" type="int">
+    <changeSet id="1" author="spanner-liquibase-tests">
+        <createTable tableName="view_table">
+            <column name="test_column" type="INT">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            start batch dml;
-            insert into sqltest (id) values (1);
-            insert into sqltest (id) values (2);
-            insert into sqltest (id) values (3);
-            run batch;
-        </sql>
         <rollback>
-            <dropTable tableName="sqltest"/>
+            <dropTable tableName="view_table"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="2" author="spanner-liquibase-tests">
+        <createView viewName="test_view">
+            SELECT view_table.test_column FROM view_table
+        </createView>
+        <rollback>
+            <dropView viewName="test_view"/>
         </rollback>
     </changeSet>
 </databaseChangeLog>

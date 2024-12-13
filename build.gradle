@@ -17,9 +17,9 @@
 plugins {
     id "java"
     id "groovy"
-    id "com.google.cloud.tools.jib" version "2.8.0"
-    id "com.github.johnrengelman.shadow" version "6.1.0"
-    id "com.github.harbby.gradle.serviceloader" version "1.1.2"
+    id "com.google.cloud.tools.jib" version "3.4.4"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "com.github.harbby.gradle.serviceloader" version "1.1.8"
 }
 
 
@@ -90,20 +90,20 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.testcontainers:testcontainers:1.20.3")
     testImplementation("net.java.dev.jna:jna:5.15.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("com.google.truth:truth:1.4.4") {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    testImplementation("org.mockito:mockito-core:1.10.19")
 
     // For using the Liquibase test harness
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.liquibase:liquibase-test-harness:1.0.0'
-    testImplementation('org.codehaus.groovy:groovy-all:2.5.23') {
+    testImplementation ('org.liquibase:liquibase-test-harness:1.0.10'){
+        exclude group: 'org.firebirdsql.jdbc', module: 'jaybird'
+    }
+    testImplementation('org.apache.groovy:groovy-all:4.0.23') {
         exclude module: 'org.codehaus.groovy:groovy-testng'
         exclude module: 'org.codehaus.groovy:groovy-swing'
     }
-    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
 
     // For testing runtime
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.3")
@@ -125,16 +125,20 @@ test {
 
   useJUnitPlatform {
     excludeTags "integration"
+    exclude '**/CloudSpannerBaseHarnessSuiteTest*'
+    exclude '**/CloudSpannerAdvancedHarnessSuiteTest*'
   }
 }
 
-task liquibaseHarnessTest(type: Test) {
+tasks.register('liquibaseHarnessTest', Test) {
 
     // serviceLoaderBuild is necessary for Liquibase to find the extensions
     dependsOn "serviceLoaderBuild"
 
-    // Use JUnit4 for Liquibase harness tests.
-    useJUnit {
+    useJUnitPlatform {
+        include '**/CloudSpannerBaseHarnessSuiteTest*'
+        include '**/CloudSpannerAdvancedHarnessSuiteTest*'
+        include '**/CloudSpannerFoundationalHarnessSuiteTest*'
     }
 }
 
@@ -143,7 +147,7 @@ task liquibaseHarnessTest(type: Test) {
 // Requires SPANNER_PROJECT and SPANNER_INSTANCE environment variables.
 // Also requires GOOGLE_APPLICATION_CREDENTIALS environment variable
 // if using a JSON key for authentication.
-task integrationTest(type: Test) {
+tasks.register('integrationTest', Test) {
   shouldRunAfter "test"
 
   // serviceLoaderBuild is necessary for Liquibase to find the extensions
@@ -151,6 +155,24 @@ task integrationTest(type: Test) {
 
   useJUnitPlatform {
     includeTags "integration"
+  }
+}
+
+tasks.withType(Test).configureEach {
+  javaLauncher = javaToolchains.launcherFor {
+      languageVersion = JavaLanguageVersion.of(8)
+  }
+  dependencies {
+      testImplementation("org.mockito:mockito-core:3.12.4")
+  }
+}
+
+tasks.named('liquibaseHarnessTest', Test).configure {
+  javaLauncher = javaToolchains.launcherFor {
+      languageVersion = JavaLanguageVersion.of(11)
+  }
+  dependencies {
+      testImplementation("org.mockito:mockito-core:5.14.1")
   }
 }
 

@@ -1,0 +1,21 @@
+{
+  "snapshot": {
+    "objects": {
+      "liquibase.structure.core.Catalog": [
+        {
+          "catalog": {
+            "default": true,
+            "name": ""
+          }
+        }
+      ],
+      "liquibase.structure.core.Schema": [
+        {
+          "schema": {
+            "default": true
+          }
+        }
+      ]
+    }
+  }
+}

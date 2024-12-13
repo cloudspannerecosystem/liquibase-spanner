@@ -1,0 +1,37 @@
+DROP TABLE IF EXISTS authors;
+
+CREATE TABLE authors (
+    id INT64 NOT NULL,
+    first_name STRING(1024),
+    last_name STRING(1024),
+    email STRING(1024),
+    birthdate DATE,
+    added TIMESTAMP
+    ) PRIMARY KEY (id);
+
+
+INSERT INTO authors (id, first_name, last_name, email, birthdate, added)
+VALUES (1, 'Alice', 'Doe', 'alice@example.com', '1990-07-15', '2012-12-25T10:45:00Z');
+
+INSERT INTO authors (id, first_name, last_name, email, birthdate, added)
+VALUES (2, 'John', 'Smith', 'john@example.com', '1985-11-22', '2015-08-10T14:30:00Z');
+
+DROP TABLE IF EXISTS posts;
+
+CREATE TABLE posts (
+    id INT64 NOT NULL,
+    author_id INT64 NOT NULL,
+    title STRING(1024),
+    description STRING(1024),
+    content STRING(1024),
+    inserted_date DATE,
+    )
+    PRIMARY KEY (id);
+
+
+INSERT INTO posts (id, author_id, title, description, content, inserted_date)
+VALUES (1, 1, 'libero', 'perspiciatis', 'Saepe laboriosam cupiditate consequatur distinctio.', '2020-07-14');
+
+INSERT INTO posts (id, author_id, title, description, content, inserted_date)
+VALUES (2, 2, 'rerum', 'voluptates', 'Consequuntur assumenda adipisci vel repellendus.', '1982-02-25');
+
