@@ -62,7 +62,7 @@ public class SequenceSnapshotGeneratorSpanner extends SequenceSnapshotGenerator 
   }
 
   /*
-   * If there is a UniqueConstraintSnapshotGenerator in the chain, we replace it. Otherwise
+   * If there is a SequenceSnapshotGenerator in the chain, we replace it. Otherwise
    * the chain will execute like normal.
    */
   @Override
