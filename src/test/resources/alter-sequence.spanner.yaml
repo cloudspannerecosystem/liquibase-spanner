@@ -15,14 +15,19 @@
 
 databaseChangeLog:
   - preConditions:
-     onFail: HALT
-     onError: HALT
+      onFail: HALT
+      onError: HALT
   - changeSet:
-     id:     v0.1-create-sequence
-     author: spanner-liquibase-tests
-     changes:
-       - createSequence:
-          sequenceName: IdSequence
-          startValue:   100000
-       - createSequence:
-           sequenceName: MinimalSequence
+      id: v0.1-create-sequence
+      author: spanner-liquibase-tests
+      changes:
+          - createSequence:
+              sequenceName: test_sequence_name
+              startValue: 100
+  - changeSet:
+      id: v0.2-alter-sequence
+      author: spanner-liquibase-tests
+      changes:
+          - alterSequence:
+              sequenceName: test_sequence_name
+              startValue: 1000000

@@ -43,8 +43,6 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
   void testCreateSequenceFromYaml() throws Exception {
     ImmutableList<String> expectedSql = ImmutableList.of("CREATE SEQUENCE IdSequence " 
         + "OPTIONS (sequence_kind='bit_reversed_positive', "
-        + "skip_range_min = 900000, "
-        + "skip_range_max = 999999, " 
         + "start_with_counter = 100000)",
         "CREATE SEQUENCE MinimalSequence OPTIONS (sequence_kind='bit_reversed_positive')");
     addUpdateDdlStatementsResponse(expectedSql.get(0));

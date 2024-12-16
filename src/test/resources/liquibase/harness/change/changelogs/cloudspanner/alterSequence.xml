@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="1" author="spanner-liquibase-tests">
+        <createSequence sequenceName="test_sequence"
+                        startValue="10"/>
+        <rollback>
+            <dropSequence sequenceName="test_sequence"/>
+        </rollback>
+    </changeSet>
+    <changeSet author="spanner-liquibase-tests" id="2" >
+       <sql>
+           ALTER SEQUENCE test_sequence SET OPTIONS (skip_range_min = 1000, skip_range_max = 5000000)
+       </sql>
+        <rollback/>
+    </changeSet>
+</databaseChangeLog>

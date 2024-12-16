@@ -174,7 +174,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public boolean supportsSequences() {
-    return false;
+    return true;
   }
 
   @Override

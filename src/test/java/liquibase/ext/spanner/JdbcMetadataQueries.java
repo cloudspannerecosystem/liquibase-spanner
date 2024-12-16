@@ -45,6 +45,29 @@ class JdbcMetadataQueries {
       convertPositionalParametersToNamedParameters(
           PARSER.removeCommentsAndTrim(
               readMetaDataSqlFromFile("DatabaseMetaData_GetImportedKeys.sql")));
+  static final String GET_SEQUENCES =
+      convertPositionalParametersToNamedParameters(
+      "SELECT " +
+          "seq.NAME AS SEQUENCE_NAME, " +
+          "seq_kind.OPTION_VALUE AS SEQUENCE_KIND, " +
+          "skip_max.OPTION_VALUE AS SKIP_RANGE_MAX, " +
+          "skip_min.OPTION_VALUE AS SKIP_RANGE_MIN, " +
+          "start_counter.OPTION_VALUE AS START_VALUE " +
+          "FROM (SELECT DISTINCT NAME FROM INFORMATION_SCHEMA.sequence_options " +
+          "WHERE CATALOG = ? AND SCHEMA = ?) AS seq " +
+          "LEFT JOIN INFORMATION_SCHEMA.sequence_options AS seq_kind " +
+          "ON seq.NAME = seq_kind.NAME " +
+          "AND seq_kind.OPTION_NAME = 'sequence_kind' " +
+          "LEFT JOIN INFORMATION_SCHEMA.sequence_options AS skip_max " +
+          "ON seq.NAME = skip_max.NAME " +
+          "AND skip_max.OPTION_NAME = 'skip_range_max' " +
+          "LEFT JOIN INFORMATION_SCHEMA.sequence_options AS skip_min " +
+          "ON seq.NAME = skip_min.NAME " +
+          "AND skip_min.OPTION_NAME = 'skip_range_min' " +
+          "LEFT JOIN INFORMATION_SCHEMA.sequence_options AS start_counter " +
+          "ON seq.NAME = start_counter.NAME " +
+          "AND start_counter.OPTION_NAME = 'start_with_counter'"
+      );
 
   static final ResultSetMetadata GET_SCHEMAS_METADATA =
       ResultSetMetadata.newBuilder()
@@ -562,6 +585,85 @@ class JdbcMetadataQueries {
               .addValues(Value.newBuilder().setStringValue("-1"))
               .addValues(Value.newBuilder().setStringValue("-1"))
           );
+    }
+    return builder.build();
+  }
+
+  static final ResultSetMetadata GET_SEQUENCE_INFO_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TABLE_CAT")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("TABLE_SCHEM")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("SEQUENCE_NAME")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("SEQUENCE_KIND")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("SKIP_RANGE_MAX")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("SKIP_RANGE_MIN")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("START_VALUE")
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64))))
+          .build();
+
+  static class SequenceMetadata {
+    final String sequenceName;
+    final String sequenceKind;
+    final Integer skipRangeMax;
+    final Integer skipRangeMin;
+    final Integer startCounter;
+
+
+    SequenceMetadata(
+        String sequenceName,
+        String sequenceKind,
+        Integer skipRangeMax,
+        Integer skipRangeMin,
+        Integer startCounter) {
+      this.sequenceName = sequenceName;
+      this.sequenceKind = sequenceKind;
+      this.skipRangeMax = skipRangeMax;
+      this.skipRangeMin = skipRangeMin;
+      this.startCounter = startCounter;
+    }
+  }
+
+  static ResultSet createGetSequenceResultSet(Iterable<SequenceMetadata> sequences) {
+    ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_SEQUENCE_INFO_METADATA);
+    for (SequenceMetadata sequence : sequences) {
+      builder.addRows(
+          ListValue.newBuilder()
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(sequence.sequenceName))
+              .addValues(Value.newBuilder().setStringValue(sequence.sequenceKind))
+              .addValues(sequence.skipRangeMax == null
+                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                  : Value.newBuilder().setStringValue(sequence.skipRangeMax.toString()))
+              .addValues(sequence.skipRangeMin == null
+                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                  : Value.newBuilder().setStringValue(sequence.skipRangeMin.toString()))
+              .addValues(sequence.startCounter == null
+                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                  : Value.newBuilder().setStringValue(sequence.startCounter.toString()))
+      );
     }
     return builder.build();
   }
