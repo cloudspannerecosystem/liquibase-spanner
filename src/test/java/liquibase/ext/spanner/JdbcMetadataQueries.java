@@ -53,20 +53,16 @@ class JdbcMetadataQueries {
           "skip_max.OPTION_VALUE AS SKIP_RANGE_MAX, " +
           "skip_min.OPTION_VALUE AS SKIP_RANGE_MIN, " +
           "start_counter.OPTION_VALUE AS START_VALUE " +
-          "FROM (SELECT DISTINCT NAME FROM INFORMATION_SCHEMA.sequence_options " +
-          "WHERE CATALOG = ? AND SCHEMA = ?) AS seq " +
-          "LEFT JOIN INFORMATION_SCHEMA.sequence_options AS seq_kind " +
-          "ON seq.NAME = seq_kind.NAME " +
-          "AND seq_kind.OPTION_NAME = 'sequence_kind' " +
-          "LEFT JOIN INFORMATION_SCHEMA.sequence_options AS skip_max " +
-          "ON seq.NAME = skip_max.NAME " +
-          "AND skip_max.OPTION_NAME = 'skip_range_max' " +
-          "LEFT JOIN INFORMATION_SCHEMA.sequence_options AS skip_min " +
-          "ON seq.NAME = skip_min.NAME " +
-          "AND skip_min.OPTION_NAME = 'skip_range_min' " +
-          "LEFT JOIN INFORMATION_SCHEMA.sequence_options AS start_counter " +
-          "ON seq.NAME = start_counter.NAME " +
-          "AND start_counter.OPTION_NAME = 'start_with_counter'"
+          "FROM INFORMATION_SCHEMA.SEQUENCES AS seq " +
+          "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS seq_kind " +
+          "ON seq.CATALOG = seq_kind.CATALOG AND seq.SCHEMA = seq_kind.SCHEMA AND seq.NAME = seq_kind.NAME AND seq_kind.OPTION_NAME = 'sequence_kind' " +
+          "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_max " +
+          "ON seq.CATALOG = skip_max.CATALOG AND seq.SCHEMA = skip_max.SCHEMA AND seq.NAME = skip_max.NAME AND skip_max.OPTION_NAME = 'skip_range_max' " +
+          "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_min " +
+          "ON seq.CATALOG = skip_min.CATALOG AND seq.SCHEMA = skip_min.SCHEMA AND seq.NAME = skip_min.NAME AND skip_min.OPTION_NAME = 'skip_range_min' " +
+          "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS start_counter " +
+          "ON seq.CATALOG = start_counter.CATALOG AND seq.SCHEMA = start_counter.SCHEMA AND seq.NAME = start_counter.NAME AND start_counter.OPTION_NAME = 'start_with_counter' " +
+          "WHERE seq.CATALOG = ? AND seq.SCHEMA = ?"
       );
 
   static final ResultSetMetadata GET_SCHEMAS_METADATA =

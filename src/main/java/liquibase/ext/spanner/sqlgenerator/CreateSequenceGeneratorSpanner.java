@@ -36,10 +36,12 @@ public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
     errors.checkDisallowedField("ordered", statement.getOrdered(), database, CloudSpanner.class);
     errors.checkDisallowedField("cycle", statement.getCycle(), database, CloudSpanner.class);
     errors.checkDisallowedField("dataType", statement.getDataType(), database, CloudSpanner.class);
-    errors.checkDisallowedField("incrementBy", statement.getDataType(), database, CloudSpanner.class);
-    errors.checkDisallowedField("minValue", statement.getDataType(), database, CloudSpanner.class);
-    errors.checkDisallowedField("cacheSize", statement.getDataType(), database, CloudSpanner.class);
-    errors.checkDisallowedField("maxValue", statement.getDataType(), database, CloudSpanner.class);
+    // Allow setting incrementBy to 1.
+    if (!Objects.equals(BigInteger.ONE, statement.getIncrementBy())) {
+      errors.checkDisallowedField("incrementBy", statement.getIncrementBy(), database,
+          CloudSpanner.class);
+    }
+
     return errors;
   }
 
@@ -50,6 +52,12 @@ public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
     queryStringBuilder.append("CREATE SEQUENCE ");
     queryStringBuilder.append(database.escapeSequenceName(statement.getCatalogName(), statement.getSchemaName(), statement.getSequenceName()));
     queryStringBuilder.append(" OPTIONS (sequence_kind='bit_reversed_positive'");
+    if (statement.getMinValue() != null) {
+      queryStringBuilder.append(", skip_range_min = ").append(statement.getMinValue());
+    }
+    if (statement.getMaxValue() != null) {
+      queryStringBuilder.append(", skip_range_max = ").append(statement.getMaxValue());
+    }
     if (statement.getStartValue() != null) {
       queryStringBuilder.append(", start_with_counter = ").append(statement.getStartValue());
     }
