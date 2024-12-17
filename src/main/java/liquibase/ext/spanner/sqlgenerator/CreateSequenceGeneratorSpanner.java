@@ -41,7 +41,7 @@ public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
       errors.checkDisallowedField("incrementBy", statement.getIncrementBy(), database,
           CloudSpanner.class);
     }
-
+    
     return errors;
   }
 
