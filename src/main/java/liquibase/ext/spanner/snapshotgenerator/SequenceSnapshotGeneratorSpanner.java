@@ -45,8 +45,8 @@ public class SequenceSnapshotGeneratorSpanner extends SequenceSnapshotGenerator 
   protected SqlStatement getSelectSequenceStatement(Schema schema, Database database) {
     if (database instanceof ICloudSpanner) {
       List<String> parameter = new ArrayList<>(2);
-      parameter.add(schema.isDefault() ? "" : schema.getName());
       parameter.add(schema.getCatalog().getName());
+      parameter.add(schema.isDefault() ? "" : schema.getName());
 
       StringBuilder sql = new StringBuilder("SELECT seq.NAME AS SEQUENCE_NAME, ")
                               .append("seq_kind.OPTION_VALUE AS SEQUENCE_KIND, ")
@@ -90,6 +90,4 @@ public class SequenceSnapshotGeneratorSpanner extends SequenceSnapshotGenerator 
   public Class<? extends SnapshotGenerator>[] replaces() {
     return new Class[]{SequenceSnapshotGenerator.class};
   }
-
-  ;
 }
