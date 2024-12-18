@@ -21,6 +21,7 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
 
+import java.sql.Types;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import liquibase.ext.spanner.JdbcMetadataQueries.IndexMetaData;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Index;
 import liquibase.structure.core.Schema;
+import liquibase.structure.core.Sequence;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,7 @@ import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.SnapshotControl;
 import liquibase.snapshot.SnapshotGeneratorFactory;
 import liquibase.structure.core.Table;
+import liquibase.ext.spanner.JdbcMetadataQueries.SequenceMetadata;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class GenerateSnapshotTest extends AbstractMockServerTest {
@@ -143,6 +146,25 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                 )
               )
             ));
+    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(JdbcMetadataQueries.GET_SCHEMAS)
+                .bind("p1").to("%")
+                .bind("p2").to("%")
+                .build(),
+        JdbcMetadataQueries.createGetSchemasResultSet()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(JdbcMetadataQueries.GET_SEQUENCES)
+                .bind("p1")
+                .to("") // Catalog
+                .bind("p2")
+                .to("") // Schema
+                .build(),
+            JdbcMetadataQueries.createGetSequenceResultSet(
+                ImmutableList.of(
+                    new SequenceMetadata("testSequence", "bit_reversed_positive", 100, 5000000, 1)
+                )
+            )
+        ));
   }
 
   @BeforeEach
@@ -180,6 +202,11 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
       assertEquals(1, indexes.size());
       Index index = indexes.iterator().next();
       assertEquals("Idx_Singers_FirstName", index.getName());
+
+      Set<Sequence> sequences = snapshot.get(Sequence.class);
+      assertEquals(1, sequences.size());
+      Sequence sequence = sequences.iterator().next();
+      assertEquals("testSequence", sequence.getName());
     }
   }
 
