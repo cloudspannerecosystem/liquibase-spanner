@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  *
  * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -22,6 +22,14 @@ import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.OfflineConnection;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.util.ISODateFormat;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
+import java.util.Date;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
 
@@ -49,12 +57,26 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public String getDateLiteral(final String isoDate) {
-    String literal = super.getDateLiteral(isoDate);
+    String literal;
+
+    // Construct the literal based on whether it is a DATE or TIMESTAMP
     if (isDateTime(isoDate)) {
-      literal = "TIMESTAMP " + literal.replace(' ', 'T');
+      Date date;
+      try {
+        date = new ISODateFormat().parse(isoDate);
+        Instant instant = date.toInstant();
+        OffsetDateTime utcDateTime = instant.atOffset(ZoneOffset.UTC);
+        String formattedDate = utcDateTime.format(ISO_LOCAL_DATE);
+        String formattedTime = utcDateTime.format(ISO_LOCAL_TIME);
+        literal = "TIMESTAMP '" + formattedDate + "T" + formattedTime + "Z'";
+      } catch (ParseException e) {
+        throw new RuntimeException("Error parsing ISO date: " + isoDate, e);
+      }
     } else {
+      literal = super.getDateLiteral(isoDate);
       literal = "DATE " + literal;
     }
+
     return literal;
   }
 
