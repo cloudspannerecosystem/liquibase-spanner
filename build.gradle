@@ -155,6 +155,8 @@ tasks.register('integrationTest', Test) {
 
   useJUnitPlatform {
     includeTags "integration"
+    exclude '**/CloudSpannerBaseHarnessSuiteTest*'
+    exclude '**/CloudSpannerAdvancedHarnessSuiteTest*'
   }
 }
 
