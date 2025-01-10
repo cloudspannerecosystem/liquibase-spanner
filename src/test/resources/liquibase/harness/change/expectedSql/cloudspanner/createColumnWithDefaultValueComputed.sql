@@ -1,0 +1,1 @@
+ALTER TABLE posts ADD COLUMN new_default_uuid STRING(36) DEFAULT (GENERATE_UUID())

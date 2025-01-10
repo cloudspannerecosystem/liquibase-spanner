@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2025 Google LLC
  *
  * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -17,6 +17,7 @@ import liquibase.database.Database;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.core.AddColumnGenerator;
+import liquibase.statement.DatabaseFunction;
 import liquibase.statement.core.AddColumnStatement;
 
 import java.lang.reflect.InvocationHandler;
@@ -49,6 +50,24 @@ public class AddColumnGeneratorSpanner extends AddColumnGenerator {
         ICloudSpanner databaseWithColumnKeyword = (ICloudSpanner) Proxy.newProxyInstance(ICloudSpanner.class.getClassLoader(),
                 new Class[] { ICloudSpanner.class },
                 handler);
+
+        // Wrapping the database function used as the default value for a Column
+        Object defaultValue = statement.getDefaultValue();
+        if (defaultValue instanceof DatabaseFunction) {
+            String wrappedFunction = "(" + defaultValue + ")";
+            DatabaseFunction modifiedDefaultValue = new DatabaseFunction(wrappedFunction);
+
+            AddColumnStatement copiedStatement = new AddColumnStatement(
+                statement.getCatalogName(),
+                statement.getSchemaName(),
+                statement.getTableName(),
+                statement.getColumnName(),
+                statement.getColumnType(),
+                modifiedDefaultValue
+            );
+            copiedStatement.getConstraints().addAll(statement.getConstraints());
+            return super.generateSingleColumnSQL(copiedStatement, databaseWithColumnKeyword);
+        }
         return super.generateSingleColumnSQL(statement, databaseWithColumnKeyword);
     }
 }

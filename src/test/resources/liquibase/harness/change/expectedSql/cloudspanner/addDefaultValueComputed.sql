@@ -1,1 +1,2 @@
-INVALID TEST -- Not supported in the current version of the Cloud Spanner extension; it will be added in future releases.
+ALTER TABLE posts ADD COLUMN default_uuid STRING(36)
+ALTER TABLE posts ALTER COLUMN default_uuid SET DEFAULT (GENERATE_UUID())

@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2025 Google LLC
  *
  * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -16,21 +16,42 @@ package liquibase.ext.spanner.sqlgenerator;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
+import liquibase.sql.Sql;
+import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.AddDefaultValueGenerator;
+import liquibase.statement.DatabaseFunction;
 import liquibase.statement.core.AddDefaultValueStatement;
 
 public class AddDefaultValueGeneratorSpanner extends AddDefaultValueGenerator {
   static final String ADD_DEFAULT_VALUE_VALIDATION_ERROR =
-      "Cloud Spanner does not support adding a default value to a column";
+      "Cloud Spanner supports default values for columns, but only with built-in functions such as CURRENT_TIMESTAMP() and GENERATE_UUID()";
 
   @Override
   public ValidationErrors validate(
       AddDefaultValueStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
+    if (statement.getDefaultValue() instanceof DatabaseFunction) {
+      return errors;
+    }
     errors.addError(ADD_DEFAULT_VALUE_VALIDATION_ERROR);
     return errors;
+  }
+
+  @Override
+  public Sql[] generateSql(final AddDefaultValueStatement statement, final Database database, SqlGeneratorChain sqlGeneratorChain) {
+    Object defaultValue = statement.getDefaultValue();
+    StringBuilder queryStringBuilder = new StringBuilder();
+    queryStringBuilder.append("ALTER TABLE ");
+    queryStringBuilder.append(database.escapeSequenceName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()));
+    queryStringBuilder.append(" ALTER COLUMN ");
+    queryStringBuilder.append(statement.getColumnName());
+    queryStringBuilder.append(" SET DEFAULT (");
+    queryStringBuilder.append(defaultValue);
+    queryStringBuilder.append(")");
+
+    return new Sql[]{new UnparsedSql(queryStringBuilder.toString(), getAffectedColumn(statement))};
   }
 
   @Override
