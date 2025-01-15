@@ -50,7 +50,11 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
                                           .queryForObject(new RawParameterizedSqlStatement(selectQuery,
                                               new Object[]{database.getDefaultCatalogName(), database.getDefaultSchemaName(), columnInfo.getRelation().getName(), columnInfo.getName()}), String.class);
         if (defaultValue != null) {
-          columnMetadataResultSet.set("COLUMN_DEF", new DatabaseFunction((defaultValue)));
+          if (database.isFunction(defaultValue)) {
+            columnMetadataResultSet.set("COLUMN_DEF", new DatabaseFunction((defaultValue)));
+          }else{
+            columnMetadataResultSet.set("COLUMN_DEF", defaultValue);
+          }
         }
       } catch (DatabaseException e) {
         Scope.getCurrentScope().getLog(this.getClass()).warning("Error fetching default column values", e);

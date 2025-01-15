@@ -1,0 +1,1 @@
+ALTER TABLE authors ADD COLUMN title_default STRING(255) NOT NULL DEFAULT ('title_test')

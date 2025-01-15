@@ -18,9 +18,19 @@ databaseChangeLog:
       onFail: HALT
       onError: HALT
   - changeSet:
-      id: v0.1-add-column-uuid-singers
+      id:     v0.1-add-default-value-column-singers
       author: spanner-liquibase-tests
       changes:
-        - dropDefaultValue:
+        - addColumn:
             tableName:  Singers
-            columnName: uuid_colum
+            columns:
+              name: booleanColumn
+              type: bool
+  - changeSet:
+      id: v0.1-add-default-value-singers
+      author: spanner-liquibase-tests
+      changes:
+        - addDefaultValue:
+            tableName: Singers
+            columnName: booleanColumn
+            defaultValueBoolean: true

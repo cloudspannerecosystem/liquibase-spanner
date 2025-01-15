@@ -37,19 +37,19 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testAddDefaultValueSingersFromYaml() throws Exception {
-    for (String file : new String[]{"add-default-value-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
-        assertThat(exception.getMessage())
-            .contains(AddDefaultValueGeneratorSpanner.ADD_DEFAULT_VALUE_VALIDATION_ERROR);
-      }
-    }
-    assertThat(mockAdmin.getRequests()).isEmpty();
-  }
+//  @Test
+//  void testAddDefaultValueSingersFromYaml() throws Exception {
+//    for (String file : new String[]{"add-default-value-singers.spanner.yaml"}) {
+//      try (Connection con = createConnection();
+//          Liquibase liquibase = getLiquibase(con, file)) {
+//        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
+//            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+//        assertThat(exception.getMessage())
+//            .contains(AddDefaultValueGeneratorSpanner.ADD_DEFAULT_VALUE_VALIDATION_ERROR);
+//      }
+//    }
+//    assertThat(mockAdmin.getRequests()).isEmpty();
+//  }
 
   @Test
   void testDropDefaultValueSingersFromYaml() throws Exception {
