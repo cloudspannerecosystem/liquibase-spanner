@@ -108,7 +108,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
   void testAddDefaultValueBooleanFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ADD COLUMN booleanColumn BOOL",
+            "ALTER TABLE Singers ADD booleanColumn BOOL",
             "ALTER TABLE Singers ALTER COLUMN booleanColumn SET DEFAULT (TRUE)",
         };
     for (String sql : expectedSql) {
@@ -135,7 +135,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
   void testAddDefaultValueNumericFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ADD COLUMN numericColumn INT64",
+            "ALTER TABLE Singers ADD numericColumn INT64",
             "ALTER TABLE Singers ALTER COLUMN numericColumn SET DEFAULT (1000000)",
         };
     for (String sql : expectedSql) {
@@ -162,7 +162,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
   void testAddDefaultValueComputedFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ADD COLUMN uuid_column STRING(36)",
+            "ALTER TABLE Singers ADD uuid_column STRING(36)",
             "ALTER TABLE Singers ALTER COLUMN uuid_column SET DEFAULT (GENERATE_UUID())",
         };
     for (String sql : expectedSql) {
@@ -190,7 +190,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
     String timestamp = convertToUtcTimestamp("2008-02-12T12:34:03");
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ADD COLUMN timestampColumn timestamp",
+            "ALTER TABLE Singers ADD timestampColumn timestamp",
             "ALTER TABLE Singers ALTER COLUMN timestampColumn SET DEFAULT (TIMESTAMP " + timestamp +")",
         };
     for (String sql : expectedSql) {
@@ -215,7 +215,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
   @Test
   void testCreateColumnWithDefaultValueFromYaml() throws Exception {
-    String expectedSql = "ALTER TABLE Singers ADD COLUMN stringColumn STRING(1000) DEFAULT ('some_string')";
+    String expectedSql = "ALTER TABLE Singers ADD stringColumn STRING(1000) DEFAULT ('some_string')";
 
     addUpdateDdlStatementsResponse(expectedSql);
 
@@ -235,7 +235,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
   @Test
   void testCreateColumnWithDefaultValueBooleanFromYaml() throws Exception {
-    String expectedSql = "ALTER TABLE Singers ADD COLUMN booleanColumn BOOL DEFAULT (TRUE)";
+    String expectedSql = "ALTER TABLE Singers ADD booleanColumn BOOL DEFAULT (TRUE)";
 
     addUpdateDdlStatementsResponse(expectedSql);
 
@@ -255,7 +255,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
   @Test
   void testCreateColumnWithDefaultValueNumericFromYaml() throws Exception {
-    String expectedSql = "ALTER TABLE Singers ADD COLUMN numericColumn INT64 DEFAULT (100000)";
+    String expectedSql = "ALTER TABLE Singers ADD numericColumn INT64 DEFAULT (100000)";
 
     addUpdateDdlStatementsResponse(expectedSql);
 
@@ -275,7 +275,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
   @Test
   void testCreateColumnWithDefaultValueComputedFromYaml() throws Exception {
-    String expectedSql = "ALTER TABLE Singers ADD COLUMN uuid_column STRING(36) DEFAULT (GENERATE_UUID())";
+    String expectedSql = "ALTER TABLE Singers ADD uuid_column STRING(36) DEFAULT (GENERATE_UUID())";
 
     addUpdateDdlStatementsResponse(expectedSql);
 
@@ -296,7 +296,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
   @Test
   void testCreateColumnWithDefaultValueDateFromYaml() throws Exception {
     String timestamp = convertToUtcTimestamp("2008-02-12T12:34:03");
-    String expectedSql = "ALTER TABLE Singers ADD COLUMN timestampColumn timestamp DEFAULT (TIMESTAMP " + timestamp + ")";
+    String expectedSql = "ALTER TABLE Singers ADD timestampColumn timestamp DEFAULT (TIMESTAMP " + timestamp + ")";
 
     addUpdateDdlStatementsResponse(expectedSql);
 

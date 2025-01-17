@@ -45,10 +45,18 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
                                  "AND TABLE_SCHEMA = ? " +
                                  "AND TABLE_NAME = ? " +
                                  "AND COLUMN_NAME = ?";
-        String defaultValue = (String)((ExecutorService) Scope.getCurrentScope().getSingleton(ExecutorService.class))
+        String schemaName = columnInfo.getRelation().getSchema().getName() == null
+                                ?  database.getDefaultSchemaName()
+                                : columnInfo.getRelation().getSchema().getName();
+        String defaultValue = Scope.getCurrentScope().getSingleton(ExecutorService.class)
                                           .getExecutor("jdbc", database)
                                           .queryForObject(new RawParameterizedSqlStatement(selectQuery,
-                                              new Object[]{database.getDefaultCatalogName(), database.getDefaultSchemaName(), columnInfo.getRelation().getName(), columnInfo.getName()}), String.class);
+                                              new Object[]{
+                                                  columnInfo.getRelation().getSchema().getCatalog().getName(),
+                                                  schemaName,
+                                                  columnInfo.getRelation().getName(),
+                                                  columnInfo.getName()}),
+                                              String.class);
         if (defaultValue != null) {
           if (database.isFunction(defaultValue)) {
             columnMetadataResultSet.set("COLUMN_DEF", new DatabaseFunction((defaultValue)));

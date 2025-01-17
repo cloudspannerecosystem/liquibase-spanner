@@ -19,10 +19,7 @@ import liquibase.datatype.DatabaseDataType;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.core.AddColumnGenerator;
-import liquibase.statement.DatabaseFunction;
 import liquibase.statement.core.AddColumnStatement;
-
-import java.sql.Timestamp;
 
 public class AddColumnGeneratorSpanner extends AddColumnGenerator {
 
@@ -36,53 +33,34 @@ public class AddColumnGeneratorSpanner extends AddColumnGenerator {
         return (database instanceof ICloudSpanner);
     }
 
-    @Override
-    protected String generateSingleColumnSQL(AddColumnStatement statement, Database database) {
-        if (!(database instanceof ICloudSpanner)) {
-            return super.generateSingleColumnSQL(statement, database);
-        }
+  @Override
+  protected String generateSingleColumnSQL(AddColumnStatement statement, Database database) {
 
-        DatabaseDataType columnType = null;
-
-        if (statement.getColumnType() != null) {
-            columnType = DataTypeFactory.getInstance().fromDescription(statement.getColumnType() + (statement.isAutoIncrement() ? "{autoIncrement:true}" : ""), database).toDatabaseDataType(database);
-        }
-
-        // Add "COLUMN" keyword before column name for compatibility with Cloud Spanner
-        String alterTable = " ADD COLUMN " + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName());
-
-        if (columnType != null) {
-            alterTable += " " + columnType;
-        }
-
-        if (!statement.isNullable()) {
-            alterTable += " NOT NULL";
-        }
-
-        // Wrap default value in parentheses
-        Object defaultValue = statement.getDefaultValue();
-        if (defaultValue != null) {
-            String wrappedDefaultValue;
-            if (defaultValue instanceof DatabaseFunction){
-                wrappedDefaultValue = "(" + defaultValue + ")";
-            }else if (defaultValue instanceof Boolean){
-                if (defaultValue == Boolean.TRUE){
-                    wrappedDefaultValue = "(TRUE)";
-                }else {
-                    wrappedDefaultValue = "(FALSE)";
-                }
-            }else if (defaultValue instanceof Number){
-                wrappedDefaultValue = "(" + defaultValue + ")";
-            }else if (defaultValue instanceof Timestamp){
-                String clause =  DataTypeFactory.getInstance().fromDescription(statement.getColumnType(), database).objectToSql(defaultValue, database);
-                wrappedDefaultValue = "(" + clause + ")";
-            }
-            else{
-                wrappedDefaultValue = "('" + defaultValue + "')";
-            }
-            alterTable += " DEFAULT " + wrappedDefaultValue;
-        }
-        return alterTable;
+    if (!(database instanceof ICloudSpanner)) {
+      return super.generateSingleColumnSQL(statement, database);
     }
 
+    DatabaseDataType columnType = null;
+
+    if (statement.getColumnType() != null) {
+      columnType = DataTypeFactory.getInstance().fromDescription(statement.getColumnType() + (statement.isAutoIncrement() ? "{autoIncrement:true}" : ""), database).toDatabaseDataType(database);
+    }
+    String alterTable = " ADD " + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName());
+
+    if (columnType != null) {
+      alterTable += " " + columnType;
+    }
+
+    if (!statement.isNullable()) {
+      alterTable += " NOT NULL";
+    }
+
+    // Wrap default value in parentheses
+    Object defaultValue = statement.getDefaultValue();
+    if (defaultValue != null) {
+      String clause = DataTypeFactory.getInstance().fromDescription(statement.getColumnType(), database).objectToSql(defaultValue, database);
+      alterTable += " DEFAULT " + "(" + clause + ")";
+    }
+    return alterTable;
+  }
 }

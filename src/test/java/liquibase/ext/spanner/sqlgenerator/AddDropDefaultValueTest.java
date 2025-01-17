@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 Google LLC
+ * Copyright 2020 Google LLC
  *
  * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -36,20 +36,6 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     mockSpanner.reset();
     mockAdmin.reset();
   }
-
-//  @Test
-//  void testAddDefaultValueSingersFromYaml() throws Exception {
-//    for (String file : new String[]{"add-default-value-singers.spanner.yaml"}) {
-//      try (Connection con = createConnection();
-//          Liquibase liquibase = getLiquibase(con, file)) {
-//        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-//            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
-//        assertThat(exception.getMessage())
-//            .contains(AddDefaultValueGeneratorSpanner.ADD_DEFAULT_VALUE_VALIDATION_ERROR);
-//      }
-//    }
-//    assertThat(mockAdmin.getRequests()).isEmpty();
-//  }
 
   @Test
   void testDropDefaultValueSingersFromYaml() throws Exception {

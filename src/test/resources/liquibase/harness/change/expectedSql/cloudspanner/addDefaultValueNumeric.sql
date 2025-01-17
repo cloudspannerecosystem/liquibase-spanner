@@ -1,2 +1,2 @@
-ALTER TABLE authors ADD COLUMN numericColumn NUMERIC
+ALTER TABLE authors ADD numericColumn NUMERIC
 ALTER TABLE authors ALTER COLUMN numericColumn SET DEFAULT (100000000)

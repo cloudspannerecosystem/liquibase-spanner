@@ -50,7 +50,7 @@ public class MergeColumnsTest extends AbstractMockServerTest {
   @Test
   void testMergeSingersFirstNamdAndLastNameFromYaml() throws Exception {
     String[] expectedSql = new String[] {
-        "ALTER TABLE Singers ADD COLUMN FullName STRING(500)",
+        "ALTER TABLE Singers ADD FullName STRING(500)",
         "ALTER TABLE Singers DROP COLUMN FirstName",
         "ALTER TABLE Singers DROP COLUMN LastName",
       };

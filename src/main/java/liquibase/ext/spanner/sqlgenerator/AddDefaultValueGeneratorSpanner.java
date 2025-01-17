@@ -37,9 +37,16 @@ public class AddDefaultValueGeneratorSpanner extends AddDefaultValueGenerator {
     Object defaultValue = statement.getDefaultValue();
     StringBuilder queryStringBuilder = new StringBuilder();
     queryStringBuilder.append("ALTER TABLE ");
-    queryStringBuilder.append(database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()));
+    queryStringBuilder.append(database.escapeTableName(
+        statement.getCatalogName(),
+        statement.getSchemaName(),
+        statement.getTableName()));
     queryStringBuilder.append(" ALTER COLUMN ");
-    queryStringBuilder.append(statement.getColumnName());
+    queryStringBuilder.append(database.escapeColumnName(
+        statement.getCatalogName(),
+        statement.getSchemaName(),
+        statement.getTableName(),
+        statement.getColumnName()));
     queryStringBuilder.append(" SET DEFAULT (");
     queryStringBuilder.append(DataTypeFactory.getInstance()
         .fromObject(defaultValue, database)

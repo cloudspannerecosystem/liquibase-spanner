@@ -25,5 +25,5 @@ databaseChangeLog:
             tableName:  Singers
             columns:
               name: numericColumn
-              type: INT64
+              type: BIGINT
               defaultValueNumeric: 100000
