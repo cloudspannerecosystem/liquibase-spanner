@@ -1,1 +1,2 @@
-INVALID TEST -- Not supported in the current version of the Cloud Spanner extension; it will be added in future releases.
+ALTER TABLE authors ADD numericColumn NUMERIC
+ALTER TABLE authors ALTER COLUMN numericColumn SET DEFAULT (100000000)

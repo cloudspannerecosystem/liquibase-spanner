@@ -1,1 +1,1 @@
-INVALID TEST -- Not supported in the current version of the Cloud Spanner extension; it will be added in future releases.
+ALTER TABLE posts ALTER COLUMN title SET DEFAULT ('title_test')

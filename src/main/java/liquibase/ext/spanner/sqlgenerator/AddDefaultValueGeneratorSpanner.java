@@ -14,23 +14,46 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import liquibase.database.Database;
+import liquibase.datatype.DataTypeFactory;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
+import liquibase.sql.Sql;
+import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.AddDefaultValueGenerator;
 import liquibase.statement.core.AddDefaultValueStatement;
 
 public class AddDefaultValueGeneratorSpanner extends AddDefaultValueGenerator {
-  static final String ADD_DEFAULT_VALUE_VALIDATION_ERROR =
-      "Cloud Spanner does not support adding a default value to a column";
 
   @Override
   public ValidationErrors validate(
       AddDefaultValueStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-    ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(ADD_DEFAULT_VALUE_VALIDATION_ERROR);
-    return errors;
+    return super.validate(statement, database, sqlGeneratorChain);
+  }
+
+  @Override
+  public Sql[] generateSql(final AddDefaultValueStatement statement, final Database database, SqlGeneratorChain sqlGeneratorChain) {
+    Object defaultValue = statement.getDefaultValue();
+    StringBuilder queryStringBuilder = new StringBuilder();
+    queryStringBuilder.append("ALTER TABLE ");
+    queryStringBuilder.append(database.escapeTableName(
+        statement.getCatalogName(),
+        statement.getSchemaName(),
+        statement.getTableName()));
+    queryStringBuilder.append(" ALTER COLUMN ");
+    queryStringBuilder.append(database.escapeColumnName(
+        statement.getCatalogName(),
+        statement.getSchemaName(),
+        statement.getTableName(),
+        statement.getColumnName()));
+    queryStringBuilder.append(" SET DEFAULT (");
+    queryStringBuilder.append(DataTypeFactory.getInstance()
+        .fromObject(defaultValue, database)
+        .objectToSql(defaultValue, database));
+    queryStringBuilder.append(")");
+
+    return new Sql[]{new UnparsedSql(queryStringBuilder.toString(), getAffectedColumn(statement))};
   }
 
   @Override

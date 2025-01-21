@@ -64,6 +64,14 @@ class JdbcMetadataQueries {
           "ON seq.CATALOG = start_counter.CATALOG AND seq.SCHEMA = start_counter.SCHEMA AND seq.NAME = start_counter.NAME AND start_counter.OPTION_NAME = 'start_with_counter' " +
           "WHERE seq.CATALOG = ? AND seq.SCHEMA = ?"
       );
+  static final String GET_COLUMN_DEFAULT_VALUE =
+      convertPositionalParametersToNamedParameters(
+          "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS " +
+              "WHERE TABLE_CATALOG = ? " +
+              "AND TABLE_SCHEMA = ? " +
+              "AND TABLE_NAME = ? " +
+              "AND COLUMN_NAME = ?"
+      );
 
   static final ResultSetMetadata GET_SCHEMAS_METADATA =
       ResultSetMetadata.newBuilder()
@@ -662,6 +670,39 @@ class JdbcMetadataQueries {
       );
     }
     return builder.build();
+  }
+
+  static final ResultSetMetadata GET_COLUMN_DEFAULT_VALUE_METADATA =
+      ResultSetMetadata.newBuilder()
+          .setRowType(
+              StructType.newBuilder()
+                  .addFields(
+                      Field.newBuilder()
+                          .setName("COLUMN_DEF")
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING))))
+          .build();
+
+  static ResultSet createGetColumnDefaultValueResultSet(Iterable<ColumnDefaultValueMetadata> columnDef) {
+    ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_COLUMN_DEFAULT_VALUE_METADATA);
+    for (ColumnDefaultValueMetadata def : columnDef) {
+      builder.addRows(
+          ListValue.newBuilder()
+              .addValues(def.columnDefault == null
+                             ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                             : Value.newBuilder().setStringValue(def.columnDefault))
+          );
+    }
+    return builder.build();
+  }
+
+  static class ColumnDefaultValueMetadata {
+    final String columnDefault;
+
+
+    ColumnDefaultValueMetadata(
+        String columnDefault) {
+      this.columnDefault  = columnDefault;
+     }
   }
 
   static String readMetaDataSqlFromFile(String filename) {

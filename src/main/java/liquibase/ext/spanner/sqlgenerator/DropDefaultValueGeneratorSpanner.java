@@ -14,23 +14,35 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import liquibase.database.Database;
-import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
+import liquibase.sql.Sql;
+import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.DropDefaultValueGenerator;
 import liquibase.statement.core.DropDefaultValueStatement;
 
 public class DropDefaultValueGeneratorSpanner extends DropDefaultValueGenerator {
-  static final String DROP_DEFAULT_VALUE_VALIDATION_ERROR =
-      "Cloud Spanner does not support dropping a default value from a column";
 
   @Override
-  public ValidationErrors validate(
-      DropDefaultValueStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-    ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.addError(DROP_DEFAULT_VALUE_VALIDATION_ERROR);
-    return errors;
+  public Sql[] generateSql(DropDefaultValueStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+    StringBuilder queryStringBuilder = new StringBuilder();
+    queryStringBuilder.append("ALTER TABLE ");
+    queryStringBuilder.append(database.escapeTableName(
+        statement.getCatalogName(),
+        statement.getSchemaName(),
+        statement.getTableName()));
+    queryStringBuilder.append(" ALTER COLUMN ");
+    queryStringBuilder.append(database.escapeColumnName(
+        statement.getCatalogName(),
+        statement.getSchemaName(),
+        statement.getTableName(),
+        statement.getColumnName()));
+    queryStringBuilder.append(" DROP DEFAULT");
+
+    return new Sql[] {
+        new UnparsedSql(queryStringBuilder.toString(), getAffectedColumn(statement))
+    };
   }
 
   @Override

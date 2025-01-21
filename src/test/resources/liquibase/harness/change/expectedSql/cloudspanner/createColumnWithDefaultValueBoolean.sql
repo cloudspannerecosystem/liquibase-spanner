@@ -1,0 +1,1 @@
+ALTER TABLE authors ADD booleanColumn BOOL DEFAULT (TRUE)
