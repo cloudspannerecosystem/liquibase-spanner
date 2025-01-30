@@ -24,7 +24,7 @@ databaseChangeLog:
         - sql: CREATE SCHEMA new_schema;
         - rollback: DROP SCHEMA new_schema;
   - changeSet:
-      id: v0.2-create-table-with-schema
+      id: v0.1-create-table-with-schema
       author: spanner-liquibase-tests
       changes:
         - createTable:
@@ -40,3 +40,11 @@ databaseChangeLog:
               - column:
                   name: textCol
                   type: STRING(MAX)
+  - changeSet:
+      id: v0.1-create-sequence-with-schema
+      author: spanner-liquibase-tests
+      changes:
+        - createSequence:
+            schemaName: new_schema
+            sequenceName: test_sequence
+            startValue: 100

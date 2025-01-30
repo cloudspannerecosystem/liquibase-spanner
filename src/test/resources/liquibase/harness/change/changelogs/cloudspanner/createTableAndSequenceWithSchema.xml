@@ -5,18 +5,23 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet id="1" author="loite">
+    <changeSet id="1" author="spanner-liquibase-tests">
         <sql> CREATE SCHEMA newSchema</sql>
         <rollback>
             DROP SCHEMA newSchema
         </rollback>
     </changeSet>
-    <changeSet id="2" author="loite">
+    <changeSet id="2" author="spanner-liquibase-tests">
         <createTable tableName="createTableSchema" schemaName="newSchema">
             <column name="id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="textCol" type="text"/>
         </createTable>
+    </changeSet>
+    <changeSet id="3" author="spanner-liquibase-tests">
+        <createSequence sequenceName="test_sequence"
+                        schemaName="newSchema"
+                        startValue="100"/>
     </changeSet>
 </databaseChangeLog>
