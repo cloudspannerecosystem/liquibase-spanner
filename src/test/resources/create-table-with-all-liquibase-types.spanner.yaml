@@ -122,6 +122,12 @@ databaseChangeLog:
             -  column:
                 name:    ColStringMaxArray
                 type:    ARRAY<STRING(MAX)>
-            -  column:
+            - column:
                 name:    ColTimestampArray
                 type:    ARRAY<TIMESTAMP>
+            - column:
+                name:    ColFloat32
+                type:    float32
+            - column:
+                name:    ColJson
+                type:    Json
