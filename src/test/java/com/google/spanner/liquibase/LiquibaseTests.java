@@ -616,7 +616,9 @@ public class LiquibaseTests {
           new ColDesc("ColNumericArray", "ARRAY<NUMERIC>"),
           new ColDesc("ColStringArray", "ARRAY<STRING(100)>"),
           new ColDesc("ColStringMaxArray", "ARRAY<STRING(MAX)>"),
-          new ColDesc("ColTimestampArray", "ARRAY<TIMESTAMP>")};
+          new ColDesc("ColTimestampArray", "ARRAY<TIMESTAMP>"),
+          new ColDesc("ColFloat32", "FLOAT32"),
+          new ColDesc("ColJson", "JSON")};
       testTableColumns(currentConnection, "TableWithAllLiquibaseTypes", cols);
 
       testTablePrimaryKeys(currentConnection, "TableWithAllLiquibaseTypes",
