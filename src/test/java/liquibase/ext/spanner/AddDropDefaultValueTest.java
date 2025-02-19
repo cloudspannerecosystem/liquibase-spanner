@@ -14,13 +14,18 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import java.sql.Connection;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.util.ISODateFormat;
@@ -29,47 +34,41 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import java.sql.Connection;
-import java.text.ParseException;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 @Execution(ExecutionMode.SAME_THREAD)
-public class AddDropDefaultValueTest extends  AbstractMockServerTest {
+public class AddDropDefaultValueTest extends AbstractMockServerTest {
 
   @BeforeAll
-  static void setupResults(){
+  static void setupResults() {
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_COLUMN_DEFAULT_VALUE)
-                .bind("p1").to("") // Catalog
-                .bind("p2").to("") // Schema
-                .bind("p3").to("Singers") // Table name
-                .bind("p4").to("uuid_column") // Column Name
+                .bind("p1")
+                .to("") // Catalog
+                .bind("p2")
+                .to("") // Schema
+                .bind("p3")
+                .to("Singers") // Table name
+                .bind("p4")
+                .to("uuid_column") // Column Name
                 .build(),
             JdbcMetadataQueries.createGetColumnDefaultValueResultSet(
                 ImmutableList.of(
-                    new JdbcMetadataQueries.ColumnDefaultValueMetadata("GENERATE_UUID()")
-                )
-            )
-        ));
+                    new JdbcMetadataQueries.ColumnDefaultValueMetadata("GENERATE_UUID()")))));
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_COLUMN_DEFAULT_VALUE)
-                .bind("p1").to("") // Catalog
-                .bind("p2").to("") // Schema
-                .bind("p3").to("%") // Table name
-                .bind("p4").to("%") // Column Name
+                .bind("p1")
+                .to("") // Catalog
+                .bind("p2")
+                .to("") // Schema
+                .bind("p3")
+                .to("%") // Table name
+                .bind("p4")
+                .to("%") // Column Name
                 .build(),
             JdbcMetadataQueries.createGetColumnDefaultValueResultSet(
-                ImmutableList.of(
-                    new JdbcMetadataQueries.ColumnDefaultValueMetadata(null)
-                )
-            )
-        ));
+                ImmutableList.of(new JdbcMetadataQueries.ColumnDefaultValueMetadata(null)))));
   }
 
   @BeforeEach
@@ -82,7 +81,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
   void testAddDefaultValueFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ALTER COLUMN LastName SET DEFAULT ('some-name')",
+          "ALTER TABLE Singers ALTER COLUMN LastName SET DEFAULT ('some-name')",
         };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
@@ -90,7 +89,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
     for (String file : new String[] {"add-default-value-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -108,8 +107,8 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
   void testAddDefaultValueBooleanFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ADD booleanColumn BOOL",
-            "ALTER TABLE Singers ALTER COLUMN booleanColumn SET DEFAULT (TRUE)",
+          "ALTER TABLE Singers ADD booleanColumn BOOL",
+          "ALTER TABLE Singers ALTER COLUMN booleanColumn SET DEFAULT (TRUE)",
         };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
@@ -117,7 +116,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
     for (String file : new String[] {"add-default-value-boolean-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -135,8 +134,8 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
   void testAddDefaultValueNumericFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ADD numericColumn INT64",
-            "ALTER TABLE Singers ALTER COLUMN numericColumn SET DEFAULT (1000000)",
+          "ALTER TABLE Singers ADD numericColumn INT64",
+          "ALTER TABLE Singers ALTER COLUMN numericColumn SET DEFAULT (1000000)",
         };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
@@ -144,7 +143,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
     for (String file : new String[] {"add-default-value-numeric-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -162,8 +161,8 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
   void testAddDefaultValueComputedFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ADD uuid_column STRING(36)",
-            "ALTER TABLE Singers ALTER COLUMN uuid_column SET DEFAULT (GENERATE_UUID())",
+          "ALTER TABLE Singers ADD uuid_column STRING(36)",
+          "ALTER TABLE Singers ALTER COLUMN uuid_column SET DEFAULT (GENERATE_UUID())",
         };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
@@ -171,7 +170,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
     for (String file : new String[] {"add-default-value-computed-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -190,8 +189,10 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
     String timestamp = convertToUtcTimestamp("2008-02-12T12:34:03");
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ADD timestampColumn timestamp",
-            "ALTER TABLE Singers ALTER COLUMN timestampColumn SET DEFAULT (TIMESTAMP " + timestamp +")",
+          "ALTER TABLE Singers ADD timestampColumn timestamp",
+          "ALTER TABLE Singers ALTER COLUMN timestampColumn SET DEFAULT (TIMESTAMP "
+              + timestamp
+              + ")",
         };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
@@ -199,7 +200,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
     for (String file : new String[] {"add-default-value-date-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -215,13 +216,14 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
   @Test
   void testCreateColumnWithDefaultValueFromYaml() throws Exception {
-    String expectedSql = "ALTER TABLE Singers ADD stringColumn STRING(1000) DEFAULT ('some_string')";
+    String expectedSql =
+        "ALTER TABLE Singers ADD stringColumn STRING(1000) DEFAULT ('some_string')";
 
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"create-column-with-default-value.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -241,7 +243,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
     for (String file : new String[] {"create-column-with-default-value-boolean.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -261,7 +263,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
     for (String file : new String[] {"create-column-with-default-value-numeric.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -281,7 +283,7 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
     for (String file : new String[] {"create-column-with-default-value-computed.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -291,18 +293,19 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
     UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
     assertThat(request.getStatementsList()).hasSize(1);
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
-    }
+  }
 
   @Test
   void testCreateColumnWithDefaultValueDateFromYaml() throws Exception {
     String timestamp = convertToUtcTimestamp("2008-02-12T12:34:03");
-    String expectedSql = "ALTER TABLE Singers ADD timestampColumn timestamp DEFAULT (TIMESTAMP " + timestamp + ")";
+    String expectedSql =
+        "ALTER TABLE Singers ADD timestampColumn timestamp DEFAULT (TIMESTAMP " + timestamp + ")";
 
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"create-column-with-default-value-date.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -316,13 +319,12 @@ public class AddDropDefaultValueTest extends  AbstractMockServerTest {
 
   @Test
   void testDropDefaultValueFromYaml() throws Exception {
-    String expectedSql =
-        "ALTER TABLE Singers ALTER COLUMN LastName DROP DEFAULT";
+    String expectedSql = "ALTER TABLE Singers ALTER COLUMN LastName DROP DEFAULT";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"drop-default-value-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }

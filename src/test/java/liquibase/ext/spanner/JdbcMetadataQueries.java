@@ -19,20 +19,18 @@ import java.sql.DatabaseMetaData;
 import java.util.Scanner;
 
 class JdbcMetadataQueries {
-  private static final AbstractStatementParser PARSER = AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL);
+  private static final AbstractStatementParser PARSER =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL);
 
   static final String GET_SCHEMAS =
       convertPositionalParametersToNamedParameters(
-          PARSER.removeCommentsAndTrim(
-              readMetaDataSqlFromFile("DatabaseMetaData_GetSchemas.sql")));
+          PARSER.removeCommentsAndTrim(readMetaDataSqlFromFile("DatabaseMetaData_GetSchemas.sql")));
   static final String GET_TABLES =
       convertPositionalParametersToNamedParameters(
-          PARSER.removeCommentsAndTrim(
-              readMetaDataSqlFromFile("DatabaseMetaData_GetTables.sql")));
+          PARSER.removeCommentsAndTrim(readMetaDataSqlFromFile("DatabaseMetaData_GetTables.sql")));
   static final String GET_COLUMNS =
       convertPositionalParametersToNamedParameters(
-          PARSER.removeCommentsAndTrim(
-              readMetaDataSqlFromFile("DatabaseMetaData_GetColumns.sql")));
+          PARSER.removeCommentsAndTrim(readMetaDataSqlFromFile("DatabaseMetaData_GetColumns.sql")));
   static final String GET_INDEX_INFO =
       convertPositionalParametersToNamedParameters(
           PARSER.removeCommentsAndTrim(
@@ -47,31 +45,29 @@ class JdbcMetadataQueries {
               readMetaDataSqlFromFile("DatabaseMetaData_GetImportedKeys.sql")));
   static final String GET_SEQUENCES =
       convertPositionalParametersToNamedParameters(
-      "SELECT " +
-          "seq.NAME AS SEQUENCE_NAME, " +
-          "seq_kind.OPTION_VALUE AS SEQUENCE_KIND, " +
-          "skip_max.OPTION_VALUE AS SKIP_RANGE_MAX, " +
-          "skip_min.OPTION_VALUE AS SKIP_RANGE_MIN, " +
-          "start_counter.OPTION_VALUE AS START_VALUE " +
-          "FROM INFORMATION_SCHEMA.SEQUENCES AS seq " +
-          "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS seq_kind " +
-          "ON seq.CATALOG = seq_kind.CATALOG AND seq.SCHEMA = seq_kind.SCHEMA AND seq.NAME = seq_kind.NAME AND seq_kind.OPTION_NAME = 'sequence_kind' " +
-          "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_max " +
-          "ON seq.CATALOG = skip_max.CATALOG AND seq.SCHEMA = skip_max.SCHEMA AND seq.NAME = skip_max.NAME AND skip_max.OPTION_NAME = 'skip_range_max' " +
-          "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_min " +
-          "ON seq.CATALOG = skip_min.CATALOG AND seq.SCHEMA = skip_min.SCHEMA AND seq.NAME = skip_min.NAME AND skip_min.OPTION_NAME = 'skip_range_min' " +
-          "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS start_counter " +
-          "ON seq.CATALOG = start_counter.CATALOG AND seq.SCHEMA = start_counter.SCHEMA AND seq.NAME = start_counter.NAME AND start_counter.OPTION_NAME = 'start_with_counter' " +
-          "WHERE seq.CATALOG = ? AND seq.SCHEMA = ?"
-      );
+          "SELECT "
+              + "seq.NAME AS SEQUENCE_NAME, "
+              + "seq_kind.OPTION_VALUE AS SEQUENCE_KIND, "
+              + "skip_max.OPTION_VALUE AS SKIP_RANGE_MAX, "
+              + "skip_min.OPTION_VALUE AS SKIP_RANGE_MIN, "
+              + "start_counter.OPTION_VALUE AS START_VALUE "
+              + "FROM INFORMATION_SCHEMA.SEQUENCES AS seq "
+              + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS seq_kind "
+              + "ON seq.CATALOG = seq_kind.CATALOG AND seq.SCHEMA = seq_kind.SCHEMA AND seq.NAME = seq_kind.NAME AND seq_kind.OPTION_NAME = 'sequence_kind' "
+              + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_max "
+              + "ON seq.CATALOG = skip_max.CATALOG AND seq.SCHEMA = skip_max.SCHEMA AND seq.NAME = skip_max.NAME AND skip_max.OPTION_NAME = 'skip_range_max' "
+              + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_min "
+              + "ON seq.CATALOG = skip_min.CATALOG AND seq.SCHEMA = skip_min.SCHEMA AND seq.NAME = skip_min.NAME AND skip_min.OPTION_NAME = 'skip_range_min' "
+              + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS start_counter "
+              + "ON seq.CATALOG = start_counter.CATALOG AND seq.SCHEMA = start_counter.SCHEMA AND seq.NAME = start_counter.NAME AND start_counter.OPTION_NAME = 'start_with_counter' "
+              + "WHERE seq.CATALOG = ? AND seq.SCHEMA = ?");
   static final String GET_COLUMN_DEFAULT_VALUE =
       convertPositionalParametersToNamedParameters(
-          "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS " +
-              "WHERE TABLE_CATALOG = ? " +
-              "AND TABLE_SCHEMA = ? " +
-              "AND TABLE_NAME = ? " +
-              "AND COLUMN_NAME = ?"
-      );
+          "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS "
+              + "WHERE TABLE_CATALOG = ? "
+              + "AND TABLE_SCHEMA = ? "
+              + "AND TABLE_NAME = ? "
+              + "AND COLUMN_NAME = ?");
 
   static final ResultSetMetadata GET_SCHEMAS_METADATA =
       ResultSetMetadata.newBuilder()
@@ -135,7 +131,7 @@ class JdbcMetadataQueries {
 
   static ResultSet createGetSchemasResultSet() {
     ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_SCHEMAS_METADATA);
-    for (String name : new String[]{"", "INFORMATION_SCHEMA", "SPANNER_SYS"}) {
+    for (String name : new String[] {"", "INFORMATION_SCHEMA", "SPANNER_SYS"}) {
       builder.addRows(
           ListValue.newBuilder()
               .addValues(Value.newBuilder().setStringValue(name))
@@ -162,7 +158,7 @@ class JdbcMetadataQueries {
     }
     return builder.build();
   }
-  
+
   static final ResultSetMetadata GET_PRIMARY_KEYS_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -190,10 +186,9 @@ class JdbcMetadataQueries {
                   .addFields(
                       Field.newBuilder()
                           .setName("PK_NAME")
-                          .setType(Type.newBuilder().setCode(TypeCode.STRING)))
-              )
+                          .setType(Type.newBuilder().setCode(TypeCode.STRING))))
           .build();
-  
+
   static class PrimaryKeyMetaData {
     final String table;
     final String column;
@@ -215,13 +210,12 @@ class JdbcMetadataQueries {
               .addValues(Value.newBuilder().setStringValue(key.table))
               .addValues(Value.newBuilder().setStringValue(key.column))
               .addValues(Value.newBuilder().setStringValue(String.valueOf(position)))
-              .addValues(Value.newBuilder().setStringValue("PRIMARY_KEY"))
-          );
+              .addValues(Value.newBuilder().setStringValue("PRIMARY_KEY")));
       position++;
     }
     return builder.build();
   }
-  
+
   static final ResultSetMetadata GET_IMPORTED_KEYS_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -281,10 +275,9 @@ class JdbcMetadataQueries {
                   .addFields(
                       Field.newBuilder()
                           .setName("DEFERRABILITY")
-                          .setType(Type.newBuilder().setCode(TypeCode.INT64)))
-              )
+                          .setType(Type.newBuilder().setCode(TypeCode.INT64))))
           .build();
-  
+
   static class ImportedKeyMetaData {
     final String pkTable;
     final String pkColumn;
@@ -318,8 +311,7 @@ class JdbcMetadataQueries {
               .addValues(Value.newBuilder().setStringValue("0"))
               .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE))
               .addValues(Value.newBuilder().setStringValue("PRIMARY_KEY"))
-              .addValues(Value.newBuilder().setStringValue("7"))
-          );
+              .addValues(Value.newBuilder().setStringValue("7")));
       position++;
     }
     return builder.build();
@@ -485,7 +477,7 @@ class JdbcMetadataQueries {
     }
     return builder.build();
   }
-  
+
   static final ResultSetMetadata GET_INDEX_INFO_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -539,7 +531,7 @@ class JdbcMetadataQueries {
                           .setName("PAGES")
                           .setType(Type.newBuilder().setCode(TypeCode.INT64))))
           .build();
-  
+
   static class IndexMetaData {
     final String table;
     final boolean unique;
@@ -579,16 +571,17 @@ class JdbcMetadataQueries {
               .addValues(Value.newBuilder().setStringValue(""))
               .addValues(Value.newBuilder().setStringValue(index.name))
               .addValues(Value.newBuilder().setStringValue(index.primaryKey ? "1" : "2"))
-              .addValues(index.ordinalPosition == null
-                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
-                  : Value.newBuilder().setStringValue(String.valueOf(index.ordinalPosition)))
+              .addValues(
+                  index.ordinalPosition == null
+                      ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                      : Value.newBuilder().setStringValue(String.valueOf(index.ordinalPosition)))
               .addValues(Value.newBuilder().setStringValue(index.column))
-              .addValues(index.ascending == null
-                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
-                  : Value.newBuilder().setStringValue(index.ascending ? "A" : "D"))
+              .addValues(
+                  index.ascending == null
+                      ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                      : Value.newBuilder().setStringValue(index.ascending ? "A" : "D"))
               .addValues(Value.newBuilder().setStringValue("-1"))
-              .addValues(Value.newBuilder().setStringValue("-1"))
-          );
+              .addValues(Value.newBuilder().setStringValue("-1")));
     }
     return builder.build();
   }
@@ -634,7 +627,6 @@ class JdbcMetadataQueries {
     final Integer skipRangeMin;
     final Integer startCounter;
 
-
     SequenceMetadata(
         String sequenceName,
         String sequenceKind,
@@ -658,16 +650,18 @@ class JdbcMetadataQueries {
               .addValues(Value.newBuilder().setStringValue(""))
               .addValues(Value.newBuilder().setStringValue(sequence.sequenceName))
               .addValues(Value.newBuilder().setStringValue(sequence.sequenceKind))
-              .addValues(sequence.skipRangeMax == null
-                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
-                  : Value.newBuilder().setStringValue(sequence.skipRangeMax.toString()))
-              .addValues(sequence.skipRangeMin == null
-                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
-                  : Value.newBuilder().setStringValue(sequence.skipRangeMin.toString()))
-              .addValues(sequence.startCounter == null
-                  ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
-                  : Value.newBuilder().setStringValue(sequence.startCounter.toString()))
-      );
+              .addValues(
+                  sequence.skipRangeMax == null
+                      ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                      : Value.newBuilder().setStringValue(sequence.skipRangeMax.toString()))
+              .addValues(
+                  sequence.skipRangeMin == null
+                      ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                      : Value.newBuilder().setStringValue(sequence.skipRangeMin.toString()))
+              .addValues(
+                  sequence.startCounter == null
+                      ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                      : Value.newBuilder().setStringValue(sequence.startCounter.toString())));
     }
     return builder.build();
   }
@@ -682,15 +676,17 @@ class JdbcMetadataQueries {
                           .setType(Type.newBuilder().setCode(TypeCode.STRING))))
           .build();
 
-  static ResultSet createGetColumnDefaultValueResultSet(Iterable<ColumnDefaultValueMetadata> columnDef) {
-    ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_COLUMN_DEFAULT_VALUE_METADATA);
+  static ResultSet createGetColumnDefaultValueResultSet(
+      Iterable<ColumnDefaultValueMetadata> columnDef) {
+    ResultSet.Builder builder =
+        ResultSet.newBuilder().setMetadata(GET_COLUMN_DEFAULT_VALUE_METADATA);
     for (ColumnDefaultValueMetadata def : columnDef) {
       builder.addRows(
           ListValue.newBuilder()
-              .addValues(def.columnDefault == null
-                             ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
-                             : Value.newBuilder().setStringValue(def.columnDefault))
-          );
+              .addValues(
+                  def.columnDefault == null
+                      ? Value.newBuilder().setNullValue(NullValue.NULL_VALUE)
+                      : Value.newBuilder().setStringValue(def.columnDefault)));
     }
     return builder.build();
   }
@@ -698,11 +694,9 @@ class JdbcMetadataQueries {
   static class ColumnDefaultValueMetadata {
     final String columnDefault;
 
-
-    ColumnDefaultValueMetadata(
-        String columnDefault) {
-      this.columnDefault  = columnDefault;
-     }
+    ColumnDefaultValueMetadata(String columnDefault) {
+      this.columnDefault = columnDefault;
+    }
   }
 
   static String readMetaDataSqlFromFile(String filename) {

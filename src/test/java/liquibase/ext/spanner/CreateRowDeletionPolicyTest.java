@@ -13,17 +13,16 @@
  */
 package liquibase.ext.spanner;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-
-import java.sql.Connection;
-
-import static com.google.common.truth.Truth.assertThat;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class CreateRowDeletionPolicyTest extends AbstractMockServerTest {
@@ -37,24 +36,23 @@ public class CreateRowDeletionPolicyTest extends AbstractMockServerTest {
   @Test
   void testCreateRowDeletionPolicyFromYaml() throws Exception {
     String[] expectedSql =
-        new String[]{
-            "CREATE TABLE MyTable(\n" +
-                "Key INT64,\n" +
-                "CreatedAt TIMESTAMP,\n" +
-                ") PRIMARY KEY (Key),\n" +
-                "ROW DELETION POLICY (OLDER_THAN(<var>timestamp_column</var>, INTERVAL <var>num_days</var> DAY))",
-            "ALTER TABLE MyTable\n" +
-                "REPLACE ROW DELETION POLICY (OLDER_THAN(ModifiedAt, INTERVAL 7 DAY))",
-            "ALTER TABLE MyTable\n" +
-                "DROP ROW DELETION POLICY"
+        new String[] {
+          "CREATE TABLE MyTable(\n"
+              + "Key INT64,\n"
+              + "CreatedAt TIMESTAMP,\n"
+              + ") PRIMARY KEY (Key),\n"
+              + "ROW DELETION POLICY (OLDER_THAN(<var>timestamp_column</var>, INTERVAL <var>num_days</var> DAY))",
+          "ALTER TABLE MyTable\n"
+              + "REPLACE ROW DELETION POLICY (OLDER_THAN(ModifiedAt, INTERVAL 7 DAY))",
+          "ALTER TABLE MyTable\n" + "DROP ROW DELETION POLICY"
         };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
     }
 
-    for (String file : new String[]{"create-row-deletion-policy.spanner.yaml"}) {
+    for (String file : new String[] {"create-row-deletion-policy.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }

@@ -1,6 +1,7 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
@@ -25,7 +26,7 @@ public class SimpleMockServerTest extends AbstractMockServerTest {
     assertThat(mockAdmin.getRequests()).hasSize(1);
     assertThat(mockAdmin.getRequests().get(0)).isInstanceOf(UpdateDatabaseDdlRequest.class);
     assertThat(getUpdateDdlStatementsList(0)).containsExactly(statement).inOrder();
-    
+
     // This test does not use Liquibase but JDBC directly, so it is expected to send requests that
     // do not contain a Liquibase client lib token.
     assertThat(receivedRequestWithNonLiquibaseToken.get()).isTrue();

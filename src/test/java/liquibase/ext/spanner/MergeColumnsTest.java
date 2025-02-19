@@ -14,6 +14,7 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.protobuf.AbstractMessage;
@@ -22,23 +23,24 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import java.sql.Connection;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import liquibase.Contexts;
+import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import liquibase.Contexts;
-import liquibase.Liquibase;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class MergeColumnsTest extends AbstractMockServerTest {
 
   @BeforeAll
   static void setupResults() {
-    mockSpanner.putStatementResult(StatementResult.update(
-        Statement
-            .of("UPDATE Singers SET FullName = FirstName || 'some-string' || LastName WHERE TRUE"),
-        10));
+    mockSpanner.putStatementResult(
+        StatementResult.update(
+            Statement.of(
+                "UPDATE Singers SET FullName = FirstName || 'some-string' || LastName WHERE TRUE"),
+            10));
   }
 
   @BeforeEach
@@ -49,17 +51,19 @@ public class MergeColumnsTest extends AbstractMockServerTest {
 
   @Test
   void testMergeSingersFirstNamdAndLastNameFromYaml() throws Exception {
-    String[] expectedSql = new String[] {
-        "ALTER TABLE Singers ADD FullName STRING(500)",
-        "ALTER TABLE Singers DROP COLUMN FirstName",
-        "ALTER TABLE Singers DROP COLUMN LastName",
-      };
+    String[] expectedSql =
+        new String[] {
+          "ALTER TABLE Singers ADD FullName STRING(500)",
+          "ALTER TABLE Singers DROP COLUMN FirstName",
+          "ALTER TABLE Singers DROP COLUMN LastName",
+        };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
     }
 
     for (String file : new String[] {"merge-singers-firstname-and-lastname.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -72,21 +76,30 @@ public class MergeColumnsTest extends AbstractMockServerTest {
       assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql[i]);
     }
     // Verify that the mock server received one BeginTransactionRequest for a PDML transaction.
-    assertThat(mockSpanner.getRequests().stream().filter(new Predicate<AbstractMessage>() {
-      @Override
-      public boolean test(AbstractMessage t) {
-        return t instanceof BeginTransactionRequest;
-      }
-    }).map(new Function<AbstractMessage, BeginTransactionRequest>() {
-      @Override
-      public BeginTransactionRequest apply(AbstractMessage t) {
-        return (BeginTransactionRequest) t;
-      }
-    }).filter(new Predicate<BeginTransactionRequest>() {
-      @Override
-      public boolean test(BeginTransactionRequest t) {
-        return t.hasOptions() && t.getOptions().hasPartitionedDml();
-      }
-    }).count()).isEqualTo(1L);
+    assertThat(
+            mockSpanner.getRequests().stream()
+                .filter(
+                    new Predicate<AbstractMessage>() {
+                      @Override
+                      public boolean test(AbstractMessage t) {
+                        return t instanceof BeginTransactionRequest;
+                      }
+                    })
+                .map(
+                    new Function<AbstractMessage, BeginTransactionRequest>() {
+                      @Override
+                      public BeginTransactionRequest apply(AbstractMessage t) {
+                        return (BeginTransactionRequest) t;
+                      }
+                    })
+                .filter(
+                    new Predicate<BeginTransactionRequest>() {
+                      @Override
+                      public boolean test(BeginTransactionRequest t) {
+                        return t.hasOptions() && t.getOptions().hasPartitionedDml();
+                      }
+                    })
+                .count())
+        .isEqualTo(1L);
   }
 }

@@ -13,10 +13,7 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
-import java.util.ArrayList;
-import java.util.List;
 import liquibase.database.Database;
-import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
 import liquibase.sql.UnparsedSql;
@@ -28,8 +25,8 @@ import liquibase.statement.core.CreateViewStatement;
 public class CreateViewGeneratorSpanner extends CreateViewGenerator {
 
   @Override
-  public Sql[] generateSql(CreateViewStatement statement, Database database,
-      SqlGeneratorChain sqlGeneratorChain) {
+  public Sql[] generateSql(
+      CreateViewStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     StringBuilder sql = new StringBuilder();
     if (!statement.isFullDefinition()) {
       sql.append("CREATE ");
@@ -44,7 +41,7 @@ public class CreateViewGeneratorSpanner extends CreateViewGenerator {
     }
     sql.append(statement.getSelectQuery());
 
-    return new Sql[] { new UnparsedSql(sql.toString(), getAffectedView(statement)) };
+    return new Sql[] {new UnparsedSql(sql.toString(), getAffectedView(statement))};
   }
 
   @Override

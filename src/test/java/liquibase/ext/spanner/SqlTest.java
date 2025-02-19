@@ -41,10 +41,12 @@ public class SqlTest extends AbstractMockServerTest {
           + "select 3, 'Three', ['Tre', 'Drei', 'Tres']\n"
           + "union all\n"
           + "select 4, 'Four', ['Fire', 'Vier', 'Cuatro']";
-  
+
   @BeforeAll
   static void setupResults() {
-    mockSpanner.putStatementResult(StatementResult.update(Statement.of("UPDATE DATABASECHANGELOG SET MD5SUM = NULL WHERE true"), 0L));
+    mockSpanner.putStatementResult(
+        StatementResult.update(
+            Statement.of("UPDATE DATABASECHANGELOG SET MD5SUM = NULL WHERE true"), 0L));
     mockSpanner.putStatementResult(StatementResult.update(Statement.of(INSERT1), 1L));
     mockSpanner.putStatementResult(StatementResult.update(Statement.of(INSERT2), 1L));
   }
@@ -64,8 +66,10 @@ public class SqlTest extends AbstractMockServerTest {
         liquibase.update(new Contexts("test"));
       }
     }
-    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream().filter(request -> request.getSql().equals(INSERT1) || request.getSql().equals(INSERT2)).collect(
-        Collectors.toList());
+    List<ExecuteSqlRequest> requests =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+            .filter(request -> request.getSql().equals(INSERT1) || request.getSql().equals(INSERT2))
+            .collect(Collectors.toList());
     assertThat(requests.size()).isEqualTo(2);
   }
 }

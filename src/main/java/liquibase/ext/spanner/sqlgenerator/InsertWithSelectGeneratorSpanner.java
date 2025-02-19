@@ -1,31 +1,28 @@
 /**
  * Copyright 2020 Google LLC
  *
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * <p>https://www.apache.org/licenses/LICENSE-2.0
  *
- * <p>
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package liquibase.ext.spanner.sqlgenerator;
 
 import java.util.Date;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeFactory;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
 import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.InsertGenerator;
 import liquibase.statement.DatabaseFunction;
 import liquibase.statement.core.InsertStatement;
-import liquibase.ext.spanner.ICloudSpanner;
 
 /** Generator for INSERT statements in the form 'INSERT INTO FOO (..) SELECT ...'. */
 public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
@@ -42,12 +39,15 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
   }
 
   @Override
-  public Sql[] generateSql(InsertStatement statement, Database database,
-      SqlGeneratorChain sqlGeneratorChain) {
+  public Sql[] generateSql(
+      InsertStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     // Generate INSERT INTO (...) header.
     StringBuilder sql = new StringBuilder();
-    sql.append("INSERT INTO ").append(database.escapeTableName(statement.getCatalogName(),
-        statement.getSchemaName(), statement.getTableName())).append(" (");
+    sql.append("INSERT INTO ")
+        .append(
+            database.escapeTableName(
+                statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()))
+        .append(" (");
     boolean first = true;
     for (String column : statement.getColumnValues().keySet()) {
       if (first) {
@@ -55,8 +55,12 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
       } else {
         sql.append(", ");
       }
-      sql.append(database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(),
-          statement.getTableName(), column));
+      sql.append(
+          database.escapeColumnName(
+              statement.getCatalogName(),
+              statement.getSchemaName(),
+              statement.getTableName(),
+              column));
     }
     sql.append(")");
 
@@ -74,8 +78,10 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
         sql.append("NULL");
       } else if ((newValue instanceof String)
           && !looksLikeFunctionCall(((String) newValue), database)) {
-        sql.append(DataTypeFactory.getInstance().fromObject(newValue, database)
-            .objectToSql(newValue, database));
+        sql.append(
+            DataTypeFactory.getInstance()
+                .fromObject(newValue, database)
+                .objectToSql(newValue, database));
       } else if (newValue instanceof Date) {
         sql.append(database.getDateLiteral(((Date) newValue)));
       } else if (newValue instanceof Boolean) {
@@ -93,5 +99,4 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
 
     return new Sql[] {new UnparsedSql(sql.toString(), getAffectedTable(statement))};
   }
-
 }

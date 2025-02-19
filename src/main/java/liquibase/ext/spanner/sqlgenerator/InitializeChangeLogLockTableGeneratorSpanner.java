@@ -15,6 +15,7 @@ package liquibase.ext.spanner.sqlgenerator;
 
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.SqlGeneratorFactory;
@@ -23,7 +24,6 @@ import liquibase.statement.SqlStatement;
 import liquibase.statement.core.DeleteStatement;
 import liquibase.statement.core.InitializeDatabaseChangeLogLockTableStatement;
 import liquibase.statement.core.InsertStatement;
-import liquibase.ext.spanner.ICloudSpanner;
 
 public class InitializeChangeLogLockTableGeneratorSpanner
     extends AbstractSqlGenerator<InitializeDatabaseChangeLogLockTableStatement> {
@@ -65,8 +65,8 @@ public class InitializeChangeLogLockTableGeneratorSpanner
   }
 
   @Override
-  public boolean supports(InitializeDatabaseChangeLogLockTableStatement statement, Database database) {
+  public boolean supports(
+      InitializeDatabaseChangeLogLockTableStatement statement, Database database) {
     return (database instanceof ICloudSpanner);
   }
-  
 }

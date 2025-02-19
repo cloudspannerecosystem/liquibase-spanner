@@ -20,42 +20,44 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
-
-import java.sql.Types;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import liquibase.CatalogAndSchema;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.ext.spanner.JdbcMetadataQueries.ColumnMetaData;
 import liquibase.ext.spanner.JdbcMetadataQueries.IndexMetaData;
+import liquibase.ext.spanner.JdbcMetadataQueries.SequenceMetadata;
+import liquibase.snapshot.DatabaseSnapshot;
+import liquibase.snapshot.SnapshotControl;
+import liquibase.snapshot.SnapshotGeneratorFactory;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Index;
 import liquibase.structure.core.Schema;
 import liquibase.structure.core.Sequence;
+import liquibase.structure.core.Table;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import liquibase.CatalogAndSchema;
-import liquibase.Liquibase;
-import liquibase.database.Database;
-import liquibase.ext.spanner.JdbcMetadataQueries.ColumnMetaData;
-import liquibase.snapshot.DatabaseSnapshot;
-import liquibase.snapshot.SnapshotControl;
-import liquibase.snapshot.SnapshotGeneratorFactory;
-import liquibase.structure.core.Table;
-import liquibase.ext.spanner.JdbcMetadataQueries.SequenceMetadata;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class GenerateSnapshotTest extends AbstractMockServerTest {
-  
+
   @BeforeAll
   static void setupResults() {
-    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(JdbcMetadataQueries.GET_SCHEMAS)
-                .bind("p1").to("%")
-            .bind("p2").to("%")
-            .build(),
-        JdbcMetadataQueries.createGetSchemasResultSet()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(JdbcMetadataQueries.GET_SCHEMAS)
+                .bind("p1")
+                .to("%")
+                .bind("p2")
+                .to("%")
+                .build(),
+            JdbcMetadataQueries.createGetSchemasResultSet()));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
@@ -118,14 +120,22 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                 .bind("p3")
                 .to("SINGERS") // Table
                 .bind("p4")
-                .to("%") // Index 
+                .to("%") // Index
                 .bind("p5")
                 .to("%") // Unique
                 .build(),
-            JdbcMetadataQueries.createGetIndexInfoResultSet(ImmutableList.of(
-                new IndexMetaData("Singers", false, "Idx_Singers_FirstName", false, 1, "FirstName", true),
-                new IndexMetaData("Singers", false, "Idx_Singers_FirstName", false, null, "LastName", null)
-            ))));
+            JdbcMetadataQueries.createGetIndexInfoResultSet(
+                ImmutableList.of(
+                    new IndexMetaData(
+                        "Singers", false, "Idx_Singers_FirstName", false, 1, "FirstName", true),
+                    new IndexMetaData(
+                        "Singers",
+                        false,
+                        "Idx_Singers_FirstName",
+                        false,
+                        null,
+                        "LastName",
+                        null)))));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_COLUMNS)
@@ -136,21 +146,40 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                 .bind("p3")
                 .to("%") // Table
                 .bind("p4")
-                .to("%") // Column 
+                .to("%") // Column
                 .build(),
             JdbcMetadataQueries.createGetColumnsResultSet(
                 ImmutableList.of(
-                  new ColumnMetaData("Singers", "SingerId", java.sql.Types.BIGINT, "INT64", 8, java.sql.DatabaseMetaData.columnNoNulls),
-                  new ColumnMetaData("Singers", "FirstName", java.sql.Types.NVARCHAR, "STRING(100)", 100, java.sql.DatabaseMetaData.columnNullable),
-                  new ColumnMetaData("Singers", "LastName", java.sql.Types.NVARCHAR, "STRING(200)", 200, java.sql.DatabaseMetaData.columnNoNulls)
-                )
-              )
-            ));
-    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(JdbcMetadataQueries.GET_SCHEMAS)
-                .bind("p1").to("%")
-                .bind("p2").to("%")
+                    new ColumnMetaData(
+                        "Singers",
+                        "SingerId",
+                        java.sql.Types.BIGINT,
+                        "INT64",
+                        8,
+                        java.sql.DatabaseMetaData.columnNoNulls),
+                    new ColumnMetaData(
+                        "Singers",
+                        "FirstName",
+                        java.sql.Types.NVARCHAR,
+                        "STRING(100)",
+                        100,
+                        java.sql.DatabaseMetaData.columnNullable),
+                    new ColumnMetaData(
+                        "Singers",
+                        "LastName",
+                        java.sql.Types.NVARCHAR,
+                        "STRING(200)",
+                        200,
+                        java.sql.DatabaseMetaData.columnNoNulls)))));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(JdbcMetadataQueries.GET_SCHEMAS)
+                .bind("p1")
+                .to("%")
+                .bind("p2")
+                .to("%")
                 .build(),
-        JdbcMetadataQueries.createGetSchemasResultSet()));
+            JdbcMetadataQueries.createGetSchemasResultSet()));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_SEQUENCES)
@@ -161,10 +190,8 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                 .build(),
             JdbcMetadataQueries.createGetSequenceResultSet(
                 ImmutableList.of(
-                    new SequenceMetadata("testSequence", "bit_reversed_positive", 100, 5000000, 1)
-                )
-            )
-        ));
+                    new SequenceMetadata(
+                        "testSequence", "bit_reversed_positive", 100, 5000000, 1)))));
   }
 
   @BeforeEach
@@ -175,7 +202,8 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
 
   @Test
   void testGenerateSnapshot() throws Exception {
-    try (Liquibase liquibase = getLiquibase(createConnectionUrl(), "create-snapshot.spanner.yaml")) {
+    try (Liquibase liquibase =
+        getLiquibase(createConnectionUrl(), "create-snapshot.spanner.yaml")) {
       SnapshotGeneratorFactory factory = SnapshotGeneratorFactory.getInstance();
       Database database = liquibase.getDatabase();
       SnapshotControl control = new SnapshotControl(database);
@@ -210,7 +238,8 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
     }
   }
 
-  private void verifySnapshotIdsInDatabaseObjects(Object object, Set<Object> visited) throws NoSuchFieldException {
+  private void verifySnapshotIdsInDatabaseObjects(Object object, Set<Object> visited)
+      throws NoSuchFieldException {
     if (object == null) {
       return; // Nothing to traverse
     }
@@ -223,9 +252,10 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
 
     if (object instanceof DatabaseObject) {
       DatabaseObject dbObject = (DatabaseObject) object;
-      //assertThat(dbObject.getSnapshotId()).isNotNull();
+      // assertThat(dbObject.getSnapshotId()).isNotNull();
       assertWithMessage("Object: " + dbObject.getClass() + " Should have snapshotId")
-          .that(dbObject.getSnapshotId()).isNotNull();
+          .that(dbObject.getSnapshotId())
+          .isNotNull();
       Set<String> attributesObj = dbObject.getAttributes();
       for (String attribute : attributesObj) {
         Object attributesField = dbObject.getAttribute(attribute, new Object());
@@ -234,30 +264,34 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
         } else if (attributesField instanceof Map<?, ?>) {
           if (!((Map<?, ?>) attributesField).isEmpty()) {
             Map<?, ?> attributes = (Map<?, ?>) attributesField;
-            attributes.forEach((key, value) -> {
-              if (value instanceof Set<?>) {
-                ((Set<?>) value).forEach(setValue -> {
-                  if (setValue instanceof DatabaseObject) {
-                    try {
-                      verifySnapshotIdsInDatabaseObjects(setValue, visited);
-                    } catch (NoSuchFieldException ignored) {
-                    }
+            attributes.forEach(
+                (key, value) -> {
+                  if (value instanceof Set<?>) {
+                    ((Set<?>) value)
+                        .forEach(
+                            setValue -> {
+                              if (setValue instanceof DatabaseObject) {
+                                try {
+                                  verifySnapshotIdsInDatabaseObjects(setValue, visited);
+                                } catch (NoSuchFieldException ignored) {
+                                }
+                              }
+                            });
                   }
                 });
-              }
-            });
           }
         } else if (attributesField instanceof List<?>) {
           List<?> objectList = (List<?>) attributesField;
-          objectList.forEach((value) -> {
-            if (value instanceof DatabaseObject) {
-              try {
-                verifySnapshotIdsInDatabaseObjects(value, visited);
-              } catch (NoSuchFieldException ignored) {
+          objectList.forEach(
+              (value) -> {
+                if (value instanceof DatabaseObject) {
+                  try {
+                    verifySnapshotIdsInDatabaseObjects(value, visited);
+                  } catch (NoSuchFieldException ignored) {
 
-              }
-            }
-          });
+                  }
+                }
+              });
         }
       }
     }

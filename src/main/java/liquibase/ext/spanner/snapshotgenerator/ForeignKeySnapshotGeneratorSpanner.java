@@ -11,7 +11,6 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package liquibase.ext.spanner.snapshotgenerator;
 
 import liquibase.database.Database;
@@ -27,8 +26,8 @@ import liquibase.structure.core.ForeignKey;
 
 public class ForeignKeySnapshotGeneratorSpanner extends ForeignKeySnapshotGenerator {
   /**
-   * This generator will be in all chains relating to CloudSpanner, whether or not
-   * the objectType is {@link ForeignKey}.
+   * This generator will be in all chains relating to CloudSpanner, whether or not the objectType is
+   * {@link ForeignKey}.
    */
   @Override
   public int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
@@ -37,9 +36,11 @@ public class ForeignKeySnapshotGeneratorSpanner extends ForeignKeySnapshotGenera
     }
     return PRIORITY_NONE;
   }
-  
+
   @Override
-  public DatabaseObject snapshot(DatabaseObject example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain) throws DatabaseException, InvalidExampleException {
+  public DatabaseObject snapshot(
+      DatabaseObject example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain)
+      throws DatabaseException, InvalidExampleException {
     // Skip foreign keys that are actually INTERLEAVED TABLE relationships.
     // These are the only foreign keys in Cloud Spanner without a name.
     if (example instanceof ForeignKey && example.getName() == null) {
@@ -49,11 +50,11 @@ public class ForeignKeySnapshotGeneratorSpanner extends ForeignKeySnapshotGenera
   }
 
   /**
-   * If there is a {@link ForeignKeySnapshotGenerator} in the chain, we replace it. Otherwise
-   * the chain will execute like normal.
+   * If there is a {@link ForeignKeySnapshotGenerator} in the chain, we replace it. Otherwise the
+   * chain will execute like normal.
    */
   @Override
   public Class<? extends SnapshotGenerator>[] replaces() {
-    return new Class[]{ ForeignKeySnapshotGenerator.class };
+    return new Class[] {ForeignKeySnapshotGenerator.class};
   };
 }

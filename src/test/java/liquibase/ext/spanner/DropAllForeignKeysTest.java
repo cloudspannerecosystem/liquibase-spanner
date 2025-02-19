@@ -14,17 +14,18 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import com.google.cloud.spanner.Statement;
+
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Statement;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
-import com.google.spanner.v1.StructType.Field;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -36,7 +37,8 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class DropAllForeignKeysTest extends AbstractMockServerTest {
-  private static final String FIND_FOREIGN_KEYS = "SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG=@p1 AND TABLE_SCHEMA=@p2 AND TABLE_NAME=@p3 AND CONSTRAINT_TYPE='FOREIGN KEY'";
+  private static final String FIND_FOREIGN_KEYS =
+      "SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG=@p1 AND TABLE_SCHEMA=@p2 AND TABLE_NAME=@p3 AND CONSTRAINT_TYPE='FOREIGN KEY'";
   private static final ResultSetMetadata FIND_FOREIGN_KEYS_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -45,12 +47,16 @@ public class DropAllForeignKeysTest extends AbstractMockServerTest {
                       Field.newBuilder()
                           .setName("TABLE_CAT")
                           .setType(Type.newBuilder().setCode(TypeCode.STRING)))
-                  .build()).build();
-  private static final ResultSet FIND_FOREIGN_KEYS_RESULT = ResultSet.newBuilder()
-      .setMetadata(FIND_FOREIGN_KEYS_METADATA)
-      .addRows(ListValue.newBuilder().addValues(Value.newBuilder().setStringValue("FK_Singers1")))
-      .addRows(ListValue.newBuilder().addValues(Value.newBuilder().setStringValue("FK_Singers2")))
-      .build();
+                  .build())
+          .build();
+  private static final ResultSet FIND_FOREIGN_KEYS_RESULT =
+      ResultSet.newBuilder()
+          .setMetadata(FIND_FOREIGN_KEYS_METADATA)
+          .addRows(
+              ListValue.newBuilder().addValues(Value.newBuilder().setStringValue("FK_Singers1")))
+          .addRows(
+              ListValue.newBuilder().addValues(Value.newBuilder().setStringValue("FK_Singers2")))
+          .build();
 
   @BeforeAll
   public static void addMetadataResults() {
@@ -66,7 +72,7 @@ public class DropAllForeignKeysTest extends AbstractMockServerTest {
                 .build(),
             FIND_FOREIGN_KEYS_RESULT));
   }
-  
+
   @BeforeEach
   void resetServer() {
     mockSpanner.reset();
@@ -83,7 +89,7 @@ public class DropAllForeignKeysTest extends AbstractMockServerTest {
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
     }
-    
+
     for (String file : new String[] {"drop-all-foreign-key-constraints-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
@@ -98,7 +104,7 @@ public class DropAllForeignKeysTest extends AbstractMockServerTest {
       assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql[i]);
     }
   }
-  
+
   @Test
   void testDropForeignKeyTest() throws Exception {
     String[] expectedSql =
@@ -108,7 +114,7 @@ public class DropAllForeignKeysTest extends AbstractMockServerTest {
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
     }
-    
+
     for (String file : new String[] {"drop-foreign-key.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {

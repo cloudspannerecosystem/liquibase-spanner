@@ -13,17 +13,16 @@
  */
 package liquibase.ext.spanner;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-
-import java.sql.Connection;
-
-import static com.google.common.truth.Truth.assertThat;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class CreateChangeStreamTest extends AbstractMockServerTest {
@@ -37,20 +36,19 @@ public class CreateChangeStreamTest extends AbstractMockServerTest {
   @Test
   void testCreateChangeStreamFromYaml() throws Exception {
     String[] expectedSql =
-        new String[]{
-            "CREATE CHANGE STREAM NamesAndAlbums\n" +
-                "FOR Singers(FirstName, LastName), Albums",
-            "ALTER CHANGE STREAM NamesAndAlbums\n" +
-                "SET FOR Singers(FirstName, LastName), Albums, Songs",
-            "DROP CHANGE STREAM NamesAndAlbums"
+        new String[] {
+          "CREATE CHANGE STREAM NamesAndAlbums\n" + "FOR Singers(FirstName, LastName), Albums",
+          "ALTER CHANGE STREAM NamesAndAlbums\n"
+              + "SET FOR Singers(FirstName, LastName), Albums, Songs",
+          "DROP CHANGE STREAM NamesAndAlbums"
         };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
     }
 
-    for (String file : new String[]{"create-change-stream.spanner.yaml"}) {
+    for (String file : new String[] {"create-change-stream.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }

@@ -14,10 +14,8 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import liquibase.database.Database;
-import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sqlgenerator.SqlGenerator;
-import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.DropSequenceGenerator;
 import liquibase.statement.core.DropSequenceStatement;
 

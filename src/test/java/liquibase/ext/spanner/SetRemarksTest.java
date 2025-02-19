@@ -37,13 +37,14 @@ public class SetRemarksTest extends AbstractMockServerTest {
 
   @Test
   void testSetTableRemarksFromYaml() throws Exception {
-    for (String file : new String[]{"set-table-remarks.spanner.yaml"}) {
+    for (String file : new String[] {"set-table-remarks.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
-        assertThat(exception.getMessage())
-            .contains("setTableRemarks is not supported");
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage()).contains("setTableRemarks is not supported");
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -51,13 +52,14 @@ public class SetRemarksTest extends AbstractMockServerTest {
 
   @Test
   void testSetColumnRemarksFromYaml() throws Exception {
-    for (String file : new String[]{"set-column-remarks.spanner.yaml"}) {
+    for (String file : new String[] {"set-column-remarks.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
-        assertThat(exception.getMessage())
-            .contains("setColumnRemarks is not supported");
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage()).contains("setColumnRemarks is not supported");
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

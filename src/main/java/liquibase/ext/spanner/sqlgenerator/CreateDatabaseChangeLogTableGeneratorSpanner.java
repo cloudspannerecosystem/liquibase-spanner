@@ -64,13 +64,14 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
       Database database,
       SqlGeneratorChain sqlGeneratorChain) {
     String databaseChangeLogTableName = getDatabaseChangeLogTableNameFrom(database);
-    String createTableSql = this.createTableSql.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);
+    String createTableSql =
+        this.createTableSql.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);
     return new Sql[] {new UnparsedSql(createTableSql)};
   }
 
   private String getDatabaseChangeLogTableNameFrom(Database database) {
     String databaseChangeLogTableName = database.getDatabaseChangeLogTableName();
-    if( databaseChangeLogTableName == null ) {
+    if (databaseChangeLogTableName == null) {
       databaseChangeLogTableName = "DATABASECHANGELOG";
     }
     return databaseChangeLogTableName;

@@ -41,28 +41,31 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
 
   @Test
   void testCreateSequenceFromYaml() throws Exception {
-    ImmutableList<String> expectedSql = ImmutableList.of("CREATE SEQUENCE IdSequence " 
-        + "OPTIONS (sequence_kind='bit_reversed_positive', "
-        + "skip_range_min = 900000, "
-        + "skip_range_max = 999999, "
-        + "start_with_counter = 100000)",
-        "CREATE SEQUENCE MinimalSequence OPTIONS (sequence_kind='bit_reversed_positive')");
+    ImmutableList<String> expectedSql =
+        ImmutableList.of(
+            "CREATE SEQUENCE IdSequence "
+                + "OPTIONS (sequence_kind='bit_reversed_positive', "
+                + "skip_range_min = 900000, "
+                + "skip_range_max = 999999, "
+                + "start_with_counter = 100000)",
+            "CREATE SEQUENCE MinimalSequence OPTIONS (sequence_kind='bit_reversed_positive')");
     addUpdateDdlStatementsResponse(expectedSql.get(0));
     addUpdateDdlStatementsResponse(expectedSql.get(1));
-    
-    for (String file : new String[]{"create-sequence.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+
+    for (String file : new String[] {"create-sequence.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
-    
+
     assertEquals(2, mockAdmin.getRequests().size());
-    
+
     assertEquals(UpdateDatabaseDdlRequest.class, mockAdmin.getRequests().get(0).getClass());
     UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
     assertEquals(1, request.getStatementsCount());
     assertEquals(expectedSql.get(0), request.getStatementsList().get(0));
-    
+
     assertEquals(UpdateDatabaseDdlRequest.class, mockAdmin.getRequests().get(0).getClass());
     request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(1);
     assertEquals(1, request.getStatementsCount());
@@ -73,13 +76,14 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
   void testDropSequenceFromYaml() throws Exception {
     String expectedSql = "DROP SEQUENCE IdSequence";
     addUpdateDdlStatementsResponse(expectedSql);
-    
-    for (String file : new String[]{"drop-sequence.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+
+    for (String file : new String[] {"drop-sequence.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
-    
+
     assertEquals(1, mockAdmin.getRequests().size());
     UpdateDatabaseDdlRequest request = (UpdateDatabaseDdlRequest) mockAdmin.getRequests().get(0);
     assertEquals(1, request.getStatementsCount());
@@ -88,12 +92,15 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
 
   @Test
   void testRenameSequenceFromYaml() throws Exception {
-    for (String file : new String[]{"rename-sequence.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
-        assertThat(exception.getMessage()).contains(
-            RenameSequenceGeneratorSpanner.RENAME_SEQUENCE_VALIDATION_ERROR);
+    for (String file : new String[] {"rename-sequence.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
+            .contains(RenameSequenceGeneratorSpanner.RENAME_SEQUENCE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();

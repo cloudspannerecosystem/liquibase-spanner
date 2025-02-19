@@ -11,7 +11,6 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package liquibase.ext.spanner.sqlgenerator;
 
 import liquibase.database.Database;
@@ -21,7 +20,6 @@ import liquibase.sqlgenerator.SqlGenerator;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.AlterSequenceGenerator;
 import liquibase.statement.core.AlterSequenceStatement;
-import liquibase.statement.core.RenameSequenceStatement;
 
 public class AlterSequenceGeneratorSpanner extends AlterSequenceGenerator {
   static final String ALTER_SEQUENCE_VALIDATION_ERROR =

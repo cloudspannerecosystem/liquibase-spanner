@@ -13,43 +13,43 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+
 import liquibase.database.Database;
 import liquibase.sql.Sql;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
-
 class CreateDatabaseChangeLogTableGeneratorSpannerTest {
 
-    private static final String DEFAULT_CHANGELOG = "DATABASECHANGELOG";
-    private static final String CUSTOM_CHANGELOG = "customChangeLog";
+  private static final String DEFAULT_CHANGELOG = "DATABASECHANGELOG";
+  private static final String CUSTOM_CHANGELOG = "customChangeLog";
 
-    private Database database = Mockito.mock(Database.class);
+  private Database database = Mockito.mock(Database.class);
 
-    private final CreateDatabaseChangeLogTableGeneratorSpanner generator = new CreateDatabaseChangeLogTableGeneratorSpanner();
+  private final CreateDatabaseChangeLogTableGeneratorSpanner generator =
+      new CreateDatabaseChangeLogTableGeneratorSpanner();
 
-    @Test
-    public void shouldUseConfiguredDatabaseChangeLogTableName() {
-        givenDatabaseChangeLogTableNameIs(CUSTOM_CHANGELOG);
+  @Test
+  public void shouldUseConfiguredDatabaseChangeLogTableName() {
+    givenDatabaseChangeLogTableNameIs(CUSTOM_CHANGELOG);
 
-        Sql[] sql = generator.generateSql(null, database, null);
+    Sql[] sql = generator.generateSql(null, database, null);
 
-        assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + CUSTOM_CHANGELOG));
-    }
+    assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + CUSTOM_CHANGELOG));
+  }
 
+  @Test
+  public void shouldUseDefaultDatabaseChangeLogTableNameIfNotConfigured() {
+    givenDatabaseChangeLogTableNameIs(null);
 
-    @Test
-    public void shouldUseDefaultDatabaseChangeLogTableNameIfNotConfigured() {
-        givenDatabaseChangeLogTableNameIs(null);
+    Sql[] sql = generator.generateSql(null, database, null);
 
-        Sql[] sql = generator.generateSql(null, database, null);
+    assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + DEFAULT_CHANGELOG));
+  }
 
-        assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + DEFAULT_CHANGELOG));
-    }
-
-    private void givenDatabaseChangeLogTableNameIs(String tableName) {
-        when(database.getDatabaseChangeLogTableName()).thenReturn(tableName);
-    }
+  private void givenDatabaseChangeLogTableNameIs(String tableName) {
+    when(database.getDatabaseChangeLogTableName()).thenReturn(tableName);
+  }
 }

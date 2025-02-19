@@ -13,7 +13,10 @@
  */
 package liquibase.ext.spanner;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -21,9 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import java.sql.Connection;
-
-import static com.google.common.truth.Truth.assertThat;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class CreateTableWithGeneratedColumns extends AbstractMockServerTest {
@@ -37,14 +37,15 @@ public class CreateTableWithGeneratedColumns extends AbstractMockServerTest {
   void testCreateTableWithGeneratedColumnFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "CREATE TABLE table_test_generated_column (id INT64 NOT NULL, FirstName STRING(200), LastName STRING(200), FullName STRING(400) AS (FirstName || ' ' || LastName) STORED) PRIMARY KEY (id)"
-            };
+          "CREATE TABLE table_test_generated_column (id INT64 NOT NULL, FirstName STRING(200), LastName STRING(200), FullName STRING(400) AS (FirstName || ' ' || LastName) STORED) PRIMARY KEY (id)"
+        };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
     }
 
     for (String file : new String[] {"create-table-with-generated-column.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
         // Update to version v0.1.
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"));
       }

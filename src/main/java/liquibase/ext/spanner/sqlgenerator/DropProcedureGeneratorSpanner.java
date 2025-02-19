@@ -27,9 +27,7 @@ public class DropProcedureGeneratorSpanner extends DropProcedureGenerator {
 
   @Override
   public ValidationErrors validate(
-      DropProcedureStatement statement,
-      Database database,
-      SqlGeneratorChain sqlGeneratorChain) {
+      DropProcedureStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
     errors.addError(DROP_PROCEDURE_VALIDATION_ERROR);
     return errors;

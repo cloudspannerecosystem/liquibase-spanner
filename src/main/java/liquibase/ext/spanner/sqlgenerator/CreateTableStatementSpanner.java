@@ -26,24 +26,22 @@ import liquibase.statement.core.CreateTableStatement;
  */
 public class CreateTableStatementSpanner extends CreateTableStatement {
 
-  public CreateTableStatementSpanner(String catalogName, String schemaName, String tableName, String remarks, String tableType) {
+  public CreateTableStatementSpanner(
+      String catalogName, String schemaName, String tableName, String remarks, String tableType) {
     super(catalogName, schemaName, tableName, remarks, tableType);
   }
-  
+
   @Override
-  public CreateTableStatement addPrimaryKeyColumn(String columnName, LiquibaseDataType columnType, Object defaultValue, String keyName,
-      String tablespace, ColumnConstraint... constraints) {
-    CreateTableStatement statement = super.addPrimaryKeyColumn(columnName, columnType, defaultValue, keyName, tablespace, constraints);
-    if (!containsNotNullConstraintForColumn(columnName, constraints)) {
-      getNotNullColumns().remove(columnName);
-    }
-    return statement;
-  }
-  
-  @Override
-  public CreateTableStatement addPrimaryKeyColumn(String columnName, LiquibaseDataType columnType, Object defaultValue,
-      Boolean validate,String keyName, String tablespace, ColumnConstraint... constraints) {
-    CreateTableStatement statement = super.addPrimaryKeyColumn(columnName, columnType, defaultValue, validate, keyName, tablespace, constraints);
+  public CreateTableStatement addPrimaryKeyColumn(
+      String columnName,
+      LiquibaseDataType columnType,
+      Object defaultValue,
+      String keyName,
+      String tablespace,
+      ColumnConstraint... constraints) {
+    CreateTableStatement statement =
+        super.addPrimaryKeyColumn(
+            columnName, columnType, defaultValue, keyName, tablespace, constraints);
     if (!containsNotNullConstraintForColumn(columnName, constraints)) {
       getNotNullColumns().remove(columnName);
     }
@@ -51,9 +49,17 @@ public class CreateTableStatementSpanner extends CreateTableStatement {
   }
 
   @Override
-  public CreateTableStatement addPrimaryKeyColumn(String columnName, LiquibaseDataType columnType, Object defaultValue,
-      Boolean validate, boolean deferrable, boolean initiallyDeferred, String keyName, String tablespace, ColumnConstraint... constraints) {
-    CreateTableStatement statement = super.addPrimaryKeyColumn(columnName, columnType, defaultValue, validate, deferrable, initiallyDeferred, keyName, tablespace, constraints);
+  public CreateTableStatement addPrimaryKeyColumn(
+      String columnName,
+      LiquibaseDataType columnType,
+      Object defaultValue,
+      Boolean validate,
+      String keyName,
+      String tablespace,
+      ColumnConstraint... constraints) {
+    CreateTableStatement statement =
+        super.addPrimaryKeyColumn(
+            columnName, columnType, defaultValue, validate, keyName, tablespace, constraints);
     if (!containsNotNullConstraintForColumn(columnName, constraints)) {
       getNotNullColumns().remove(columnName);
     }
@@ -61,16 +67,65 @@ public class CreateTableStatementSpanner extends CreateTableStatement {
   }
 
   @Override
-  public CreateTableStatement addPrimaryKeyColumn(String columnName, LiquibaseDataType columnType, Object defaultValue,
-      Boolean validate, boolean deferrable, boolean initiallyDeferred, String keyName, String tablespace, String remarks, ColumnConstraint... constraints) {
-    CreateTableStatement statement = super.addPrimaryKeyColumn(columnName, columnType, defaultValue, validate, deferrable, initiallyDeferred, keyName, tablespace, remarks, constraints);
+  public CreateTableStatement addPrimaryKeyColumn(
+      String columnName,
+      LiquibaseDataType columnType,
+      Object defaultValue,
+      Boolean validate,
+      boolean deferrable,
+      boolean initiallyDeferred,
+      String keyName,
+      String tablespace,
+      ColumnConstraint... constraints) {
+    CreateTableStatement statement =
+        super.addPrimaryKeyColumn(
+            columnName,
+            columnType,
+            defaultValue,
+            validate,
+            deferrable,
+            initiallyDeferred,
+            keyName,
+            tablespace,
+            constraints);
     if (!containsNotNullConstraintForColumn(columnName, constraints)) {
       getNotNullColumns().remove(columnName);
     }
     return statement;
   }
 
-  private boolean containsNotNullConstraintForColumn(String column, ColumnConstraint... constraints) {
+  @Override
+  public CreateTableStatement addPrimaryKeyColumn(
+      String columnName,
+      LiquibaseDataType columnType,
+      Object defaultValue,
+      Boolean validate,
+      boolean deferrable,
+      boolean initiallyDeferred,
+      String keyName,
+      String tablespace,
+      String remarks,
+      ColumnConstraint... constraints) {
+    CreateTableStatement statement =
+        super.addPrimaryKeyColumn(
+            columnName,
+            columnType,
+            defaultValue,
+            validate,
+            deferrable,
+            initiallyDeferred,
+            keyName,
+            tablespace,
+            remarks,
+            constraints);
+    if (!containsNotNullConstraintForColumn(columnName, constraints)) {
+      getNotNullColumns().remove(columnName);
+    }
+    return statement;
+  }
+
+  private boolean containsNotNullConstraintForColumn(
+      String column, ColumnConstraint... constraints) {
     for (ColumnConstraint constraint : constraints) {
       if (constraint instanceof NotNullConstraint) {
         NotNullConstraint nn = (NotNullConstraint) constraint;

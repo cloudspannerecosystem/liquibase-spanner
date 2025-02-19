@@ -1,11 +1,12 @@
 package liquibase.ext.spanner;
 
 import static org.junit.Assert.fail;
+
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.common.collect.ImmutableList;
@@ -25,11 +26,11 @@ import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.Metadata;
+import io.grpc.Metadata.Key;
 import io.grpc.Server;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
-import io.grpc.Metadata.Key;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -67,7 +68,8 @@ public abstract class AbstractMockServerTest {
       Statement.of(
           "UPDATE DATABASECHANGELOGLOCK SET LOCKED = FALSE, LOCKEDBY = NULL, LOCKGRANTED = NULL WHERE ID = 1");
   static final Statement SELECT_MD5SUM =
-      Statement.of("SELECT MD5SUM FROM DATABASECHANGELOG WHERE MD5SUM IS NOT NULL AND MD5SUM NOT LIKE '9:%'");
+      Statement.of(
+          "SELECT MD5SUM FROM DATABASECHANGELOG WHERE MD5SUM IS NOT NULL AND MD5SUM NOT LIKE '9:%'");
   static final Statement SELECT_MAX_ORDER_EXEC =
       Statement.of("SELECT MAX(ORDEREXECUTED) FROM DATABASECHANGELOG");
   static final Statement INSERT_DATABASECHANGELOG =
@@ -122,35 +124,49 @@ public abstract class AbstractMockServerTest {
     mockSpanner.setAbortProbability(0.0D);
     mockAdmin = new MockDatabaseAdminImpl();
     address = new InetSocketAddress("localhost", 0);
-    server = NettyServerBuilder.forAddress(address).addService(mockSpanner).addService(mockAdmin)
-        // Add a server interceptor that will check that we receive the client lib
-        // token that we expect.
-        .intercept(new ServerInterceptor() {
-          @Override
-          public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
-              Metadata headers, ServerCallHandler<ReqT, RespT> next) {
-            // Ignore create/delete session and execute query calls. Some other
-            // database drivers try to execute a query to check whether the
-            // backend is the 'right' database, instead of at least checking the driver first...
-            if (!(call.getMethodDescriptor().getFullMethodName()
-                    .equals("google.spanner.v1.Spanner/BatchCreateSessions")
-                || call.getMethodDescriptor().getFullMethodName()
-                    .equals("google.spanner.v1.Spanner/CreateSession")
-                || call.getMethodDescriptor().getFullMethodName()
-                    .equals("google.spanner.v1.Spanner/ExecuteStreamingSql")
-                || call.getMethodDescriptor().getFullMethodName()
-                    .equals("google.spanner.v1.Spanner/DeleteSession"))) {
-              String clientLibToken =
-                  headers.get(Key.of("x-goog-api-client", Metadata.ASCII_STRING_MARSHALLER));
-              if (clientLibToken == null || !clientLibToken.contains("sp-liq")) {
-                if (!receivedRequestWithNonLiquibaseToken.getAndSet(true)) {
-                  invalidClientLibToken = clientLibToken;
-                }
-              }
-            }
-            return Contexts.interceptCall(Context.current(), call, headers, next);
-          }
-        }).build().start();
+    server =
+        NettyServerBuilder.forAddress(address)
+            .addService(mockSpanner)
+            .addService(mockAdmin)
+            // Add a server interceptor that will check that we receive the client lib
+            // token that we expect.
+            .intercept(
+                new ServerInterceptor() {
+                  @Override
+                  public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
+                      ServerCall<ReqT, RespT> call,
+                      Metadata headers,
+                      ServerCallHandler<ReqT, RespT> next) {
+                    // Ignore create/delete session and execute query calls. Some other
+                    // database drivers try to execute a query to check whether the
+                    // backend is the 'right' database, instead of at least checking the driver
+                    // first...
+                    if (!(call.getMethodDescriptor()
+                            .getFullMethodName()
+                            .equals("google.spanner.v1.Spanner/BatchCreateSessions")
+                        || call.getMethodDescriptor()
+                            .getFullMethodName()
+                            .equals("google.spanner.v1.Spanner/CreateSession")
+                        || call.getMethodDescriptor()
+                            .getFullMethodName()
+                            .equals("google.spanner.v1.Spanner/ExecuteStreamingSql")
+                        || call.getMethodDescriptor()
+                            .getFullMethodName()
+                            .equals("google.spanner.v1.Spanner/DeleteSession"))) {
+                      String clientLibToken =
+                          headers.get(
+                              Key.of("x-goog-api-client", Metadata.ASCII_STRING_MARSHALLER));
+                      if (clientLibToken == null || !clientLibToken.contains("sp-liq")) {
+                        if (!receivedRequestWithNonLiquibaseToken.getAndSet(true)) {
+                          invalidClientLibToken = clientLibToken;
+                        }
+                      }
+                    }
+                    return Contexts.interceptCall(Context.current(), call, headers, next);
+                  }
+                })
+            .build()
+            .start();
 
     registerDefaultResults();
   }
@@ -174,8 +190,7 @@ public abstract class AbstractMockServerTest {
                 .bind("p5")
                 .to("NON_EXISTENT_TYPE") // This is a trick in the JDBC driver to simplify the query
                 .build(),
-            JdbcMetadataQueries.createGetTablesResultSet(
-                ImmutableList.of("DATABASECHANGELOG"))));
+            JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of("DATABASECHANGELOG"))));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(JdbcMetadataQueries.GET_COLUMNS)
@@ -322,7 +337,7 @@ public abstract class AbstractMockServerTest {
     server.shutdown();
     server.awaitTermination();
   }
-  
+
   @AfterEach
   void checkForLiquibaseToken() {
     if (receivedRequestWithNonLiquibaseToken.get()) {
@@ -371,14 +386,14 @@ public abstract class AbstractMockServerTest {
                 .findCorrectDatabaseImplementation(new JdbcConnection(connection)));
     return liquibase;
   }
-  
-  protected static Liquibase getLiquibase(String connectionUrl, String changeLogFile) throws DatabaseException {
+
+  protected static Liquibase getLiquibase(String connectionUrl, String changeLogFile)
+      throws DatabaseException {
     Liquibase liquibase =
         new Liquibase(
             changeLogFile,
             new ClassLoaderResourceAccessor(),
-            DatabaseFactory.getInstance()
-                .openDatabase(connectionUrl, null, null, null, null));
+            DatabaseFactory.getInstance().openDatabase(connectionUrl, null, null, null, null));
     return liquibase;
   }
 
@@ -409,11 +424,11 @@ public abstract class AbstractMockServerTest {
   protected static Connection createConnection() throws SQLException {
     return DriverManager.getConnection(createConnectionUrl());
   }
-  
+
   protected static String createConnectionUrl() {
-    return
-        new StringBuilder("jdbc:cloudspanner://localhost:")
-            .append(server.getPort())
-            .append("/projects/p/instances/i/databases/d;usePlainText=true;minSessions=0").toString();
+    return new StringBuilder("jdbc:cloudspanner://localhost:")
+        .append(server.getPort())
+        .append("/projects/p/instances/i/databases/d;usePlainText=true;minSessions=0")
+        .toString();
   }
 }

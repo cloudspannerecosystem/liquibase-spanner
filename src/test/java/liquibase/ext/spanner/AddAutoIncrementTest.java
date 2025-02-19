@@ -37,11 +37,13 @@ public class AddAutoIncrementTest extends AbstractMockServerTest {
 
   @Test
   void testAddAutoIncrementSingersFromYaml() throws Exception {
-    for (String file : new String[]{"add-auto-increment-singers.spanner.yaml"}) {
+    for (String file : new String[] {"add-auto-increment-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
         assertThat(exception.getMessage()).contains("addAutoIncrement is not supported");
       }
     }

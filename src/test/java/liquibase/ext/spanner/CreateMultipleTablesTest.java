@@ -2,8 +2,8 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Statement;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import java.util.Arrays;
@@ -33,14 +33,17 @@ public class CreateMultipleTablesTest extends AbstractMockServerTest {
     addUpdateDdlStatementsResponse(Arrays.asList(createSingers, createAlbums));
 
     for (String file : new String[] {"create-multiple-tables.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
         // Update to version v0.1.
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"));
 
         // Register result for tagging the last update and then tag it.
-        mockSpanner.putStatementResult(StatementResult.update(Statement.of(
-            "UPDATE DATABASECHANGELOG SET TAG = 'rollback-v0.1' WHERE DATEEXECUTED = (SELECT MAX(DATEEXECUTED) FROM DATABASECHANGELOG)"),
-            1L));
+        mockSpanner.putStatementResult(
+            StatementResult.update(
+                Statement.of(
+                    "UPDATE DATABASECHANGELOG SET TAG = 'rollback-v0.1' WHERE DATEEXECUTED = (SELECT MAX(DATEEXECUTED) FROM DATABASECHANGELOG)"),
+                1L));
         liquibase.tag("rollback-v0.1");
       }
     }
