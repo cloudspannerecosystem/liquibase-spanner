@@ -14,12 +14,12 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import liquibase.database.Database;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
 import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateDatabaseChangeLogLockTableGenerator;
 import liquibase.statement.core.CreateDatabaseChangeLogLockTableStatement;
-import liquibase.ext.spanner.ICloudSpanner;
 
 public class CreateDatabaseChangeLogLockTableGeneratorSpanner
     extends CreateDatabaseChangeLogLockTableGenerator {
@@ -40,13 +40,14 @@ public class CreateDatabaseChangeLogLockTableGeneratorSpanner
       Database database,
       SqlGeneratorChain sqlGeneratorChain) {
     String databaseChangeLogLockTableName = getDatabaseChangeLogLockTableNameFrom(database);
-    String createTableSQL = this.createTableSQL.replaceAll("__DATABASECHANGELOGLOCK__", databaseChangeLogLockTableName);
+    String createTableSQL =
+        this.createTableSQL.replaceAll("__DATABASECHANGELOGLOCK__", databaseChangeLogLockTableName);
     return new Sql[] {new UnparsedSql(createTableSQL)};
   }
 
   private String getDatabaseChangeLogLockTableNameFrom(Database database) {
     String databaseChangeLogLockTableName = database.getDatabaseChangeLogLockTableName();
-    if( databaseChangeLogLockTableName == null ) {
+    if (databaseChangeLogLockTableName == null) {
       databaseChangeLogLockTableName = "DATABASECHANGELOGLOCK";
     }
     return databaseChangeLogLockTableName;

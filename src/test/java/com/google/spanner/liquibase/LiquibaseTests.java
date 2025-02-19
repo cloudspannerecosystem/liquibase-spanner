@@ -16,13 +16,13 @@ package com.google.spanner.liquibase;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.io.File;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -41,19 +40,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import liquibase.integration.commandline.LiquibaseCommandLine;
-import org.junit.Assert;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import liquibase.CatalogAndSchema;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -69,7 +55,17 @@ import liquibase.snapshot.SnapshotControl;
 import liquibase.snapshot.SnapshotGeneratorFactory;
 import liquibase.structure.core.Column;
 import liquibase.structure.core.Table;
-import org.xml.sax.SAXException;
+import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 // As these are forms of integration tests -- against an external emulator or a real Spanner
 // instance --
@@ -114,9 +110,14 @@ public class LiquibaseTests {
   // Get the Liquibase changeset for the given log file and JDBC
   Liquibase getLiquibase(TestHarness.Connection testHarness, String changeLogFile)
       throws DatabaseException, SQLException {
-    Liquibase liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(),
-        DatabaseFactory.getInstance().findCorrectDatabaseImplementation(
-            new JdbcConnection(DriverManager.getConnection(testHarness.getConnectionUrl()))));
+    Liquibase liquibase =
+        new Liquibase(
+            changeLogFile,
+            new ClassLoaderResourceAccessor(),
+            DatabaseFactory.getInstance()
+                .findCorrectDatabaseImplementation(
+                    new JdbcConnection(
+                        DriverManager.getConnection(testHarness.getConnectionUrl()))));
 
     return liquibase;
   }
@@ -183,8 +184,9 @@ public class LiquibaseTests {
             "CREATE TABLE Singers (SingerId INT64, Name STRING(100), Country STRING(100), CONSTRAINT FK_Singers_Countries FOREIGN KEY (Country) REFERENCES Countries (Code)) PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
 
-        try (ResultSet rs = statement.executeQuery(
-            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
+        try (ResultSet rs =
+            statement.executeQuery(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
           assertThat(rs.next()).isTrue();
           assertThat(rs.getLong(1)).isEqualTo(1L);
           assertThat(rs.next()).isFalse();
@@ -194,8 +196,9 @@ public class LiquibaseTests {
             getLiquibase(testHarness, "drop-all-foreign-key-constraints-singers.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
 
-          try (ResultSet rs = statement.executeQuery(
-              "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
+          try (ResultSet rs =
+              statement.executeQuery(
+                  "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
             assertThat(rs.next()).isTrue();
             assertThat(rs.getLong(1)).isEqualTo(0L);
             assertThat(rs.next()).isFalse();
@@ -229,11 +232,16 @@ public class LiquibaseTests {
             "CREATE TABLE Singers (SingerId INT64, FirstName STRING(100), LastName STRING(100)) PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
 
-        Object[][] singers = new Object[][] {{1L, "FirstName1", "LastName1"},
-            {2L, "FirstName2", "LastName2"}, {3L, "FirstName3", "LastName3"},};
+        Object[][] singers =
+            new Object[][] {
+              {1L, "FirstName1", "LastName1"},
+              {2L, "FirstName2", "LastName2"},
+              {3L, "FirstName3", "LastName3"},
+            };
         statement.execute("BEGIN");
-        try (PreparedStatement ps = con.prepareStatement(
-            "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES (?, ?, ?)")) {
+        try (PreparedStatement ps =
+            con.prepareStatement(
+                "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES (?, ?, ?)")) {
           for (Object[] singer : singers) {
             for (int p = 0; p < singer.length; p++) {
               // JDBC param index is 1-based.
@@ -286,15 +294,17 @@ public class LiquibaseTests {
             "CREATE TABLE Singers (SingerId INT64, LastName STRING(100) NOT NULL, SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
 
-        try (ResultSet rs = statement.executeQuery(
-            "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
+        try (ResultSet rs =
+            statement.executeQuery(
+                "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
           assertThat(rs.next()).isTrue();
           assertThat(rs.getString(1)).isEqualTo("STRING(100)");
           assertThat(rs.getString(2)).isEqualTo("NO");
           assertThat(rs.next()).isFalse();
         }
-        try (ResultSet rs = statement.executeQuery(
-            "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
+        try (ResultSet rs =
+            statement.executeQuery(
+                "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
           assertThat(rs.next()).isTrue();
           assertThat(rs.getString(1)).isEqualTo("BYTES(MAX)");
           assertThat(rs.getString(2)).isEqualTo("YES");
@@ -305,8 +315,9 @@ public class LiquibaseTests {
             getLiquibase(testHarness, "modify-data-type-singers-lastname.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
 
-          try (ResultSet rs = statement.executeQuery(
-              "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
+          try (ResultSet rs =
+              statement.executeQuery(
+                  "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
             assertThat(rs.next()).isTrue();
             assertThat(rs.getString(1)).isEqualTo("STRING(1000)");
             assertThat(rs.getString(2)).isEqualTo("NO");
@@ -317,8 +328,9 @@ public class LiquibaseTests {
         try (Liquibase liquibase =
             getLiquibase(testHarness, "modify-data-type-singers-singerinfo.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
-          try (ResultSet rs = statement.executeQuery(
-              "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
+          try (ResultSet rs =
+              statement.executeQuery(
+                  "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
             assertThat(rs.next()).isTrue();
             assertThat(rs.getString(1)).isEqualTo("STRING(MAX)");
             assertThat(rs.getString(2)).isEqualTo("YES");
@@ -348,10 +360,17 @@ public class LiquibaseTests {
     try (Connection con = DriverManager.getConnection(testHarness.getConnectionUrl())) {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
-        statement.execute("CREATE TABLE Singers (" + "SingerId INT64," + "Name STRING(100),"
-            + "Description STRING(MAX)," + "SingerInfo BYTES(MAX)," + "AnyGood BOOL,"
-            + "Birthdate DATE," + "LastConcertTimestamp TIMESTAMP," + "ExternalID STRING(36),"
-            + ") PRIMARY KEY (SingerId)");
+        statement.execute(
+            "CREATE TABLE Singers ("
+                + "SingerId INT64,"
+                + "Name STRING(100),"
+                + "Description STRING(MAX),"
+                + "SingerInfo BYTES(MAX),"
+                + "AnyGood BOOL,"
+                + "Birthdate DATE,"
+                + "LastConcertTimestamp TIMESTAMP,"
+                + "ExternalID STRING(36),"
+                + ") PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
         try (Liquibase liquibase = getLiquibase(testHarness, "load-data-singers.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
@@ -394,16 +413,18 @@ public class LiquibaseTests {
     try (Connection con = DriverManager.getConnection(testHarness.getConnectionUrl())) {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
-        statement.execute("CREATE TABLE TableWithEscapedStringData (" + "Id INT64,"
-            + "ColString STRING(100),"
-            + ") PRIMARY KEY (Id)");
+        statement.execute(
+            "CREATE TABLE TableWithEscapedStringData ("
+                + "Id INT64,"
+                + "ColString STRING(100),"
+                + ") PRIMARY KEY (Id)");
         statement.execute("RUN BATCH");
         try (Liquibase liquibase =
             getLiquibase(testHarness, "load-data-with-single-quotes.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
 
-          try (ResultSet rs = statement
-              .executeQuery("SELECT * FROM TableWithEscapedStringData ORDER BY Id")) {
+          try (ResultSet rs =
+              statement.executeQuery("SELECT * FROM TableWithEscapedStringData ORDER BY Id")) {
             int index = 0;
             while (rs.next()) {
               index++;
@@ -437,21 +458,41 @@ public class LiquibaseTests {
     try (Connection con = DriverManager.getConnection(testHarness.getConnectionUrl())) {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
-        statement.execute("CREATE TABLE Singers (" + "SingerId INT64," + "Name STRING(100),"
-            + "Description STRING(MAX)," + "SingerInfo BYTES(MAX)," + "AnyGood BOOL,"
-            + "Birthdate DATE," + "LastConcertTimestamp TIMESTAMP," + "ExternalID STRING(36),"
-            + ") PRIMARY KEY (SingerId)");
+        statement.execute(
+            "CREATE TABLE Singers ("
+                + "SingerId INT64,"
+                + "Name STRING(100),"
+                + "Description STRING(MAX),"
+                + "SingerInfo BYTES(MAX),"
+                + "AnyGood BOOL,"
+                + "Birthdate DATE,"
+                + "LastConcertTimestamp TIMESTAMP,"
+                + "ExternalID STRING(36),"
+                + ") PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
         // Insert one record that will be updated by Liquibase.
         CloudSpannerJdbcConnection cs = con.unwrap(CloudSpannerJdbcConnection.class);
         boolean wasAutoCommit = cs.getAutoCommit();
         cs.setAutoCommit(true);
-        cs.write(Mutation.newInsertBuilder("Singers").set("SingerId").to(2L).set("Name")
-            .to("Some initial name").set("Description").to("Some initial description")
-            .set("SingerInfo").to(ByteArray.copyFrom("Some initial singer info")).set("AnyGood")
-            .to(false).set("Birthdate").to(Date.fromYearMonthDay(2000, 1, 1))
-            .set("LastConcertTimestamp").to(Timestamp.ofTimeMicroseconds(12345678))
-            .set("ExternalId").to("some initial external id").build());
+        cs.write(
+            Mutation.newInsertBuilder("Singers")
+                .set("SingerId")
+                .to(2L)
+                .set("Name")
+                .to("Some initial name")
+                .set("Description")
+                .to("Some initial description")
+                .set("SingerInfo")
+                .to(ByteArray.copyFrom("Some initial singer info"))
+                .set("AnyGood")
+                .to(false)
+                .set("Birthdate")
+                .to(Date.fromYearMonthDay(2000, 1, 1))
+                .set("LastConcertTimestamp")
+                .to(Timestamp.ofTimeMicroseconds(12345678))
+                .set("ExternalId")
+                .to("some initial external id")
+                .build());
         cs.setAutoCommit(wasAutoCommit);
         try (Liquibase liquibase =
             getLiquibase(testHarness, "load-update-data-singers.spanner.yaml")) {
@@ -512,7 +553,8 @@ public class LiquibaseTests {
   void doLiquibaseCreateSequenceTest(TestHarness.Connection testHarness) throws Exception {
     try (Liquibase liquibase = getLiquibase(testHarness, "create-sequence.spanner.yaml")) {
       // Verify that there is no sequence in the database.
-      String sql = "select name from information_schema.sequences where catalog='' and schema='' and name='IdSequence'";
+      String sql =
+          "select name from information_schema.sequences where catalog='' and schema='' and name='IdSequence'";
       Connection connection =
           ((JdbcConnection) liquibase.getDatabase().getConnection()).getUnderlyingConnection();
       try (ResultSet sequences = connection.createStatement().executeQuery(sql)) {
@@ -556,8 +598,11 @@ public class LiquibaseTests {
 
       Connection currentConnection =
           ((JdbcConnection) liquibase.getDatabase().getConnection()).getUnderlyingConnection();
-      testTableColumns(currentConnection, "rollback_table",
-          new ColDesc("id", "INT64", Boolean.FALSE), new ColDesc("name", "STRING(255)"));
+      testTableColumns(
+          currentConnection,
+          "rollback_table",
+          new ColDesc("id", "INT64", Boolean.FALSE),
+          new ColDesc("name", "STRING(255)"));
 
       testTablePrimaryKeys(currentConnection, "rollback_table", new ColDesc("id"));
 
@@ -596,33 +641,47 @@ public class LiquibaseTests {
       Connection currentConnection =
           ((JdbcConnection) liquibase.getDatabase().getConnection()).getUnderlyingConnection();
       // Expect all of the columns and types
-      ColDesc[] cols = new ColDesc[] {new ColDesc("ColBigInt", "INT64", Boolean.FALSE),
-          new ColDesc("ColBlob", "BYTES(MAX)"), new ColDesc("ColBoolean", "BOOL"),
-          new ColDesc("ColChar", "STRING(100)"), new ColDesc("ColNChar", "STRING(50)"),
-          new ColDesc("ColNVarchar", "STRING(100)"), new ColDesc("ColVarchar", "STRING(200)"),
-          new ColDesc("ColClob", "STRING(MAX)"), new ColDesc("ColDateTime", "TIMESTAMP"),
-          new ColDesc("ColTimestamp", "TIMESTAMP"), new ColDesc("ColDate", "DATE"),
-          new ColDesc("ColDecimal", "NUMERIC"), new ColDesc("ColDouble", "FLOAT64"),
-          new ColDesc("ColFloat", "FLOAT64"), new ColDesc("ColInt", "INT64"),
-          new ColDesc("ColMediumInt", "INT64"), new ColDesc("ColNumber", "NUMERIC"),
-          new ColDesc("ColSmallInt", "INT64"), new ColDesc("ColTime", "TIMESTAMP"),
-          new ColDesc("ColTinyInt", "INT64"), new ColDesc("ColUUID", "STRING(36)"),
-          new ColDesc("ColXml", "STRING(MAX)"), new ColDesc("ColBoolArray", "ARRAY<BOOL>"),
-          new ColDesc("ColBytesArray", "ARRAY<BYTES(100)>"),
-          new ColDesc("ColBytesMaxArray", "ARRAY<BYTES(MAX)>"),
-          new ColDesc("ColDateArray", "ARRAY<DATE>"),
-          new ColDesc("ColFloat64Array", "ARRAY<FLOAT64>"),
-          new ColDesc("ColInt64Array", "ARRAY<INT64>"),
-          new ColDesc("ColNumericArray", "ARRAY<NUMERIC>"),
-          new ColDesc("ColStringArray", "ARRAY<STRING(100)>"),
-          new ColDesc("ColStringMaxArray", "ARRAY<STRING(MAX)>"),
-          new ColDesc("ColTimestampArray", "ARRAY<TIMESTAMP>"),
-          new ColDesc("ColFloat32", "FLOAT32"),
-          new ColDesc("ColJson", "JSON")};
+      ColDesc[] cols =
+          new ColDesc[] {
+            new ColDesc("ColBigInt", "INT64", Boolean.FALSE),
+            new ColDesc("ColBlob", "BYTES(MAX)"),
+            new ColDesc("ColBoolean", "BOOL"),
+            new ColDesc("ColChar", "STRING(100)"),
+            new ColDesc("ColNChar", "STRING(50)"),
+            new ColDesc("ColNVarchar", "STRING(100)"),
+            new ColDesc("ColVarchar", "STRING(200)"),
+            new ColDesc("ColClob", "STRING(MAX)"),
+            new ColDesc("ColDateTime", "TIMESTAMP"),
+            new ColDesc("ColTimestamp", "TIMESTAMP"),
+            new ColDesc("ColDate", "DATE"),
+            new ColDesc("ColDecimal", "NUMERIC"),
+            new ColDesc("ColDouble", "FLOAT64"),
+            new ColDesc("ColFloat", "FLOAT64"),
+            new ColDesc("ColInt", "INT64"),
+            new ColDesc("ColMediumInt", "INT64"),
+            new ColDesc("ColNumber", "NUMERIC"),
+            new ColDesc("ColSmallInt", "INT64"),
+            new ColDesc("ColTime", "TIMESTAMP"),
+            new ColDesc("ColTinyInt", "INT64"),
+            new ColDesc("ColUUID", "STRING(36)"),
+            new ColDesc("ColXml", "STRING(MAX)"),
+            new ColDesc("ColBoolArray", "ARRAY<BOOL>"),
+            new ColDesc("ColBytesArray", "ARRAY<BYTES(100)>"),
+            new ColDesc("ColBytesMaxArray", "ARRAY<BYTES(MAX)>"),
+            new ColDesc("ColDateArray", "ARRAY<DATE>"),
+            new ColDesc("ColFloat64Array", "ARRAY<FLOAT64>"),
+            new ColDesc("ColInt64Array", "ARRAY<INT64>"),
+            new ColDesc("ColNumericArray", "ARRAY<NUMERIC>"),
+            new ColDesc("ColStringArray", "ARRAY<STRING(100)>"),
+            new ColDesc("ColStringMaxArray", "ARRAY<STRING(MAX)>"),
+            new ColDesc("ColTimestampArray", "ARRAY<TIMESTAMP>"),
+            new ColDesc("ColFloat32", "FLOAT32"),
+            new ColDesc("ColJson", "JSON")
+          };
       testTableColumns(currentConnection, "TableWithAllLiquibaseTypes", cols);
 
-      testTablePrimaryKeys(currentConnection, "TableWithAllLiquibaseTypes",
-          new ColDesc("ColBigInt"));
+      testTablePrimaryKeys(
+          currentConnection, "TableWithAllLiquibaseTypes", new ColDesc("ColBigInt"));
 
       // Generate a snapshot of the database.
       SnapshotGeneratorFactory factory = SnapshotGeneratorFactory.getInstance();
@@ -631,15 +690,21 @@ public class LiquibaseTests {
       DatabaseSnapshot snapshot = factory.createSnapshot(schema, liquibase.getDatabase(), control);
 
       testSnapshotTableAndColumns(snapshot, "TableWithAllLiquibaseTypes", cols);
-      testSnapshotPrimaryKey(snapshot, "TableWithAllLiquibaseTypes",
-          new ColDesc("ColBigInt", "INT64", Boolean.FALSE));
+      testSnapshotPrimaryKey(
+          snapshot, "TableWithAllLiquibaseTypes", new ColDesc("ColBigInt", "INT64", Boolean.FALSE));
 
       // Generate an initial changelog for the database.
       File changeLogFile = File.createTempFile("test-changelog", ".xml");
       changeLogFile.deleteOnExit();
-      int returnCode = new LiquibaseCommandLine().execute(new String[] {"--overwriteOutputFile=true",
-          String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
-          String.format("--url=%s", testHarness.getConnectionUrl()), "generateChangeLog"});
+      int returnCode =
+          new LiquibaseCommandLine()
+              .execute(
+                  new String[] {
+                    "--overwriteOutputFile=true",
+                    String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
+                    String.format("--url=%s", testHarness.getConnectionUrl()),
+                    "generateChangeLog"
+                  });
       assertThat(returnCode).isEqualTo(0);
       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
@@ -682,9 +747,15 @@ public class LiquibaseTests {
           // Generate an initial changelog for the database.
           File changeLogFile = File.createTempFile("test-changelog", ".xml");
           changeLogFile.deleteOnExit();
-          int returnCode = new LiquibaseCommandLine().execute(new String[] {"--overwriteOutputFile=true",
-              String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
-              String.format("--url=%s", testHarness.getConnectionUrl()), "generateChangeLog"});
+          int returnCode =
+              new LiquibaseCommandLine()
+                  .execute(
+                      new String[] {
+                        "--overwriteOutputFile=true",
+                        String.format("--changeLogFile=%s", changeLogFile.getAbsolutePath()),
+                        String.format("--url=%s", testHarness.getConnectionUrl()),
+                        "generateChangeLog"
+                      });
           assertThat(returnCode).isEqualTo(0);
 
           // Verify that the generated change log only includes one foreign key.
@@ -698,7 +769,8 @@ public class LiquibaseTests {
           NodeList createForeignKeys = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
           assertEquals(1, createForeignKeys.getLength());
           Node createForeignKey = createForeignKeys.item(0);
-          assertEquals("FK_Concerts_Singers",
+          assertEquals(
+              "FK_Concerts_Singers",
               createForeignKey.getAttributes().getNamedItem("constraintName").getNodeValue());
         } finally {
           statement.addBatch("DROP TABLE Concerts");
@@ -773,12 +845,15 @@ public class LiquibaseTests {
   static void testTableColumn(XPath xpath, Node createTableNode, ColDesc col)
       throws XPathExpressionException {
     NodeList createCols =
-        (NodeList) xpath.compile(String.format("//column[@name=\"%s\"]", col.name))
-            .evaluate(createTableNode, XPathConstants.NODESET);
+        (NodeList)
+            xpath
+                .compile(String.format("//column[@name=\"%s\"]", col.name))
+                .evaluate(createTableNode, XPathConstants.NODESET);
     assertEquals(1, createCols.getLength());
     Node createCol = createCols.item(0);
     assertEquals(col.name, createCol.getAttributes().getNamedItem("name").getNodeValue());
-    assertEquals(col.type.toUpperCase(),
+    assertEquals(
+        col.type.toUpperCase(),
         createCol.getAttributes().getNamedItem("type").getNodeValue().toUpperCase());
   }
 
@@ -798,8 +873,8 @@ public class LiquibaseTests {
     }
   }
 
-  static void testSnapshotTableAndColumns(DatabaseSnapshot snapshot, String tableName,
-      ColDesc... cols) {
+  static void testSnapshotTableAndColumns(
+      DatabaseSnapshot snapshot, String tableName, ColDesc... cols) {
     Table table = snapshot.get(new Table("", "", tableName));
     assertThat(table).isNotNull();
 
@@ -873,8 +948,11 @@ public class LiquibaseTests {
       // Create a simple table.
       Statement statement = connection.createStatement();
       statement.execute("START BATCH DDL");
-      statement.execute("CREATE TABLE Singers (\n" + "  SingerId INT64 NOT NULL,\n"
-          + "  LastName STRING(100),\n" + ") PRIMARY KEY (SingerId)");
+      statement.execute(
+          "CREATE TABLE Singers (\n"
+              + "  SingerId INT64 NOT NULL,\n"
+              + "  LastName STRING(100),\n"
+              + ") PRIMARY KEY (SingerId)");
       statement.execute("RUN BATCH");
       assertThat(isNullable(connection, "Singers", "LastName")).isTrue();
 
@@ -943,11 +1021,16 @@ public class LiquibaseTests {
         statement.execute(
             "CREATE TABLE Singers (SingerId INT64, FirstName STRING(100), LastName STRING(100)) PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
-        Object[][] singers = new Object[][] {{1L, "FirstName1", "c LastName1"},
-            {2L, "FirstName2", "b LastName2"}, {3L, "FirstName3", "a LastName3"},};
+        Object[][] singers =
+            new Object[][] {
+              {1L, "FirstName1", "c LastName1"},
+              {2L, "FirstName2", "b LastName2"},
+              {3L, "FirstName3", "a LastName3"},
+            };
         statement.execute("BEGIN");
-        try (PreparedStatement ps = con.prepareStatement(
-            "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES (?, ?, ?)")) {
+        try (PreparedStatement ps =
+            con.prepareStatement(
+                "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES (?, ?, ?)")) {
           for (Object[] singer : singers) {
             for (int p = 0; p < singer.length; p++) {
               // JDBC param index is 1-based.
@@ -962,16 +1045,14 @@ public class LiquibaseTests {
         // The VIEW definition contains a LIMIT 2, so it will only return the first two rows.
         char[] prefixes = new char[] {'a', 'b'};
         try {
-          Liquibase liquibase =
-              getLiquibase(testHarness, "create-or-replace-view.spanner.yaml");
+          Liquibase liquibase = getLiquibase(testHarness, "create-or-replace-view.spanner.yaml");
           liquibase.clearCheckSums();
           liquibase.update(new Contexts("test"));
 
           try (ResultSet rs = statement.executeQuery("SELECT * FROM V_Singers ORDER BY LastName")) {
             for (char prefix : prefixes) {
               assertThat(rs.next()).isTrue();
-              assertThat(rs.getString("LastName"))
-                  .startsWith(String.format("%s LastName", prefix));
+              assertThat(rs.getString("LastName")).startsWith(String.format("%s LastName", prefix));
             }
             assertThat(rs.next()).isFalse();
           }

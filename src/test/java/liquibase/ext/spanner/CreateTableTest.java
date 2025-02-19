@@ -32,15 +32,18 @@ public class CreateTableTest extends AbstractMockServerTest {
         "CREATE TABLE Singers (SingerId INT64, FirstName STRING(255), LastName STRING(255) NOT NULL, SingerInfo BYTES(MAX), `hash\\`s` STRING(40)) PRIMARY KEY (SingerId)";
     addUpdateDdlStatementsResponse(expectedSql);
 
-    for (String file : new String[]{"create-singers-table.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+    for (String file : new String[] {"create-singers-table.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
         // Update to version v0.1.
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"));
 
         // Register result for tagging the last update and then tag it.
-        mockSpanner.putStatementResult(StatementResult.update(Statement.of(
-                "UPDATE DATABASECHANGELOG SET TAG = 'rollback-v0.1' WHERE DATEEXECUTED = (SELECT MAX(DATEEXECUTED) FROM DATABASECHANGELOG)"),
-            1L));
+        mockSpanner.putStatementResult(
+            StatementResult.update(
+                Statement.of(
+                    "UPDATE DATABASECHANGELOG SET TAG = 'rollback-v0.1' WHERE DATEEXECUTED = (SELECT MAX(DATEEXECUTED) FROM DATABASECHANGELOG)"),
+                1L));
         liquibase.tag("rollback-v0.1");
       }
     }
@@ -58,8 +61,9 @@ public class CreateTableTest extends AbstractMockServerTest {
         "CREATE TABLE TableWithAllColumnTypes (ColInt64 INT64 NOT NULL, ColFloat64 FLOAT64, ColBool BOOL, ColString STRING(200), ColStringMax STRING(MAX), ColBytes BYTES(200), ColBytesMax BYTES(MAX), ColDate date, ColTimestamp timestamp, ColNumeric NUMERIC) PRIMARY KEY (ColInt64)";
     addUpdateDdlStatementsResponse(expectedSql);
 
-    for (String file : new String[]{"create-table-with-all-spanner-types.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+    for (String file : new String[] {"create-table-with-all-spanner-types.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.2"));
       }
     }
@@ -77,8 +81,9 @@ public class CreateTableTest extends AbstractMockServerTest {
         "CREATE TABLE TableWithAllLiquibaseTypes (ColBigInt INT64 NOT NULL, ColBlob BYTES(MAX), ColBoolean BOOL, ColChar STRING(100), ColNChar STRING(50), ColNVarchar STRING(100), ColVarchar STRING(200), ColClob STRING(MAX), ColDateTime TIMESTAMP, ColTimestamp timestamp, ColDate date, ColDecimal NUMERIC, ColDouble FLOAT64, ColFloat FLOAT64, ColInt INT64, ColMediumInt INT64, ColNumber NUMERIC, ColSmallInt INT64, ColTime TIMESTAMP, ColTinyInt INT64, ColUUID STRING(36), ColXml STRING(MAX), ColBoolArray ARRAY<BOOL>, ColBytesArray ARRAY<BYTES(100)>, ColBytesMaxArray ARRAY<BYTES(MAX)>, ColDateArray ARRAY<DATE>, ColFloat64Array ARRAY<FLOAT64>, ColInt64Array ARRAY<INT64>, ColNumericArray ARRAY<NUMERIC>, ColStringArray ARRAY<STRING(100)>, ColStringMaxArray ARRAY<STRING(MAX)>, ColTimestampArray ARRAY<TIMESTAMP>, ColFloat32 FLOAT32, ColJson JSON) PRIMARY KEY (ColBigInt)";
     addUpdateDdlStatementsResponse(expectedSql);
 
-    for (String file : new String[]{"create-table-with-all-liquibase-types.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+    for (String file : new String[] {"create-table-with-all-liquibase-types.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.3"));
       }
     }
@@ -92,12 +97,17 @@ public class CreateTableTest extends AbstractMockServerTest {
 
   @Test
   void testTableWithoutPrimaryKeyFromYaml() throws Exception {
-    for (String file : new String[]{"create-table-without-pk.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(
-            CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"),
-                new OutputStreamWriter(System.out)));
+    for (String file : new String[] {"create-table-without-pk.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () ->
+                    liquibase.update(
+                        new Contexts("test"),
+                        new LabelExpression("version 0.1"),
+                        new OutputStreamWriter(System.out)));
         assertThat(exception.getMessage()).contains("primary key is required");
       }
     }

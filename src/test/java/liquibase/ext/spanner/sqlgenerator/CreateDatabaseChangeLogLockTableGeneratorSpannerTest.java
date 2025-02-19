@@ -13,42 +13,43 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+
 import liquibase.database.Database;
 import liquibase.sql.Sql;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
-
 class CreateDatabaseChangeLogLockTableGeneratorSpannerTest {
 
-    private static final String DEFAULT_CHANGELOGLOCK = "DATABASECHANGELOGLOCK";
-    private static final String CUSTOM_CHANGELOGLOCK = "customChangeLogLock";
+  private static final String DEFAULT_CHANGELOGLOCK = "DATABASECHANGELOGLOCK";
+  private static final String CUSTOM_CHANGELOGLOCK = "customChangeLogLock";
 
-    private Database database = Mockito.mock(Database.class);
+  private Database database = Mockito.mock(Database.class);
 
-    private final CreateDatabaseChangeLogLockTableGeneratorSpanner generator = new CreateDatabaseChangeLogLockTableGeneratorSpanner();
+  private final CreateDatabaseChangeLogLockTableGeneratorSpanner generator =
+      new CreateDatabaseChangeLogLockTableGeneratorSpanner();
 
-    @Test
-    public void shouldUseConfiguredDatabaseChangeLogLockTableName() {
-        givenDatabaseChangeLogLockTableNameIs(CUSTOM_CHANGELOGLOCK);
+  @Test
+  public void shouldUseConfiguredDatabaseChangeLogLockTableName() {
+    givenDatabaseChangeLogLockTableNameIs(CUSTOM_CHANGELOGLOCK);
 
-        Sql[] sql = generator.generateSql(null, database, null);
+    Sql[] sql = generator.generateSql(null, database, null);
 
-        assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + CUSTOM_CHANGELOGLOCK));
-    }
+    assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + CUSTOM_CHANGELOGLOCK));
+  }
 
-    @Test
-    public void shouldUseDefaultDatabaseChangeLogTableNameIfNotConfigured() {
-        givenDatabaseChangeLogLockTableNameIs(null);
+  @Test
+  public void shouldUseDefaultDatabaseChangeLogTableNameIfNotConfigured() {
+    givenDatabaseChangeLogLockTableNameIs(null);
 
-        Sql[] sql = generator.generateSql(null, database, null);
+    Sql[] sql = generator.generateSql(null, database, null);
 
-        assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + DEFAULT_CHANGELOGLOCK));
-    }
+    assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + DEFAULT_CHANGELOGLOCK));
+  }
 
-    private void givenDatabaseChangeLogLockTableNameIs(String tableName) {
-        when(database.getDatabaseChangeLogLockTableName()).thenReturn(tableName);
-    }
+  private void givenDatabaseChangeLogLockTableNameIs(String tableName) {
+    when(database.getDatabaseChangeLogLockTableName()).thenReturn(tableName);
+  }
 }

@@ -38,13 +38,15 @@ public class CreateDropProcedureTest extends AbstractMockServerTest {
 
   @Test
   void testCreateProcedureFromYaml() throws Exception {
-    for (String file : new String[]{"create-procedure.spanner.yaml"}) {
+    for (String file : new String[] {"create-procedure.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
-        assertThat(exception.getMessage()).contains(
-            CreateProcedureGeneratorSpanner.CREATE_PROCEDURE_VALIDATION_ERROR);
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
+            .contains(CreateProcedureGeneratorSpanner.CREATE_PROCEDURE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -52,11 +54,13 @@ public class CreateDropProcedureTest extends AbstractMockServerTest {
 
   @Test
   void testDropProcedureFromYaml() throws Exception {
-    for (String file : new String[]{"drop-procedure.spanner.yaml"}) {
+    for (String file : new String[] {"drop-procedure.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
         assertThat(exception.getMessage())
             .contains(DropProcedureGeneratorSpanner.DROP_PROCEDURE_VALIDATION_ERROR);
       }

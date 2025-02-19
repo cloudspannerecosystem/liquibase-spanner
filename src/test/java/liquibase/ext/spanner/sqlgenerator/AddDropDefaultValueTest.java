@@ -14,14 +14,11 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.OutputStreamWriter;
-import java.sql.Connection;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +38,7 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
   void testDropDefaultValueSingersFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "ALTER TABLE Singers ALTER COLUMN LastName DROP DEFAULT",
+          "ALTER TABLE Singers ALTER COLUMN LastName DROP DEFAULT",
         };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
@@ -49,7 +46,7 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
 
     for (String file : new String[] {"drop-default-value-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }

@@ -1,18 +1,15 @@
 /**
  * Copyright 2020 Google LLC
  *
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- * <p>
- * https://www.apache.org/licenses/LICENSE-2.0
+ * <p>https://www.apache.org/licenses/LICENSE-2.0
  *
- * <p>
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package liquibase.ext.spanner.sqlgenerator;
 
@@ -33,7 +30,9 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
   }
 
   @Override
-  public Sql[] generateSql(InsertOrUpdateStatement insertOrUpdateStatement, Database database,
+  public Sql[] generateSql(
+      InsertOrUpdateStatement insertOrUpdateStatement,
+      Database database,
       SqlGeneratorChain sqlGeneratorChain) {
     // Cloud Spanner does not have an UPSERT / MERGE DML statement, so we will generate both an
     // INSERT and an UPDATE statement. The INSERT statement will check whether the record already
@@ -45,8 +44,10 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
     ArrayList<Sql> sqlList = new ArrayList<>(2);
     if (!insertOrUpdateStatement.getOnlyUpdate()) {
       sqlList.add(
-          new UnparsedSql(getInsertStatement(insertOrUpdateStatement, database, sqlGeneratorChain),
-              "", getAffectedTable(insertOrUpdateStatement)));
+          new UnparsedSql(
+              getInsertStatement(insertOrUpdateStatement, database, sqlGeneratorChain),
+              "",
+              getAffectedTable(insertOrUpdateStatement)));
     }
 
     String whereClause = getWhereClause(insertOrUpdateStatement, database);
@@ -66,20 +67,25 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
   }
 
   @Override
-  protected String getInsertStatement(InsertOrUpdateStatement insertOrUpdateStatement,
-      Database database, SqlGeneratorChain sqlGeneratorChain) {
+  protected String getInsertStatement(
+      InsertOrUpdateStatement insertOrUpdateStatement,
+      Database database,
+      SqlGeneratorChain sqlGeneratorChain) {
     InsertWithSelectGeneratorSpanner insertGenerator = new InsertWithSelectGeneratorSpanner();
-    StringBuffer sql = new StringBuffer(
-        insertGenerator.generateSql(insertOrUpdateStatement, database, sqlGeneratorChain)[0]
-            .toSql());
-    sql
-        .append(" FROM UNNEST([1])") // only SELECT statements with a FROM may have a WHERE clause.
+    StringBuffer sql =
+        new StringBuffer(
+            insertGenerator.generateSql(insertOrUpdateStatement, database, sqlGeneratorChain)[0]
+                .toSql());
+    sql.append(" FROM UNNEST([1])") // only SELECT statements with a FROM may have a WHERE clause.
         .append(" WHERE NOT EXISTS (") // only insert if the row does not already exist.
         .append("SELECT ")
         .append(insertOrUpdateStatement.getPrimaryKey())
         .append(" FROM ")
-        .append(database.escapeTableName(insertOrUpdateStatement.getCatalogName(),
-            insertOrUpdateStatement.getSchemaName(), insertOrUpdateStatement.getTableName()))
+        .append(
+            database.escapeTableName(
+                insertOrUpdateStatement.getCatalogName(),
+                insertOrUpdateStatement.getSchemaName(),
+                insertOrUpdateStatement.getTableName()))
         .append(" WHERE ")
         .append(getWhereClause(insertOrUpdateStatement, database))
         .append(")");
@@ -88,8 +94,8 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
   }
 
   @Override
-  protected String getRecordCheck(InsertOrUpdateStatement insertOrUpdateStatement,
-      Database database, String whereClause) {
+  protected String getRecordCheck(
+      InsertOrUpdateStatement insertOrUpdateStatement, Database database, String whereClause) {
     return "";
   }
 
@@ -97,5 +103,4 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
   protected String getElse(Database database) {
     return "";
   }
-
 }

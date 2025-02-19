@@ -38,12 +38,13 @@ public class AddDropUniqueConstraintTest extends AbstractMockServerTest {
 
   @Test
   void testAddUniqueConstraintSingersFromYaml() throws Exception {
-    for (String file : new String[]{"add-unique-constraint-singers.spanner.yaml"}) {
+    for (String file : new String[] {"add-unique-constraint-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(
-            CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
         assertThat(exception.getMessage())
             .contains(AddUniqueConstraintGeneratorSpanner.ADD_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
       }
@@ -53,11 +54,13 @@ public class AddDropUniqueConstraintTest extends AbstractMockServerTest {
 
   @Test
   void testDropUniqueConstraintSingersFromYaml() throws Exception {
-    for (String file : new String[]{"drop-unique-constraint-singers.spanner.yaml"}) {
+    for (String file : new String[] {"drop-unique-constraint-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
         assertThat(exception.getMessage())
             .contains(DropUniqueConstraintGeneratorSpanner.DROP_UNIQUE_CONSTRAINT_VALIDATION_ERROR);
       }

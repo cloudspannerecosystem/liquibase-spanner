@@ -23,15 +23,15 @@ import liquibase.statement.core.AddColumnStatement;
 
 public class AddColumnGeneratorSpanner extends AddColumnGenerator {
 
-    @Override
-    public int getPriority() {
-        return SqlGenerator.PRIORITY_DATABASE;
-    }
+  @Override
+  public int getPriority() {
+    return SqlGenerator.PRIORITY_DATABASE;
+  }
 
-    @Override
-    public boolean supports(AddColumnStatement statement, Database database) {
-        return (database instanceof ICloudSpanner);
-    }
+  @Override
+  public boolean supports(AddColumnStatement statement, Database database) {
+    return (database instanceof ICloudSpanner);
+  }
 
   @Override
   protected String generateSingleColumnSQL(AddColumnStatement statement, Database database) {
@@ -43,9 +43,21 @@ public class AddColumnGeneratorSpanner extends AddColumnGenerator {
     DatabaseDataType columnType = null;
 
     if (statement.getColumnType() != null) {
-      columnType = DataTypeFactory.getInstance().fromDescription(statement.getColumnType() + (statement.isAutoIncrement() ? "{autoIncrement:true}" : ""), database).toDatabaseDataType(database);
+      columnType =
+          DataTypeFactory.getInstance()
+              .fromDescription(
+                  statement.getColumnType()
+                      + (statement.isAutoIncrement() ? "{autoIncrement:true}" : ""),
+                  database)
+              .toDatabaseDataType(database);
     }
-    String alterTable = " ADD " + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName());
+    String alterTable =
+        " ADD "
+            + database.escapeColumnName(
+                statement.getCatalogName(),
+                statement.getSchemaName(),
+                statement.getTableName(),
+                statement.getColumnName());
 
     if (columnType != null) {
       alterTable += " " + columnType;
@@ -58,7 +70,10 @@ public class AddColumnGeneratorSpanner extends AddColumnGenerator {
     // Wrap default value in parentheses
     Object defaultValue = statement.getDefaultValue();
     if (defaultValue != null) {
-      String clause = DataTypeFactory.getInstance().fromDescription(statement.getColumnType(), database).objectToSql(defaultValue, database);
+      String clause =
+          DataTypeFactory.getInstance()
+              .fromDescription(statement.getColumnType(), database)
+              .objectToSql(defaultValue, database);
       alterTable += " DEFAULT " + "(" + clause + ")";
     }
     return alterTable;

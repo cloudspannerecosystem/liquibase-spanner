@@ -38,13 +38,15 @@ public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
 
   @Test
   void testAddPrimaryKeySingersFromYaml() throws Exception {
-    for (String file : new String[]{"add-primary-key-singers.spanner.yaml"}) {
+    for (String file : new String[] {"add-primary-key-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
-        assertThat(exception.getMessage()).contains(
-            AddPrimaryKeyGeneratorSpanner.ADD_PK_VALIDATION_ERROR);
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
+            .contains(AddPrimaryKeyGeneratorSpanner.ADD_PK_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
@@ -52,11 +54,13 @@ public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
 
   @Test
   void testDropPrimaryKeySingersFromYaml() throws Exception {
-    for (String file : new String[]{"drop-primary-key-singers.spanner.yaml"}) {
+    for (String file : new String[] {"drop-primary-key-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
         assertThat(exception.getMessage())
             .contains(DropPrimaryKeyGeneratorSpanner.DROP_PK_VALIDATION_ERROR);
       }

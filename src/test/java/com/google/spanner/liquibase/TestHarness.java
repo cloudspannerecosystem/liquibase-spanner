@@ -35,7 +35,7 @@ public class TestHarness {
    * Interface for a Liquibase JDBC Test Harness
    */
   public interface Connection {
-    
+
     // Returns the connection URL that is used by this connection.
     String getConnectionUrl();
 
@@ -145,8 +145,7 @@ public class TestHarness {
 
       // JDBC Connection
       spannerEmulatorHost =
-          String.format(
-              "%s:%d", testContainer.getHost(), testContainer.getMappedPort(9010));
+          String.format("%s:%d", testContainer.getHost(), testContainer.getMappedPort(9010));
     }
 
     // Create the Spanner service
@@ -161,12 +160,13 @@ public class TestHarness {
     createInstance(service, INSTANCE_ID);
     createDatabase(service, INSTANCE_ID, DATABASE_ID);
 
-    final String connectionUrl = String.format(
-        "jdbc:cloudspanner://%s/projects/%s/instances/%s/databases/%s?autocommit=true;usePlainText=true",
-        spannerEmulatorHost, PROJECT_ID, INSTANCE_ID, DATABASE_ID); 
+    final String connectionUrl =
+        String.format(
+            "jdbc:cloudspanner://%s/projects/%s/instances/%s/databases/%s?autocommit=true;usePlainText=true",
+            spannerEmulatorHost, PROJECT_ID, INSTANCE_ID, DATABASE_ID);
 
     return new Connection() {
-      
+
       @Override
       public String getConnectionUrl() {
         return connectionUrl;
@@ -207,16 +207,15 @@ public class TestHarness {
 
     createDatabase(service, instanceId, databaseId);
 
-    final String connectionUrl = 
+    final String connectionUrl =
         String.format(
             "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s?autocommit=true",
             projectId, instanceId, databaseId);
     // JDBC connection initialize
-    java.sql.Connection conn =
-        DriverManager.getConnection(connectionUrl);
+    java.sql.Connection conn = DriverManager.getConnection(connectionUrl);
 
     return new Connection() {
-      
+
       @Override
       public String getConnectionUrl() {
         return connectionUrl;

@@ -11,7 +11,6 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package liquibase.ext.spanner.snapshotgenerator;
 
 import liquibase.Scope;
@@ -37,35 +36,45 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
   }
 
   @Override
-  protected Object readDefaultValue(CachedRow columnMetadataResultSet, Column columnInfo, Database database) {
+  protected Object readDefaultValue(
+      CachedRow columnMetadataResultSet, Column columnInfo, Database database) {
     if (database instanceof ICloudSpanner) {
       try {
-        String selectQuery = "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS " +
-                                 "WHERE TABLE_CATALOG = ? " +
-                                 "AND TABLE_SCHEMA = ? " +
-                                 "AND TABLE_NAME = ? " +
-                                 "AND COLUMN_NAME = ?";
-        String schemaName = columnInfo.getRelation().getSchema().getName() == null
-                                ?  database.getDefaultSchemaName()
-                                : columnInfo.getRelation().getSchema().getName();
-        String defaultValue = Scope.getCurrentScope().getSingleton(ExecutorService.class)
-                                          .getExecutor("jdbc", database)
-                                          .queryForObject(new RawParameterizedSqlStatement(selectQuery,
-                                              new Object[]{
-                                                  columnInfo.getRelation().getSchema().getCatalog().getName(),
-                                                  schemaName,
-                                                  columnInfo.getRelation().getName(),
-                                                  columnInfo.getName()}),
-                                              String.class);
+        String selectQuery =
+            "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS "
+                + "WHERE TABLE_CATALOG = ? "
+                + "AND TABLE_SCHEMA = ? "
+                + "AND TABLE_NAME = ? "
+                + "AND COLUMN_NAME = ?";
+        String schemaName =
+            columnInfo.getRelation().getSchema().getName() == null
+                ? database.getDefaultSchemaName()
+                : columnInfo.getRelation().getSchema().getName();
+        String defaultValue =
+            Scope.getCurrentScope()
+                .getSingleton(ExecutorService.class)
+                .getExecutor("jdbc", database)
+                .queryForObject(
+                    new RawParameterizedSqlStatement(
+                        selectQuery,
+                        new Object[] {
+                          columnInfo.getRelation().getSchema().getCatalog().getName(),
+                          schemaName,
+                          columnInfo.getRelation().getName(),
+                          columnInfo.getName()
+                        }),
+                    String.class);
         if (defaultValue != null) {
           if (database.isFunction(defaultValue)) {
             columnMetadataResultSet.set("COLUMN_DEF", new DatabaseFunction((defaultValue)));
-          }else{
+          } else {
             columnMetadataResultSet.set("COLUMN_DEF", defaultValue);
           }
         }
       } catch (DatabaseException e) {
-        Scope.getCurrentScope().getLog(this.getClass()).warning("Error fetching default column values", e);
+        Scope.getCurrentScope()
+            .getLog(this.getClass())
+            .warning("Error fetching default column values", e);
       }
     }
     return super.readDefaultValue(columnMetadataResultSet, columnInfo, database);
@@ -73,6 +82,6 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
 
   @Override
   public Class<? extends SnapshotGenerator>[] replaces() {
-    return new Class[]{ ColumnSnapshotGenerator.class };
+    return new Class[] {ColumnSnapshotGenerator.class};
   }
 }

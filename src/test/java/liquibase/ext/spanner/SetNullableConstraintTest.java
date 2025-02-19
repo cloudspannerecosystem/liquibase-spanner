@@ -14,14 +14,15 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
+import liquibase.Contexts;
+import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import liquibase.Contexts;
-import liquibase.Liquibase;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class SetNullableConstraintTest extends AbstractMockServerTest {

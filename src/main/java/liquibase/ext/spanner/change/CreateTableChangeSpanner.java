@@ -20,18 +20,24 @@ import liquibase.database.Database;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.ext.spanner.sqlgenerator.CreateTableStatementSpanner;
 
-/** Custom implementation for Cloud Spanner that enables the creation of nullable primary key columns. */
-@DatabaseChange(name="createTable", description = "Create Table", priority = ChangeMetaData.PRIORITY_DATABASE)
+/**
+ * Custom implementation for Cloud Spanner that enables the creation of nullable primary key
+ * columns.
+ */
+@DatabaseChange(
+    name = "createTable",
+    description = "Create Table",
+    priority = ChangeMetaData.PRIORITY_DATABASE)
 public class CreateTableChangeSpanner extends CreateTableChange {
 
   @Override
   public boolean supports(Database database) {
     return (database instanceof ICloudSpanner);
   }
-  
+
   @Override
   protected CreateTableStatementSpanner generateCreateTableStatement() {
-    return new CreateTableStatementSpanner(getCatalogName(), getSchemaName(), getTableName(), getRemarks(), getTableType());
+    return new CreateTableStatementSpanner(
+        getCatalogName(), getSchemaName(), getTableName(), getRemarks(), getTableType());
   }
-
 }

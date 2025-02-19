@@ -93,11 +93,11 @@ public class CreateIndexTest extends AbstractMockServerTest {
 
   @Test
   void testCreateNullFilteredIndexFromYaml() throws Exception {
-    String expectedSql =
-        "CREATE NULL_FILTERED INDEX Idx_Singers_FirstName ON Singers(FirstName)";
+    String expectedSql = "CREATE NULL_FILTERED INDEX Idx_Singers_FirstName ON Singers(FirstName)";
     addUpdateDdlStatementsResponse(expectedSql);
 
-    for (String file : new String[] {"create-null-filtered-index-singers-first-name.spanner.yaml"}) {
+    for (String file :
+        new String[] {"create-null-filtered-index-singers-first-name.spanner.yaml"}) {
       try (Connection con = createConnection();
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));

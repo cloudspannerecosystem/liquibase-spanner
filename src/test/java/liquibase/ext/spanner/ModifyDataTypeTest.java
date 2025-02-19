@@ -14,17 +14,18 @@
 package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
-import com.google.cloud.spanner.Statement;
+
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Statement;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
-import com.google.spanner.v1.StructType.Field;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -36,7 +37,8 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class ModifyDataTypeTest extends AbstractMockServerTest {
-  private static final String FIND_COLUMN = "SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_CATALOG=@p1 AND TABLE_SCHEMA=@p2 AND TABLE_NAME=@p3 AND COLUMN_NAME=@p4";
+  private static final String FIND_COLUMN =
+      "SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_CATALOG=@p1 AND TABLE_SCHEMA=@p2 AND TABLE_NAME=@p3 AND COLUMN_NAME=@p4";
   private static final ResultSetMetadata FIND_COLUMN_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
@@ -45,15 +47,18 @@ public class ModifyDataTypeTest extends AbstractMockServerTest {
                       Field.newBuilder()
                           .setName("IS_NULLABLE")
                           .setType(Type.newBuilder().setCode(TypeCode.STRING)))
-                  .build()).build();
-  private static final ResultSet NULLABLE_RESULT = ResultSet.newBuilder()
-      .setMetadata(FIND_COLUMN_METADATA)
-      .addRows(ListValue.newBuilder().addValues(Value.newBuilder().setStringValue("YES")))
-      .build();
-  private static final ResultSet NOT_NULLABLE_RESULT = ResultSet.newBuilder()
-      .setMetadata(FIND_COLUMN_METADATA)
-      .addRows(ListValue.newBuilder().addValues(Value.newBuilder().setStringValue("NO")))
-      .build();
+                  .build())
+          .build();
+  private static final ResultSet NULLABLE_RESULT =
+      ResultSet.newBuilder()
+          .setMetadata(FIND_COLUMN_METADATA)
+          .addRows(ListValue.newBuilder().addValues(Value.newBuilder().setStringValue("YES")))
+          .build();
+  private static final ResultSet NOT_NULLABLE_RESULT =
+      ResultSet.newBuilder()
+          .setMetadata(FIND_COLUMN_METADATA)
+          .addRows(ListValue.newBuilder().addValues(Value.newBuilder().setStringValue("NO")))
+          .build();
 
   @BeforeAll
   public static void addMetadataResults() {

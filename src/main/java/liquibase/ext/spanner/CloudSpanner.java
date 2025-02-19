@@ -13,23 +13,24 @@
  */
 package liquibase.ext.spanner;
 
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
+
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import liquibase.Scope;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.OfflineConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.util.ISODateFormat;
-import java.text.ParseException;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
-import java.util.Date;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
 
@@ -47,7 +48,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   public java.lang.Integer getDefaultPort() {
     return 9010;
   }
-  
+
   @Override
   public boolean dataTypeIsNotModifiable(final String typeName) {
     // All data types are returned including the length by the JDBC driver
@@ -137,17 +138,19 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
     // The latter should be safe, even if the caller uses the connection for other purposes, as
     // even if the connection was not replaced it would have been closed by Liquibase at the same
     // moment.
-    if (!(conn instanceof CloudSpannerConnection) && conn instanceof JdbcConnection
-        && ((JdbcConnection) conn)
-            .getUnderlyingConnection() instanceof CloudSpannerJdbcConnection) {
+    if (!(conn instanceof CloudSpannerConnection)
+        && conn instanceof JdbcConnection
+        && ((JdbcConnection) conn).getUnderlyingConnection()
+            instanceof CloudSpannerJdbcConnection) {
       // The underlying connection is a Spanner JDBC connection. Check whether it already included a
       // user-agent string.
       if (!conn.getURL().contains("userAgent=")) {
         // The underlying connection does not use a specific user-agent string. Create a replacement
         // connection that will be used by Liquibase with the correct user-agent.
         try {
-          connectionToUse = new CloudSpannerConnection(
-              DriverManager.getConnection(conn.getURL() + ";userAgent=sp-liq"), conn);
+          connectionToUse =
+              new CloudSpannerConnection(
+                  DriverManager.getConnection(conn.getURL() + ";userAgent=sp-liq"), conn);
         } catch (SQLException e) {
           // Ignore and use the original connection. This could for example happen if the user is
           // using an older version of the Spanner JDBC driver that does not support this user-agent

@@ -13,7 +13,10 @@
  */
 package liquibase.ext.spanner;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,12 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
-import java.sql.Connection;
-
-import static com.google.common.truth.Truth.assertThat;
-
 @Execution(ExecutionMode.SAME_THREAD)
-public class AddCheckConstraintsTest extends AbstractMockServerTest{
+public class AddCheckConstraintsTest extends AbstractMockServerTest {
 
   @BeforeEach
   void resetServer() {
@@ -37,17 +36,17 @@ public class AddCheckConstraintsTest extends AbstractMockServerTest{
   @Test
   void testCreateTableWithCheckConstraintsFromYaml() throws Exception {
     String expectedSql =
-        "CREATE TABLE Concerts (\n" +
-            "ConcertId INT64,\n" +
-            "StartTime Timestamp,\n" +
-            "EndTime Timestamp,\n" +
-            "CONSTRAINT start_before_end CHECK(StartTime < EndTime),\n" +
-            ") PRIMARY KEY (ConcertId)";
+        "CREATE TABLE Concerts (\n"
+            + "ConcertId INT64,\n"
+            + "StartTime Timestamp,\n"
+            + "EndTime Timestamp,\n"
+            + "CONSTRAINT start_before_end CHECK(StartTime < EndTime),\n"
+            + ") PRIMARY KEY (ConcertId)";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"create-table-with-check-constraint.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }
@@ -62,13 +61,12 @@ public class AddCheckConstraintsTest extends AbstractMockServerTest{
   @Test
   void testAddCheckConstraintsFromYaml() throws Exception {
     String expectedSql =
-        "ALTER TABLE Singers\n" +
-            "ADD CONSTRAINT concert_id_gt_0 CHECK (ConcertId > 0)";
+        "ALTER TABLE Singers\n" + "ADD CONSTRAINT concert_id_gt_0 CHECK (ConcertId > 0)";
     addUpdateDdlStatementsResponse(expectedSql);
 
     for (String file : new String[] {"add-check-constraint-singers.spanner.yaml"}) {
       try (Connection con = createConnection();
-           Liquibase liquibase = getLiquibase(con, file)) {
+          Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
     }

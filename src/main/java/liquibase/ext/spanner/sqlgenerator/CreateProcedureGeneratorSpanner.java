@@ -29,16 +29,16 @@ public class CreateProcedureGeneratorSpanner extends CreateProcedureGenerator {
 
   @Override
   public ValidationErrors validate(
-      CreateProcedureStatement statement,
-      Database database,
-      SqlGeneratorChain sqlGeneratorChain) {
+      CreateProcedureStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = new ValidationErrors();
     errors.addError(CREATE_PROCEDURE_VALIDATION_ERROR);
     return errors;
   }
-  
-  public Sql[] generateSql(CreateProcedureStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-    // The normal way of failing the generation by adding a validation error does not work for CREATE PROCEDURE.
+
+  public Sql[] generateSql(
+      CreateProcedureStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+    // The normal way of failing the generation by adding a validation error does not work for
+    // CREATE PROCEDURE.
     // This seems to be caused by the fact that CreateProcedureChange is a DbmsTargetedChange.
     throw new UnexpectedLiquibaseException(CREATE_PROCEDURE_VALIDATION_ERROR);
   }

@@ -21,7 +21,11 @@ import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.statement.SqlStatement;
 import liquibase.statement.core.UpdateStatement;
 
-@DatabaseChange(name="addColumn", description = "Adds a new column to an existing table", priority = ChangeMetaData.PRIORITY_DATABASE, appliesTo = "table")
+@DatabaseChange(
+    name = "addColumn",
+    description = "Adds a new column to an existing table",
+    priority = ChangeMetaData.PRIORITY_DATABASE,
+    appliesTo = "table")
 public class AddColumnChangeSpanner extends AddColumnChange {
 
   @Override

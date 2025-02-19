@@ -23,29 +23,32 @@ import liquibase.statement.core.AddForeignKeyConstraintStatement;
 
 public class AddForeignKeyConstraintGeneratorSpanner extends AddForeignKeyConstraintGenerator {
 
-    @Override
-    public int getPriority() {
-        return SqlGenerator.PRIORITY_DATABASE;
-    }
+  @Override
+  public int getPriority() {
+    return SqlGenerator.PRIORITY_DATABASE;
+  }
 
-    @Override
-    public boolean supports(AddForeignKeyConstraintStatement statement, Database database) {
-        return (database instanceof ICloudSpanner);
-    }
+  @Override
+  public boolean supports(AddForeignKeyConstraintStatement statement, Database database) {
+    return (database instanceof ICloudSpanner);
+  }
 
-    @Override
-    public Sql[] generateSql(AddForeignKeyConstraintStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-        String onUpdate = statement.getOnUpdate();
-        String onDelete = statement.getOnDelete();
-        try {
-            // Ignore any onUpdate or onDelete clauses. Ignoring this instead of failing is
-            // consistent with other databases that also do not support these features.
-            statement.setOnUpdate(null);
-            statement.setOnDelete(null);
-            return super.generateSql(statement, database, sqlGeneratorChain);
-        } finally {
-            statement.setOnUpdate(onUpdate);
-            statement.setOnDelete(onDelete);
-        }
+  @Override
+  public Sql[] generateSql(
+      AddForeignKeyConstraintStatement statement,
+      Database database,
+      SqlGeneratorChain sqlGeneratorChain) {
+    String onUpdate = statement.getOnUpdate();
+    String onDelete = statement.getOnDelete();
+    try {
+      // Ignore any onUpdate or onDelete clauses. Ignoring this instead of failing is
+      // consistent with other databases that also do not support these features.
+      statement.setOnUpdate(null);
+      statement.setOnDelete(null);
+      return super.generateSql(statement, database, sqlGeneratorChain);
+    } finally {
+      statement.setOnUpdate(onUpdate);
+      statement.setOnDelete(onDelete);
     }
+  }
 }

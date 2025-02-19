@@ -32,25 +32,28 @@ public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
   public ValidationErrors validate(
       CreateSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     ValidationErrors errors = super.validate(statement, database, sqlGeneratorChain);
-    errors.checkDisallowedField("cacheSize", statement.getCacheSize(), database, CloudSpanner.class);
+    errors.checkDisallowedField(
+        "cacheSize", statement.getCacheSize(), database, CloudSpanner.class);
     errors.checkDisallowedField("ordered", statement.getOrdered(), database, CloudSpanner.class);
     errors.checkDisallowedField("cycle", statement.getCycle(), database, CloudSpanner.class);
     errors.checkDisallowedField("dataType", statement.getDataType(), database, CloudSpanner.class);
     // Allow setting incrementBy to 1.
     if (!Objects.equals(BigInteger.ONE, statement.getIncrementBy())) {
-      errors.checkDisallowedField("incrementBy", statement.getIncrementBy(), database,
-          CloudSpanner.class);
+      errors.checkDisallowedField(
+          "incrementBy", statement.getIncrementBy(), database, CloudSpanner.class);
     }
-    
+
     return errors;
   }
 
   @Override
-  public Sql[] generateSql(CreateSequenceStatement statement, Database database,
-      SqlGeneratorChain sqlGeneratorChain) {
+  public Sql[] generateSql(
+      CreateSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     StringBuilder queryStringBuilder = new StringBuilder();
     queryStringBuilder.append("CREATE SEQUENCE ");
-    queryStringBuilder.append(database.escapeSequenceName(statement.getCatalogName(), statement.getSchemaName(), statement.getSequenceName()));
+    queryStringBuilder.append(
+        database.escapeSequenceName(
+            statement.getCatalogName(), statement.getSchemaName(), statement.getSequenceName()));
     queryStringBuilder.append(" OPTIONS (sequence_kind='bit_reversed_positive'");
     if (statement.getMinValue() != null) {
       queryStringBuilder.append(", skip_range_min = ").append(statement.getMinValue());
@@ -63,7 +66,9 @@ public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
     }
     queryStringBuilder.append(")");
 
-    return new Sql[]{new UnparsedSql(queryStringBuilder.toString(), getAffectedSequence(statement))};
+    return new Sql[] {
+      new UnparsedSql(queryStringBuilder.toString(), getAffectedSequence(statement))
+    };
   }
 
   @Override

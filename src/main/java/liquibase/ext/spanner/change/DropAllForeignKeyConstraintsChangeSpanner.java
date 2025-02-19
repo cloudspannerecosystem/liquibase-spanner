@@ -18,19 +18,25 @@ import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.statement.SqlStatement;
 
-@DatabaseChange(name="dropAllForeignKeyConstraints", description = "Drops all foreign key constraints for a table", priority = ChangeMetaData.PRIORITY_DATABASE, appliesTo = "table")
+@DatabaseChange(
+    name = "dropAllForeignKeyConstraints",
+    description = "Drops all foreign key constraints for a table",
+    priority = ChangeMetaData.PRIORITY_DATABASE,
+    appliesTo = "table")
 public class DropAllForeignKeyConstraintsChangeSpanner extends DropAllForeignKeyConstraintsChange {
 
   @Override
   public boolean supports(Database database) {
     return (database instanceof ICloudSpanner);
   }
-  
+
   public SqlStatement[] generateStatements(Database database) {
     List<SqlStatement> sqlStatements = new ArrayList<>();
-    
+
     JdbcConnection connection = (JdbcConnection) database.getConnection();
-    try (PreparedStatement ps = connection.prepareStatement("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG=? AND TABLE_SCHEMA=? AND TABLE_NAME=? AND CONSTRAINT_TYPE='FOREIGN KEY'")) {
+    try (PreparedStatement ps =
+        connection.prepareStatement(
+            "SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG=? AND TABLE_SCHEMA=? AND TABLE_NAME=? AND CONSTRAINT_TYPE='FOREIGN KEY'")) {
       ps.setString(1, MoreObjects.firstNonNull(getBaseTableCatalogName(), ""));
       ps.setString(2, MoreObjects.firstNonNull(getBaseTableSchemaName(), ""));
       ps.setString(3, getBaseTableName());
@@ -45,10 +51,10 @@ public class DropAllForeignKeyConstraintsChangeSpanner extends DropAllForeignKey
         }
       }
     } catch (SQLException | DatabaseException e) {
-      throw new UnexpectedLiquibaseException(String.format("Could not retrieve foreign keys for table %s", getBaseTableName()), e);
+      throw new UnexpectedLiquibaseException(
+          String.format("Could not retrieve foreign keys for table %s", getBaseTableName()), e);
     }
-    
+
     return sqlStatements.toArray(new SqlStatement[sqlStatements.size()]);
   }
-
 }

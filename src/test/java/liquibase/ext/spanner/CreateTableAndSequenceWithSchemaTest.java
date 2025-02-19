@@ -13,8 +13,10 @@
  */
 package liquibase.ext.spanner;
 
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -22,9 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import java.sql.Connection;
-
-import static com.google.common.truth.Truth.assertThat;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class CreateTableAndSequenceWithSchemaTest extends AbstractMockServerTest {
@@ -39,16 +38,17 @@ public class CreateTableAndSequenceWithSchemaTest extends AbstractMockServerTest
   void testCreateTableWithSchemaFromYaml() throws Exception {
     String[] expectedSql =
         new String[] {
-            "CREATE SCHEMA new_schema",
-            "CREATE TABLE new_schema.Singers2 (id INT64 NOT NULL, textCol STRING(MAX)) PRIMARY KEY (id)",
-            "CREATE SEQUENCE new_schema.test_sequence OPTIONS (sequence_kind='bit_reversed_positive', start_with_counter = 100)"
+          "CREATE SCHEMA new_schema",
+          "CREATE TABLE new_schema.Singers2 (id INT64 NOT NULL, textCol STRING(MAX)) PRIMARY KEY (id)",
+          "CREATE SEQUENCE new_schema.test_sequence OPTIONS (sequence_kind='bit_reversed_positive', start_with_counter = 100)"
         };
     for (String sql : expectedSql) {
       addUpdateDdlStatementsResponse(sql);
     }
 
     for (String file : new String[] {"create-table-and-sequence-with-schema.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
         // Update to version v0.1.
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"));
       }

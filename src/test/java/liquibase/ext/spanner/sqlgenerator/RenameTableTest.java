@@ -38,12 +38,15 @@ public class RenameTableTest extends AbstractMockServerTest {
 
   @Test
   void testRenameTableSingersFromYaml() throws Exception {
-    for (String file : new String[]{"rename-table-singers.spanner.yaml"}) {
-      try (Connection con = createConnection(); Liquibase liquibase = getLiquibase(con, file)) {
-        CommandExecutionException exception = assertThrows(CommandExecutionException.class,
-            () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
-        assertThat(exception.getMessage()).contains(
-            RenameTableGeneratorSpanner.RENAME_TABLE_VALIDATION_ERROR);
+    for (String file : new String[] {"rename-table-singers.spanner.yaml"}) {
+      try (Connection con = createConnection();
+          Liquibase liquibase = getLiquibase(con, file)) {
+        CommandExecutionException exception =
+            assertThrows(
+                CommandExecutionException.class,
+                () -> liquibase.update(new Contexts("test"), new OutputStreamWriter(System.out)));
+        assertThat(exception.getMessage())
+            .contains(RenameTableGeneratorSpanner.RENAME_TABLE_VALIDATION_ERROR);
       }
     }
     assertThat(mockAdmin.getRequests()).isEmpty();
