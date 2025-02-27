@@ -14,6 +14,7 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
@@ -75,6 +76,10 @@ public abstract class AbstractMockServerTest {
   static final Statement INSERT_DATABASECHANGELOG =
       Statement.of(
           "INSERT INTO DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID)");
+
+  static final Statement GET_COLUMN_DEFAULT_STATEMENT =
+      Statement.of(
+          "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_CATALOG = @p1 AND TABLE_SCHEMA = @p2 AND TABLE_NAME = @p3 AND COLUMN_NAME = @p4");
 
   private static final ResultSetMetadata SINGLE_COL_INT64_METADATA =
       ResultSetMetadata.newBuilder()
@@ -324,6 +329,28 @@ public abstract class AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_MAX_ORDER_EXEC, createInt64ResultSet(0L)));
     mockSpanner.putPartialStatementResult(StatementResult.update(INSERT_DATABASECHANGELOG, 1L));
+
+    // TODO: Remove when the JDBC driver includes the column default in getColumns
+    mockSpanner.putPartialStatementResult(
+        StatementResult.query(
+            GET_COLUMN_DEFAULT_STATEMENT,
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("COLUMN_DEF")
+                                        .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                        .build())
+                                .build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build())
+                        .build())
+                .build()));
   }
 
   @AfterAll

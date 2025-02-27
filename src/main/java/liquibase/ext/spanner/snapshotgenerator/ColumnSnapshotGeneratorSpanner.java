@@ -40,6 +40,7 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
       CachedRow columnMetadataResultSet, Column columnInfo, Database database) {
     if (database instanceof ICloudSpanner) {
       try {
+        // TODO: Remove when COLUMN_DEF is included in the results for getColumns
         String selectQuery =
             "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS "
                 + "WHERE TABLE_CATALOG = ? "
