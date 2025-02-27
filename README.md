@@ -1,14 +1,14 @@
 
 # Liquibase Spanner Extension
 
-A Liquibase extension adding support for Google Cloud Spanner. Include this in your
+A Liquibase extension adding support for Google Spanner. Include this in your
 application project to run Liquibase database migration scripts against a Google
-Cloud Spanner database.
+Spanner database.
 
 ## Performance Recommendations
-Executing multiple small DDL statements on Cloud Spanner can take a very long time. This means that
+Executing multiple small DDL statements on Spanner can take a very long time. This means that
 the standard recommendation to use as small changesets as possible with Liquibase is not always the
-best choice when working with Cloud Spanner. Instead, it is recommended to create changesets that
+best choice when working with Spanner. Instead, it is recommended to create changesets that
 group multiple DDL statements into one DDL batch. Use [SQL change](https://docs.liquibase.com/change-types/community/sql.html)
 and batch the DDL using [batch statements](https://cloud.google.com/spanner/docs/jdbc-session-mgmt-commands#batch_statements).
 
@@ -235,8 +235,8 @@ See the samples directory for specific integrations with other frameworks, such 
 The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:<br/>
 createTable, dropTable, addColumn, modifyDataType, addNotNullConstraint, dropColumn, createIndex, dropIndex, addForeignKeyConstraint, dropForeignKeyConstraint, dropAllForeignKeyConstraints, addLookupTable, createView, dropView
 
-The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are not allowed with Cloud Spanner:<br/>
-addAutoIncrement, addDefaultValue, addPrimaryKey, addUniqueConstraint, dropUniqueConstraint, createProcedure, dropDefaultValue, dropNotNullConstraint, dropPrimaryKey, dropProcedure, renameColumn, renameSequence, renameTable, renameView, setColumnRemarks, setTableRemarks, alterSequence
+The following Liquibase [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are not allowed with Spanner:<br/>
+addAutoIncrement, addPrimaryKey, addUniqueConstraint, dropUniqueConstraint, createProcedure, dropNotNullConstraint, dropPrimaryKey, dropProcedure, renameColumn, renameSequence, renameView, setColumnRemarks, setTableRemarks, alterSequence
 
 The following data DML [ChangeTypes](https://docs.liquibase.com/change-types/home.html) are supported:<br/>
 insert, update, loadData, loadUpdateData
@@ -274,7 +274,7 @@ delete.
 
 ### Unsupported Spanner Features
 
-There are a number of features that Spanner does not have such as sequences and stored procedures. The Liquibase extension will
+There are a number of features that Spanner does not have such as stored procedures. The Liquibase extension will
 throw an exception during analysis of the changeSet in most cases, but not all. For example, a DELETE without a WHERE clause
 will fail in Spanner but not in the Liquibase extension.
 
@@ -292,7 +292,7 @@ will fail in Spanner but not in the Liquibase extension.
 Testing requirements:
  * Emulator requires [testcontainers](https://www.testcontainers.org/) and its [requirements](https://www.testcontainers.org/supported_docker_environment/) installed.
  * Spanner in GCP requires SPANNER_PROJECT and SPANNER_INSTANCE environment variables set to an active instance
- * Spanner in GCP requires application default credentials set or GOOGLE_APPLICATION_CREDENTIALS environent set
+ * Spanner in GCP requires application default credentials set or GOOGLE_APPLICATION_CREDENTIALS environment set
 
 ### Deploying
 
