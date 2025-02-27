@@ -110,7 +110,7 @@ dependencies {
     
     // For Spanner mock server testing
     testImplementation(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
-    testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '2.61.0', classifier: 'testlib')
+    testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '2.62.0', classifier: 'testlib')
 
     // For Liquibase to work without throwing NoClassDefFound/NoSuchMethodError
     testRuntimeOnly("info.picocli:picocli:4.7.6")
