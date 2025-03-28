@@ -57,7 +57,7 @@
 
     <gax-grpc.version>2.63.1</gax-grpc.version>
     <jupiter.version>5.12.1</jupiter.version>
-    <testcontainers.version>1.20.5</testcontainers.version>
+    <testcontainers.version>1.20.6</testcontainers.version>
     <truth.version>1.4.4</truth.version>
     <mockito.version>1.10.19</mockito.version>
     <groovy.version>2.5.23</groovy.version>
