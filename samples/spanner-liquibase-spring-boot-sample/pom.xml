@@ -16,7 +16,7 @@
     <spring-boot.version>2.7.18</spring-boot.version>
     <spanner-liquibase.version>4.31.0.1</spanner-liquibase.version>
     <spanner-jdbc.version>2.1.0</spanner-jdbc.version>
-    <testcontainers.version>1.20.5</testcontainers.version>
+    <testcontainers.version>1.20.6</testcontainers.version>
   </properties>
 
   <dependencyManagement>
