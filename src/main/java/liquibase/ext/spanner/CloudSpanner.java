@@ -142,9 +142,9 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
     // even if the connection was not replaced it would have been closed by Liquibase at the same
     // moment.
     if (!(conn instanceof CloudSpannerConnection)
-            && conn instanceof JdbcConnection
-            && ((JdbcConnection) conn).getUnderlyingConnection()
-                   instanceof CloudSpannerJdbcConnection) {
+        && conn instanceof JdbcConnection
+        && ((JdbcConnection) conn).getUnderlyingConnection()
+            instanceof CloudSpannerJdbcConnection) {
       // The underlying connection is a Spanner JDBC connection. Check whether it already included a
       // user-agent string.
       if (!conn.getURL().contains("userAgent=")) {
