@@ -16,7 +16,8 @@ package liquibase.ext.spanner.sqlgenerator;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-import liquibase.database.Database;
+import java.sql.SQLException;
+import liquibase.ext.spanner.CloudSpanner;
 import liquibase.sql.Sql;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,14 +27,16 @@ class CreateDatabaseChangeLogLockTableGeneratorSpannerTest {
   private static final String DEFAULT_CHANGELOGLOCK = "DATABASECHANGELOGLOCK";
   private static final String CUSTOM_CHANGELOGLOCK = "customChangeLogLock";
 
-  private Database database = Mockito.mock(Database.class);
+  private CloudSpanner database = Mockito.mock(CloudSpanner.class);
 
   private final CreateDatabaseChangeLogLockTableGeneratorSpanner generator =
       new CreateDatabaseChangeLogLockTableGeneratorSpanner();
 
+  // TODO: add tests for PostgreSQL dialect
   @Test
-  public void shouldUseConfiguredDatabaseChangeLogLockTableName() {
+  public void shouldUseConfiguredDatabaseChangeLogLockTableName() throws SQLException {
     givenDatabaseChangeLogLockTableNameIs(CUSTOM_CHANGELOGLOCK);
+    when(database.getDialect()).thenReturn(com.google.cloud.spanner.Dialect.GOOGLE_STANDARD_SQL);
 
     Sql[] sql = generator.generateSql(null, database, null);
 
@@ -41,8 +44,9 @@ class CreateDatabaseChangeLogLockTableGeneratorSpannerTest {
   }
 
   @Test
-  public void shouldUseDefaultDatabaseChangeLogTableNameIfNotConfigured() {
+  public void shouldUseDefaultDatabaseChangeLogTableNameIfNotConfigured() throws SQLException {
     givenDatabaseChangeLogLockTableNameIs(null);
+    when(database.getDialect()).thenReturn(com.google.cloud.spanner.Dialect.GOOGLE_STANDARD_SQL);
 
     Sql[] sql = generator.generateSql(null, database, null);
 
