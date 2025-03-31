@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
@@ -21,6 +22,8 @@ import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateDatabaseChangeLogTableGenerator;
 import liquibase.statement.core.CreateDatabaseChangeLogTableStatement;
+
+import java.sql.SQLException;
 
 public class CreateDatabaseChangeLogTableGeneratorSpanner
     extends CreateDatabaseChangeLogTableGenerator {
@@ -45,6 +48,27 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
           + "    deployment_id string(MAX),\n"
           + ") primary key (id, author, filename);";
 
+  final String createPostgresqlTableSql =
+      ""
+          + "CREATE TABLE public.__DATABASECHANGELOG__\n"
+          + "(\n"
+          + "    id            varchar(255) not null,\n"
+          + "    author        varchar(255) not null,\n"
+          + "    filename      varchar(255) not null,\n"
+          + "    dateExecuted  timestamptz  not null,\n"
+          + "    orderExecuted bigint       not null,\n"
+          + "    execType      varchar(255),\n"
+          + "    md5sum        varchar(255),\n"
+          + "    description   varchar(255),\n"
+          + "    comments      varchar(255),\n"
+          + "    tag           varchar(255),\n"
+          + "    liquibase     varchar(255),\n"
+          + "    contexts      varchar(255),\n"
+          + "    labels        varchar(255),\n"
+          + "    deployment_id varchar(255),\n"
+          + "    PRIMARY KEY (id, author, filename)\n"
+          + ");";
+
   @Override
   public boolean supports(CreateDatabaseChangeLogTableStatement statement, Database database) {
     return database instanceof ICloudSpanner;
@@ -64,9 +88,25 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
       Database database,
       SqlGeneratorChain sqlGeneratorChain) {
     String databaseChangeLogTableName = getDatabaseChangeLogTableNameFrom(database);
-    String createTableSql =
-        this.createTableSql.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);
-    return new Sql[] {new UnparsedSql(createTableSql)};
+
+    Dialect dialect = null;
+    try {
+      dialect = ((ICloudSpanner) database).getDialect();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    String createTableSQL = "";
+    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      createTableSQL =
+          this.createTableSql.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);
+    } else if (dialect == Dialect.POSTGRESQL) {
+      createTableSQL =
+          this.createPostgresqlTableSql.replaceAll(
+              "__DATABASECHANGELOG__", databaseChangeLogTableName);
+    }
+
+    return new Sql[] {new UnparsedSql(createTableSQL)};
   }
 
   private String getDatabaseChangeLogTableNameFrom(Database database) {
