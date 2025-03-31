@@ -14,6 +14,7 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import com.google.cloud.spanner.Dialect;
+import java.sql.SQLException;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
@@ -22,8 +23,6 @@ import liquibase.sql.UnparsedSql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.CreateDatabaseChangeLogTableGenerator;
 import liquibase.statement.core.CreateDatabaseChangeLogTableStatement;
-
-import java.sql.SQLException;
 
 public class CreateDatabaseChangeLogTableGeneratorSpanner
     extends CreateDatabaseChangeLogTableGenerator {
