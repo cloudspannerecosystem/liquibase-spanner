@@ -27,7 +27,7 @@ import liquibase.statement.core.CreateDatabaseChangeLogTableStatement;
 public class CreateDatabaseChangeLogTableGeneratorSpanner
     extends CreateDatabaseChangeLogTableGenerator {
 
-  final String createTableSql =
+  final String createTableSQL =
       ""
           + "CREATE TABLE __DATABASECHANGELOG__\n"
           + "(\n"
@@ -47,24 +47,24 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
           + "    deployment_id string(MAX),\n"
           + ") primary key (id, author, filename);";
 
-  final String createPostgresqlTableSql =
+  final String createPostgresqlTableSQL =
       ""
           + "CREATE TABLE public.__DATABASECHANGELOG__\n"
           + "(\n"
-          + "    id            varchar(255) not null,\n"
-          + "    author        varchar(255) not null,\n"
-          + "    filename      varchar(255) not null,\n"
+          + "    id            varchar not null,\n"
+          + "    author        varchar not null,\n"
+          + "    filename      varchar not null,\n"
           + "    dateExecuted  timestamptz  not null,\n"
           + "    orderExecuted bigint       not null,\n"
-          + "    execType      varchar(255),\n"
-          + "    md5sum        varchar(255),\n"
-          + "    description   varchar(255),\n"
-          + "    comments      varchar(255),\n"
-          + "    tag           varchar(255),\n"
-          + "    liquibase     varchar(255),\n"
-          + "    contexts      varchar(255),\n"
-          + "    labels        varchar(255),\n"
-          + "    deployment_id varchar(255),\n"
+          + "    execType      varchar,\n"
+          + "    md5sum        varchar,\n"
+          + "    description   varchar,\n"
+          + "    comments      varchar,\n"
+          + "    tag           varchar,\n"
+          + "    liquibase     varchar,\n"
+          + "    contexts      varchar,\n"
+          + "    labels        varchar,\n"
+          + "    deployment_id varchar,\n"
           + "    PRIMARY KEY (id, author, filename)\n"
           + ");";
 
@@ -94,16 +94,9 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
-
-    String createTableSQL = "";
-    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
-      createTableSQL =
-          this.createTableSql.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);
-    } else if (dialect == Dialect.POSTGRESQL) {
-      createTableSQL =
-          this.createPostgresqlTableSql.replaceAll(
-              "__DATABASECHANGELOG__", databaseChangeLogTableName);
-    }
+    String createTableSQL =
+        dialect == Dialect.POSTGRESQL ? this.createPostgresqlTableSQL : this.createTableSQL;
+    createTableSQL = createTableSQL.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);
 
     return new Sql[] {new UnparsedSql(createTableSQL)};
   }

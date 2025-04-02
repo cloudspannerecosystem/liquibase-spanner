@@ -43,7 +43,7 @@ public class CreateDatabaseChangeLogLockTableGeneratorSpanner
           + "    id          bigint primary key,\n"
           + "    locked      bool,\n"
           + "    lockgranted timestamptz,\n"
-          + "    lockedby    varchar(255)\n"
+          + "    lockedby    varchar,\n"
           + ")";
 
   @Override
@@ -59,16 +59,10 @@ public class CreateDatabaseChangeLogLockTableGeneratorSpanner
       throw new RuntimeException(e);
     }
     String databaseChangeLogLockTableName = getDatabaseChangeLogLockTableNameFrom(database);
-    String createTableSQL = "";
-    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
-      createTableSQL =
-          this.createTableSQL.replaceAll(
-              "__DATABASECHANGELOGLOCK__", databaseChangeLogLockTableName);
-    } else if (dialect == Dialect.POSTGRESQL) {
-      createTableSQL =
-          this.createPostgresqlTableSQL.replaceAll(
-              "__DATABASECHANGELOGLOCK__", databaseChangeLogLockTableName);
-    }
+    String createTableSQL =
+        dialect == Dialect.POSTGRESQL ? this.createPostgresqlTableSQL : this.createTableSQL;
+    createTableSQL =
+        createTableSQL.replaceAll("__DATABASECHANGELOGLOCK__", databaseChangeLogLockTableName);
 
     return new Sql[] {new UnparsedSql(createTableSQL)};
   }
