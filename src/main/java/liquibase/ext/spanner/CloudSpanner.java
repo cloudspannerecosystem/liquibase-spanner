@@ -16,8 +16,10 @@ package liquibase.ext.spanner;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -30,6 +32,7 @@ import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.OfflineConnection;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
 import liquibase.util.ISODateFormat;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
@@ -259,5 +262,24 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   @Override
   public String escapeStringForDatabase(String string) {
     return string == null ? null : string.replace("'", "\\'");
+  }
+
+  @Override
+  public Dialect getDialect() throws SQLException {
+    DatabaseConnection conn = getConnection();
+
+    if (conn instanceof JdbcConnection) {
+      Connection underlying = ((JdbcConnection) conn).getUnderlyingConnection();
+      if (underlying.isWrapperFor(CloudSpannerJdbcConnection.class)) {
+        return underlying.unwrap(CloudSpannerJdbcConnection.class).getDialect();
+      }
+    }
+    return null;
+  }
+
+  // TODO: Temporarily solution. Will need remove after fix the TABLE_CATALOG bug in the emulator
+  @Override
+  protected String getConnectionCatalogName() throws DatabaseException {
+    return "";
   }
 }

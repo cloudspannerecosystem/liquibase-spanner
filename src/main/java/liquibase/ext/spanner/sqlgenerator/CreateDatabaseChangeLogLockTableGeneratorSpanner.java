@@ -13,6 +13,8 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
+import java.sql.SQLException;
 import liquibase.database.Database;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
@@ -34,14 +36,34 @@ public class CreateDatabaseChangeLogLockTableGeneratorSpanner
           + "    lockedby    string(max),\n"
           + ") primary key (id)";
 
+  final String createPostgresqlTableSQL =
+      ""
+          + "CREATE TABLE public.__DATABASECHANGELOGLOCK__\n"
+          + "(\n"
+          + "    id          bigint primary key,\n"
+          + "    locked      bool,\n"
+          + "    lockgranted timestamptz,\n"
+          + "    lockedby    varchar,\n"
+          + ")";
+
   @Override
   public Sql[] generateSql(
       CreateDatabaseChangeLogLockTableStatement statement,
       Database database,
       SqlGeneratorChain sqlGeneratorChain) {
+
+    Dialect dialect = null;
+    try {
+      dialect = ((ICloudSpanner) database).getDialect();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
     String databaseChangeLogLockTableName = getDatabaseChangeLogLockTableNameFrom(database);
     String createTableSQL =
-        this.createTableSQL.replaceAll("__DATABASECHANGELOGLOCK__", databaseChangeLogLockTableName);
+        dialect == Dialect.POSTGRESQL ? this.createPostgresqlTableSQL : this.createTableSQL;
+    createTableSQL =
+        createTableSQL.replaceAll("__DATABASECHANGELOGLOCK__", databaseChangeLogLockTableName);
+
     return new Sql[] {new UnparsedSql(createTableSQL)};
   }
 

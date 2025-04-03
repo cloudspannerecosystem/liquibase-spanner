@@ -13,6 +13,8 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
+import java.sql.SQLException;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
@@ -25,7 +27,7 @@ import liquibase.statement.core.CreateDatabaseChangeLogTableStatement;
 public class CreateDatabaseChangeLogTableGeneratorSpanner
     extends CreateDatabaseChangeLogTableGenerator {
 
-  final String createTableSql =
+  final String createTableSQL =
       ""
           + "CREATE TABLE __DATABASECHANGELOG__\n"
           + "(\n"
@@ -44,6 +46,27 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
           + "    labels        string(MAX),\n"
           + "    deployment_id string(MAX),\n"
           + ") primary key (id, author, filename);";
+
+  final String createPostgresqlTableSQL =
+      ""
+          + "CREATE TABLE public.__DATABASECHANGELOG__\n"
+          + "(\n"
+          + "    id            varchar not null,\n"
+          + "    author        varchar not null,\n"
+          + "    filename      varchar not null,\n"
+          + "    dateExecuted  timestamptz  not null,\n"
+          + "    orderExecuted bigint       not null,\n"
+          + "    execType      varchar,\n"
+          + "    md5sum        varchar,\n"
+          + "    description   varchar,\n"
+          + "    comments      varchar,\n"
+          + "    tag           varchar,\n"
+          + "    liquibase     varchar,\n"
+          + "    contexts      varchar,\n"
+          + "    labels        varchar,\n"
+          + "    deployment_id varchar,\n"
+          + "    PRIMARY KEY (id, author, filename)\n"
+          + ");";
 
   @Override
   public boolean supports(CreateDatabaseChangeLogTableStatement statement, Database database) {
@@ -64,9 +87,18 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
       Database database,
       SqlGeneratorChain sqlGeneratorChain) {
     String databaseChangeLogTableName = getDatabaseChangeLogTableNameFrom(database);
-    String createTableSql =
-        this.createTableSql.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);
-    return new Sql[] {new UnparsedSql(createTableSql)};
+
+    Dialect dialect = null;
+    try {
+      dialect = ((ICloudSpanner) database).getDialect();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    String createTableSQL =
+        dialect == Dialect.POSTGRESQL ? this.createPostgresqlTableSQL : this.createTableSQL;
+    createTableSQL = createTableSQL.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);
+
+    return new Sql[] {new UnparsedSql(createTableSQL)};
   }
 
   private String getDatabaseChangeLogTableNameFrom(Database database) {
