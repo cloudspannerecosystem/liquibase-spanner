@@ -83,8 +83,8 @@ public class TestHarness {
     return false;
   }
 
-  private static void createDatabase(Spanner service, String instanceId, String databaseId)
-      throws SQLException {
+  private static void createDatabase(
+      Spanner service, String instanceId, String databaseId, Dialect dialect) throws SQLException {
     if (hasDatabase(service, instanceId, databaseId)) {
       logger.info(
           String.format("Reusing existing instance %s database %s", instanceId, databaseId));
@@ -93,11 +93,18 @@ public class TestHarness {
 
     try {
       // Create the database
-      service
-          .getDatabaseAdminClient()
-          .createDatabase(instanceId, databaseId, Collections.emptyList())
-          .get();
-
+      if (dialect == Dialect.POSTGRESQL) {
+        String createDatabaseStatement = String.format("CREATE DATABASE \"%s\"", databaseId);
+        service
+            .getDatabaseAdminClient()
+            .createDatabase(instanceId, createDatabaseStatement, dialect, Collections.emptyList())
+            .get();
+      } else {
+        service
+            .getDatabaseAdminClient()
+            .createDatabase(instanceId, databaseId, Collections.emptyList())
+            .get();
+      }
     } catch (ExecutionException | InterruptedException e) {
       throw new SQLException("Unable to create database", e);
     }
@@ -121,7 +128,7 @@ public class TestHarness {
   //
   // Creates a temporary Liquibase database using the Spanner emulator
   //
-  public static Connection useSpannerEmulator() throws SQLException {
+  public static Connection useSpannerEmulator(Dialect dialect) throws SQLException {
 
     // Test parameters
     final String PROJECT_ID = "test-project-id";
@@ -158,7 +165,7 @@ public class TestHarness {
 
     // Initialize the instance and database.
     createInstance(service, INSTANCE_ID);
-    createDatabase(service, INSTANCE_ID, DATABASE_ID);
+    createDatabase(service, INSTANCE_ID, DATABASE_ID, dialect);
 
     final String connectionUrl =
         String.format(
@@ -205,7 +212,7 @@ public class TestHarness {
 
     Spanner service = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
 
-    createDatabase(service, instanceId, databaseId);
+    createDatabase(service, instanceId, databaseId, Dialect.GOOGLE_STANDARD_SQL);
 
     final String connectionUrl =
         String.format(

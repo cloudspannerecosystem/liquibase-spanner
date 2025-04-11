@@ -14,7 +14,6 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import com.google.cloud.spanner.Dialect;
-import java.sql.SQLException;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
@@ -88,12 +87,8 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
       SqlGeneratorChain sqlGeneratorChain) {
     String databaseChangeLogTableName = getDatabaseChangeLogTableNameFrom(database);
 
-    Dialect dialect = null;
-    try {
-      dialect = ((ICloudSpanner) database).getDialect();
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
+
     String createTableSQL =
         dialect == Dialect.POSTGRESQL ? this.createPostgresqlTableSQL : this.createTableSQL;
     createTableSQL = createTableSQL.replaceAll("__DATABASECHANGELOG__", databaseChangeLogTableName);

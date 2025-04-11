@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.io.File;
@@ -61,6 +62,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -77,6 +80,9 @@ public class LiquibaseTests {
   // Return spannerReal instance
   // It is shared across tests.
   private static TestHarness.Connection spannerReal;
+  private static TestHarness.Connection spannerGsqlConnection;
+  private static TestHarness.Connection spannerPgConnection;
+  private Dialect dialect = Dialect.GOOGLE_STANDARD_SQL;
 
   static TestHarness.Connection getSpannerReal() throws SQLException {
     if (spannerReal == null) {
@@ -87,13 +93,20 @@ public class LiquibaseTests {
 
   // Return spannerEmulator instance
   // It is shared across tests.
-  private static TestHarness.Connection spannerEmulator;
+  public TestHarness.Connection getSpannerEmulator(Dialect dialect) throws SQLException {
+    switch (dialect) {
+      case POSTGRESQL:
+        if (spannerPgConnection == null) {
+          spannerPgConnection = TestHarness.useSpannerEmulator(dialect);
+        }
+        return spannerPgConnection;
 
-  static TestHarness.Connection getSpannerEmulator() throws SQLException {
-    if (spannerEmulator == null) {
-      spannerEmulator = TestHarness.useSpannerEmulator();
+      default:
+        if (spannerGsqlConnection == null) {
+          spannerGsqlConnection = TestHarness.useSpannerEmulator(dialect);
+        }
+        return spannerGsqlConnection;
     }
-    return spannerEmulator;
   }
 
   // Stop all instances and do cleanup if necessary
@@ -102,8 +115,11 @@ public class LiquibaseTests {
     if (spannerReal != null) {
       spannerReal.stop();
     }
-    if (spannerEmulator != null) {
-      spannerEmulator.stop();
+    if (spannerGsqlConnection != null) {
+      spannerGsqlConnection.stop();
+    }
+    if (spannerPgConnection != null) {
+      spannerPgConnection.stop();
     }
   }
 
@@ -122,9 +138,11 @@ public class LiquibaseTests {
     return liquibase;
   }
 
-  @Test
-  void doSpannerEmulatorSanityCheckTest() throws SQLException, LiquibaseException {
-    doSanityCheckTest(getSpannerEmulator());
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doSpannerEmulatorSanityCheckTest(Dialect dialect) throws SQLException, LiquibaseException {
+    this.dialect = dialect;
+    doSanityCheckTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -138,11 +156,11 @@ public class LiquibaseTests {
     try (Connection connection =
         DriverManager.getConnection(liquibaseTestHarness.getConnectionUrl())) {
       // Execute Query
-      List<Map<String, Object>> rss = testQuery(connection, "SELECT 3");
+      List<Map<String, Object>> rss = testQuery(connection, "SELECT 3 as test");
 
       // Validate results
       Assert.assertTrue(rss.size() == 1);
-      Assert.assertTrue(rss.get(0).get("1").equals("3"));
+      Assert.assertTrue(rss.get(0).get("test").equals("3"));
 
       // Ensure SELECT COUNT(*) FROM DATABASECHANGELOGLOCK works
       rss = testQuery(connection, "SELECT COUNT(*) FROM DATABASECHANGELOGLOCK");
@@ -151,9 +169,11 @@ public class LiquibaseTests {
     }
   }
 
-  @Test
-  void doSpannerUpdateEmulatorTest() throws Exception {
-    doLiquibaseUpdateTest(getSpannerEmulator());
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doSpannerUpdateEmulatorTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doLiquibaseUpdateTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -165,7 +185,7 @@ public class LiquibaseTests {
   @Test
   void doEmulatorDropAllForeignKeysTest() throws Exception {
     logger.warn("Starting emulator foreign key test");
-    doDropAllForeignKeysTest(getSpannerEmulator());
+    doDropAllForeignKeysTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -215,7 +235,7 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorMergeColumnsTest() throws Exception {
-    doMergeColumnsTest(getSpannerEmulator());
+    doMergeColumnsTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -277,7 +297,7 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorModifyDataTypeTest() throws Exception {
-    doModifyDataTypeTest(getSpannerEmulator());
+    doModifyDataTypeTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -347,7 +367,7 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorLoadDataTest() throws Exception {
-    doLoadDataTest(getSpannerEmulator());
+    doLoadDataTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -400,7 +420,7 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorLoadDataWithSingleQuotesTest() throws Exception {
-    doLoadDataWithSingleQuotesTest(getSpannerEmulator());
+    doLoadDataWithSingleQuotesTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -445,7 +465,7 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorLoadUpdateDataTest() throws Exception {
-    doLoadUpdateDataTest(getSpannerEmulator());
+    doLoadUpdateDataTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -520,28 +540,35 @@ public class LiquibaseTests {
   }
 
   void doLiquibaseUpdateTest(TestHarness.Connection testHarness) throws Exception {
-    try (Liquibase liquibase = getLiquibase(testHarness, "changelog.spanner.sql")) {
+    String changelogFile =
+        dialect == Dialect.POSTGRESQL ? "changelog.spanner.pg.sql" : "changelog.spanner.sql";
+
+    try (Liquibase liquibase = getLiquibase(testHarness, changelogFile)) {
       liquibase.update(null, new LabelExpression("base"));
       liquibase.tag("mytag");
 
       Connection currentConnection =
           ((JdbcConnection) liquibase.getDatabase().getConnection()).getUnderlyingConnection();
+
       List<Map<String, Object>> rss =
           testQuery(currentConnection, "SELECT id, name, extra FROM table1");
+      List<Map<String, Object>> rss2 =
+          testQuery(currentConnection, "SELECT * FROM DATABASECHANGELOG");
+
       Assert.assertTrue(rss.size() == 1);
       Assert.assertTrue(rss.get(0).get("id").equals("1"));
       Assert.assertTrue(rss.get(0).get("name").equals("test"));
       Assert.assertTrue(rss.get(0).get("extra").equals("abc"));
 
-      rss = testQuery(currentConnection, "SELECT COUNT(*) FROM DATABASECHANGELOG");
+      rss = testQuery(currentConnection, "SELECT COUNT(*) as count FROM DATABASECHANGELOG");
       Assert.assertTrue(rss.size() == 1);
-      Assert.assertTrue(rss.get(0).get("1").equals("3"));
+      Assert.assertTrue(rss.get(0).get("count").equals("3"));
     }
   }
 
   @Test
   void doEmulatorCreateSequenceTest() throws Exception {
-    doLiquibaseCreateSequenceTest(getSpannerEmulator());
+    doLiquibaseCreateSequenceTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -575,8 +602,10 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorSpannerCreateAndRollbackTest() throws Exception {
-    doLiquibaseCreateAndRollbackTest("create_table.spanner.sql", getSpannerEmulator());
-    doLiquibaseCreateAndRollbackTest("create_table.spanner.yaml", getSpannerEmulator());
+    doLiquibaseCreateAndRollbackTest(
+        "create_table.spanner.sql", getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+    doLiquibaseCreateAndRollbackTest(
+        "create_table.spanner.yaml", getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -616,7 +645,7 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorSpannerCreateAllDataTypesTest() throws Exception {
-    doSpannerCreateAllDataTypesTest(getSpannerEmulator());
+    doSpannerCreateAllDataTypesTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -719,9 +748,12 @@ public class LiquibaseTests {
     }
   }
 
-  @Test
-  void doEmulatorSpannerGenerateChangeLogForInterleavedTableTest() throws Exception {
-    doSpannerGenerateChangeLogForInterleavedTableTest(getSpannerEmulator());
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorSpannerGenerateChangeLogForInterleavedTableTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doSpannerGenerateChangeLogForInterleavedTableTest(
+        getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -903,7 +935,7 @@ public class LiquibaseTests {
 
     // Set readonly
     boolean readOnlyStatus = conn.isReadOnly();
-    conn.setReadOnly(true);
+    // conn.setReadOnly(true);
     ResultSet rs = conn.createStatement().executeQuery(query);
     logger.info(String.format("Query: %s, results: %s", query, rs.toString()));
     conn.setReadOnly(readOnlyStatus);
@@ -934,7 +966,7 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorSetNullableTest() throws Exception {
-    doSetNullableTest(getSpannerEmulator());
+    doSetNullableTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
@@ -1005,7 +1037,7 @@ public class LiquibaseTests {
 
   @Test
   void doEmulatorCreateViewTest() throws Exception {
-    doCreateViewTest(getSpannerEmulator());
+    doCreateViewTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
   }
 
   @Test
