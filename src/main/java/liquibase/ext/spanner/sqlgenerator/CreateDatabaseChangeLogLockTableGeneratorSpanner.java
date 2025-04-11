@@ -14,7 +14,6 @@
 package liquibase.ext.spanner.sqlgenerator;
 
 import com.google.cloud.spanner.Dialect;
-import java.sql.SQLException;
 import liquibase.database.Database;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
@@ -43,7 +42,7 @@ public class CreateDatabaseChangeLogLockTableGeneratorSpanner
           + "    id          bigint primary key,\n"
           + "    locked      bool,\n"
           + "    lockgranted timestamptz,\n"
-          + "    lockedby    varchar,\n"
+          + "    lockedby    varchar\n"
           + ")";
 
   @Override
@@ -52,12 +51,8 @@ public class CreateDatabaseChangeLogLockTableGeneratorSpanner
       Database database,
       SqlGeneratorChain sqlGeneratorChain) {
 
-    Dialect dialect = null;
-    try {
-      dialect = ((ICloudSpanner) database).getDialect();
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
+
     String databaseChangeLogLockTableName = getDatabaseChangeLogLockTableNameFrom(database);
     String createTableSQL =
         dialect == Dialect.POSTGRESQL ? this.createPostgresqlTableSQL : this.createTableSQL;
