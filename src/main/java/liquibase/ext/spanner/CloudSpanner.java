@@ -285,10 +285,4 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
     return null;
   }
-
-  // TODO: Temporarily solution. Will need remove after fix the TABLE_CATALOG bug in the emulator
-  @Override
-  protected String getConnectionCatalogName() {
-    return "";
-  }
 }
