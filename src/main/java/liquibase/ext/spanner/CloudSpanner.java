@@ -27,12 +27,12 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.Objects;
 import liquibase.Scope;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.OfflineConnection;
 import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.DatabaseException;
 import liquibase.util.ISODateFormat;
 
 public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner {
@@ -80,6 +80,10 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public String getCurrentDateTimeFunction() {
+    Dialect dialect = this.getDialect();
+    if (Objects.requireNonNull(dialect) == Dialect.POSTGRESQL) {
+      return "CURRENT_TIMESTAMP";
+    }
     return "CURRENT_TIMESTAMP()";
   }
 
@@ -265,21 +269,20 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   }
 
   @Override
-  public Dialect getDialect() throws SQLException {
-    DatabaseConnection conn = getConnection();
+  public Dialect getDialect() {
+    try {
+      DatabaseConnection conn = getConnection();
 
-    if (conn instanceof JdbcConnection) {
-      Connection underlying = ((JdbcConnection) conn).getUnderlyingConnection();
-      if (underlying.isWrapperFor(CloudSpannerJdbcConnection.class)) {
-        return underlying.unwrap(CloudSpannerJdbcConnection.class).getDialect();
+      if (conn instanceof JdbcConnection) {
+        Connection underlying = ((JdbcConnection) conn).getUnderlyingConnection();
+        if (underlying.isWrapperFor(CloudSpannerJdbcConnection.class)) {
+          return underlying.unwrap(CloudSpannerJdbcConnection.class).getDialect();
+        }
       }
+    } catch (SQLException e) {
+      throw new RuntimeException("Failed to get dialect from connection", e);
     }
-    return null;
-  }
 
-  // TODO: Temporarily solution. Will need remove after fix the TABLE_CATALOG bug in the emulator
-  @Override
-  protected String getConnectionCatalogName() throws DatabaseException {
-    return "";
+    return null;
   }
 }
