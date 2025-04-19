@@ -113,7 +113,7 @@ dependencies {
     testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '2.63.1', classifier: 'testlib')
 
     // For Liquibase to work without throwing NoClassDefFound/NoSuchMethodError
-    testRuntimeOnly("info.picocli:picocli:4.7.6")
+    testRuntimeOnly("info.picocli:picocli:4.7.7")
 }
 
 
