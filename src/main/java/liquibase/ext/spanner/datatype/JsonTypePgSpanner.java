@@ -2,13 +2,23 @@ package liquibase.ext.spanner.datatype;
 
 import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
+import liquibase.datatype.DataTypeInfo;
 import liquibase.datatype.DatabaseDataType;
-import liquibase.datatype.core.FloatType;
+import liquibase.datatype.LiquibaseDataType;
+import liquibase.datatype.core.UnknownType;
 import liquibase.ext.spanner.ICloudSpanner;
 
-public class FloatTypeSpanner extends FloatType {
-  private static final DatabaseDataType FLOAT64 = new DatabaseDataType("FLOAT64");
-  private static final DatabaseDataType FLOAT8 = new DatabaseDataType("float8");
+@DataTypeInfo(
+    name = "jsonb",
+    aliases = {"java.sql.Types.OTHER", "java.lang.String"},
+    minParameters = 0,
+    maxParameters = 0,
+    priority = LiquibaseDataType.PRIORITY_DATABASE)
+public class JsonTypePgSpanner extends UnknownType {
+
+  public JsonTypePgSpanner() {
+    super("jsonb", 0, 0);
+  }
 
   @Override
   public boolean supports(Database database) {
@@ -19,10 +29,9 @@ public class FloatTypeSpanner extends FloatType {
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
       Dialect dialect = ((ICloudSpanner) database).getDialect();
-      return dialect == Dialect.POSTGRESQL ? FLOAT8 : FLOAT64;
-    } else {
-      return super.toDatabaseDataType(database);
+      return new DatabaseDataType(dialect == Dialect.POSTGRESQL ? "jsonb" : "JSON");
     }
+    return super.toDatabaseDataType(database);
   }
 
   @Override

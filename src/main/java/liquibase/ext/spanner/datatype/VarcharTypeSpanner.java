@@ -13,12 +13,19 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.VarcharType;
 import liquibase.ext.spanner.ICloudSpanner;
 
-/** VARCHAR(n) is translated to STRING(n). */
+/**
+ * Maps VARCHAR(n) to dialect-specific string types: - STRING(n) or STRING(MAX) for GoogleSQL
+ * dialect - varchar(n) or varchar for PostgreSQL dialect
+ *
+ * <p>This ensures proper translation of variable-length character types across Cloud Spanner's
+ * supported SQL dialects.
+ */
 public class VarcharTypeSpanner extends VarcharType {
 
   @Override
@@ -29,10 +36,17 @@ public class VarcharTypeSpanner extends VarcharType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
-      if (getParameters() != null && getParameters().length > 0) {
-        return new DatabaseDataType("STRING(" + getParameters()[0] + ")");
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      Object[] params = getParameters();
+
+      if (dialect == Dialect.POSTGRESQL) {
+        return (params != null && params.length > 0)
+            ? new DatabaseDataType("varchar(" + params[0] + ")")
+            : new DatabaseDataType("varchar");
       } else {
-        return new DatabaseDataType("STRING(MAX)");
+        return (params != null && params.length > 0)
+            ? new DatabaseDataType("STRING(" + params[0] + ")")
+            : new DatabaseDataType("STRING(MAX)");
       }
     } else {
       return super.toDatabaseDataType(database);

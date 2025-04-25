@@ -13,12 +13,16 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.CharType;
 import liquibase.ext.spanner.ICloudSpanner;
 
-/** CHAR(n) is translated to STRING(n). */
+/**
+ * Maps CHAR(n) to dialect-specific types: - STRING(n) for GoogleSQL dialect - varchar(n) for
+ * PostgreSQL dialect
+ */
 public class CharTypeSpanner extends CharType {
 
   @Override
@@ -29,7 +33,11 @@ public class CharTypeSpanner extends CharType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
-      return new DatabaseDataType("STRING(" + getParameters()[0] + ")");
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      return new DatabaseDataType(
+          dialect == Dialect.POSTGRESQL
+              ? "varchar(" + getParameters()[0] + ")"
+              : "STRING(" + getParameters()[0] + ")");
     } else {
       return super.toDatabaseDataType(database);
     }

@@ -1,6 +1,11 @@
 services:
-   spanner-emulator:
-     image: gcr.io/cloud-spanner-emulator/emulator:latest
-     ports:
-       - 9010:9010
-       - 9020:9020
+  spanner-emulator:
+    image: gcr.io/cloud-spanner-emulator/emulator:latest
+    ports:
+      - 9010:9010
+      - 9020:9020
+  spanner-emulator-postgresql:
+    image: gcr.io/cloud-spanner-emulator/emulator:latest
+    ports:
+      - 9110:9010
+      - 9120:9020
