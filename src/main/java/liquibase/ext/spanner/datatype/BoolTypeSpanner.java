@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.BooleanType;
@@ -20,6 +21,7 @@ import liquibase.ext.spanner.ICloudSpanner;
 
 public class BoolTypeSpanner extends BooleanType {
   private static final DatabaseDataType BOOL = new DatabaseDataType("BOOL");
+  private static final DatabaseDataType BOOLEAN = new DatabaseDataType("boolean");
 
   @Override
   public boolean supports(Database database) {
@@ -29,7 +31,8 @@ public class BoolTypeSpanner extends BooleanType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
-      return BOOL;
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      return dialect == Dialect.POSTGRESQL ? BOOLEAN : BOOL;
     } else {
       return super.toDatabaseDataType(database);
     }

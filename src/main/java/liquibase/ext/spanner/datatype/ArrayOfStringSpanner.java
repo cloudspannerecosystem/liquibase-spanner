@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeInfo;
 import liquibase.datatype.DatabaseDataType;
@@ -21,8 +22,11 @@ import liquibase.datatype.core.UnknownType;
 import liquibase.ext.spanner.ICloudSpanner;
 
 /**
- * ARRAY<STRING(len)> needs special handling because it contains a length parameter that is not at
- * the end of the type definition.
+ * Maps ARRAY<STRING(len)> to dialect-specific array types: - ARRAY<STRING(len)> for GoogleSQL
+ * dialect - varchar[] or varchar(n)[] for PostgreSQL dialect
+ *
+ * <p>Special handling is required because the length parameter appears inside the type declaration
+ * (e.g., STRING(50)), rather than at the end like standard SQL types.
  */
 @DataTypeInfo(
     name = "array<string>",
@@ -44,6 +48,12 @@ public class ArrayOfStringSpanner extends UnknownType {
   public DatabaseDataType toDatabaseDataType(Database database) {
     Object[] parameters = getParameters();
     if (parameters != null && parameters.length == 1) {
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      if (dialect == Dialect.POSTGRESQL) {
+        String literal =
+            parameters[0].equals("MAX") ? "varchar" : String.format("varchar(%s)", parameters[0]);
+        return new DatabaseDataType(literal + "[]");
+      }
       return new DatabaseDataType(String.format("ARRAY<STRING(%s)>", parameters[0]));
     }
     return super.toDatabaseDataType(database);

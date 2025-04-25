@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.TimeType;
@@ -20,10 +21,11 @@ import liquibase.ext.spanner.ICloudSpanner;
 
 /**
  * Cloud Spanner does not have a data type that only stores time information. The best possible
- * translation is therefore a TIMESTAMP column.
+ * translation is therefore a TIMESTAMP or TIMESTAMPTZ for Postgresql dialect column.
  */
 public class TimeTypeSpanner extends TimeType {
   private static final DatabaseDataType TIME = new DatabaseDataType("TIMESTAMP");
+  private static final DatabaseDataType TIME_TZ = new DatabaseDataType("timestamptz");
 
   @Override
   public boolean supports(Database database) {
@@ -33,7 +35,8 @@ public class TimeTypeSpanner extends TimeType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
-      return TIME;
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      return dialect == Dialect.POSTGRESQL ? TIME_TZ : TIME;
     } else {
       return super.toDatabaseDataType(database);
     }

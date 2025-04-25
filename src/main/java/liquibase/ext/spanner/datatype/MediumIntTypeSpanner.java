@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.MediumIntType;
@@ -20,6 +21,7 @@ import liquibase.ext.spanner.ICloudSpanner;
 
 public class MediumIntTypeSpanner extends MediumIntType {
   private static final DatabaseDataType INT64 = new DatabaseDataType("INT64");
+  private static final DatabaseDataType BIGINT = new DatabaseDataType("BIGINT");
 
   @Override
   public boolean supports(Database database) {
@@ -29,7 +31,8 @@ public class MediumIntTypeSpanner extends MediumIntType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
-      return INT64;
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      return dialect == Dialect.POSTGRESQL ? BIGINT : INT64;
     } else {
       return super.toDatabaseDataType(database);
     }

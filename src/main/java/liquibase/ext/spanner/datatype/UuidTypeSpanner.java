@@ -13,14 +13,19 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.UUIDType;
 import liquibase.ext.spanner.ICloudSpanner;
 
-/** UUID is translated to STRING(36) as Cloud Spanner does not have a built-in type for UUID's. */
+/**
+ * UUID is translated to STRING(36) or VARCHAR as Cloud Spanner does not have a built-in type for
+ * UUID's.
+ */
 public class UuidTypeSpanner extends UUIDType {
   private static final DatabaseDataType UUID = new DatabaseDataType("STRING(36)");
+  private static final DatabaseDataType UUID_PG = new DatabaseDataType("varchar(36)");
 
   @Override
   public boolean supports(Database database) {
@@ -30,7 +35,8 @@ public class UuidTypeSpanner extends UUIDType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
-      return UUID;
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      return dialect == Dialect.POSTGRESQL ? UUID_PG : UUID;
     } else {
       return super.toDatabaseDataType(database);
     }

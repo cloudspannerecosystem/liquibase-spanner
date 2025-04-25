@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.snapshotgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.Scope;
 import liquibase.database.Database;
 import liquibase.exception.DatabaseException;
@@ -25,6 +26,7 @@ import liquibase.statement.DatabaseFunction;
 import liquibase.statement.core.RawParameterizedSqlStatement;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Column;
+import liquibase.structure.core.DataType;
 
 public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
   @Override
@@ -79,6 +81,44 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
       }
     }
     return super.readDefaultValue(columnMetadataResultSet, columnInfo, database);
+  }
+
+  @Override
+  protected DataType readDataType(
+      CachedRow columnMetadataResultSet, Column column, Database database)
+      throws DatabaseException {
+    if (database instanceof ICloudSpanner) {
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      if (dialect == Dialect.POSTGRESQL) {
+        try {
+          StringBuilder sql =
+              new StringBuilder("SELECT SPANNER_TYPE FROM INFORMATION_SCHEMA.COLUMNS\n")
+                  .append("WHERE TABLE_SCHEMA = ?\n")
+                  .append("AND TABLE_NAME = ?\n")
+                  .append("AND COLUMN_NAME = ?");
+          String dataType =
+              Scope.getCurrentScope()
+                  .getSingleton(ExecutorService.class)
+                  .getExecutor("jdbc", database)
+                  .queryForObject(
+                      new RawParameterizedSqlStatement(
+                          sql.toString(),
+                          column.getSchema().getName(),
+                          column.getRelation().getName(),
+                          column.getName()),
+                      String.class);
+
+          dataType = dataType.replace("character varying", "varchar");
+          dataType = dataType.replace("timestamp with time zone", "timestamptz");
+          dataType = dataType.replace("double precision", "float8");
+          dataType = dataType.replace("double precision[]", "float8[]");
+          return new DataType(dataType);
+        } catch (DatabaseException e) {
+          Scope.getCurrentScope().getLog(getClass()).warning("Error fetching data type column", e);
+        }
+      }
+    }
+    return super.readDataType(columnMetadataResultSet, column, database);
   }
 
   @Override
