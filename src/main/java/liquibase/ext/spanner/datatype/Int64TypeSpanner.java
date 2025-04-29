@@ -30,7 +30,7 @@ import liquibase.ext.spanner.ICloudSpanner;
  */
 @DataTypeInfo(
     name = "INT64",
-    aliases = {"java.sql.Types.BIGINT", "java.lang.BigInteger"},
+    aliases = {"java.sql.Types.BIGINT", "java.math.BigInteger"},
     minParameters = 0,
     maxParameters = 0,
     priority = LiquibaseDataType.PRIORITY_DATABASE)

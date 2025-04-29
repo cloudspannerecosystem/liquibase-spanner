@@ -21,7 +21,7 @@ import liquibase.ext.spanner.ICloudSpanner;
 
 public class MediumIntTypeSpanner extends MediumIntType {
   private static final DatabaseDataType INT64 = new DatabaseDataType("INT64");
-  private static final DatabaseDataType BIGINT = new DatabaseDataType("BIGINT");
+  private static final DatabaseDataType INT = new DatabaseDataType("int");
 
   @Override
   public boolean supports(Database database) {
@@ -32,7 +32,7 @@ public class MediumIntTypeSpanner extends MediumIntType {
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
       Dialect dialect = ((ICloudSpanner) database).getDialect();
-      return dialect == Dialect.POSTGRESQL ? BIGINT : INT64;
+      return dialect == Dialect.POSTGRESQL ? INT : INT64;
     } else {
       return super.toDatabaseDataType(database);
     }

@@ -31,9 +31,9 @@ import liquibase.ext.spanner.ICloudSpanner;
     minParameters = 0,
     maxParameters = 0,
     priority = LiquibaseDataType.PRIORITY_DATABASE)
-public class ArrayOfBigintSpanner extends UnknownType {
+public class ArrayOfInt64Spanner extends UnknownType {
 
-  public ArrayOfBigintSpanner() {
+  public ArrayOfInt64Spanner() {
     super("ARRAY<INT64>", 0, 0);
   }
 

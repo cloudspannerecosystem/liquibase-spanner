@@ -27,7 +27,7 @@ import liquibase.ext.spanner.ICloudSpanner;
  */
 @DataTypeInfo(
     name = "ARRAY<DATE>",
-    aliases = {"java.sql.Types.ARRAY", "java.lang.Date[]"},
+    aliases = {"java.sql.Types.ARRAY", "java.sql.Date[]"},
     minParameters = 0,
     maxParameters = 0,
     priority = LiquibaseDataType.PRIORITY_DATABASE)

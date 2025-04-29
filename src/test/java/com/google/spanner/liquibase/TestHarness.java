@@ -123,6 +123,7 @@ public class TestHarness {
 
   static GenericContainer<?> testContainer;
   static Spanner spanner;
+  static Spanner spannerReal;
 
   //
   // Create a Spanner emulator instance
@@ -216,9 +217,11 @@ public class TestHarness {
           "Both SPANNER_PROJECT and SPANNER_INSTANCE environment variables must be set!");
     }
 
-    Spanner service = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+    if (spanner == null) {
+      spannerReal = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+    }
 
-    createDatabase(service, instanceId, databaseId, dialect);
+    createDatabase(spannerReal, instanceId, databaseId, dialect);
 
     final String connectionUrl =
         String.format(
@@ -236,9 +239,9 @@ public class TestHarness {
 
       @Override
       public void stop() throws SQLException {
-        dropDatabase(service, instanceId, databaseId);
+        dropDatabase(spannerReal, instanceId, databaseId);
         conn.close();
-        service.close();
+        spannerReal.close();
         try {
           ConnectionOptions.closeSpanner();
         } catch (SpannerException e) {

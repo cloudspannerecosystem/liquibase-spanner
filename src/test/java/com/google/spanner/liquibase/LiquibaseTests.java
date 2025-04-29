@@ -79,57 +79,31 @@ public class LiquibaseTests {
 
   // Return spannerReal instance
   // It is shared across tests.
-  private static TestHarness.Connection spannerRealGsql;
-  private static TestHarness.Connection spannerRealPg;
-  private static TestHarness.Connection spannerGsqlConnection;
-  private static TestHarness.Connection spannerPgConnection;
-
+  private static TestHarness.Connection spannerReal;
   private Dialect dialect = Dialect.GOOGLE_STANDARD_SQL;
 
   static TestHarness.Connection getSpannerReal(Dialect dialect) throws SQLException {
-    switch (dialect) {
-      case POSTGRESQL:
-        if (spannerRealPg == null) {
-          spannerRealPg = TestHarness.useSpannerConnection(dialect);
-        }
-      case GOOGLE_STANDARD_SQL:
-      default:
-        if (spannerRealGsql == null) {
-          spannerRealGsql = TestHarness.useSpannerConnection(dialect);
-        }
-    }
-    return spannerRealGsql;
+    spannerReal = TestHarness.useSpannerConnection(dialect);
+    return spannerReal;
   }
 
   // Return spannerEmulator instance
   // It is shared across tests.
-  public TestHarness.Connection getSpannerEmulator(Dialect dialect) throws SQLException {
-    switch (dialect) {
-      case POSTGRESQL:
-        if (spannerPgConnection == null) {
-          spannerPgConnection = TestHarness.useSpannerEmulator(Dialect.POSTGRESQL);
-        }
-        return spannerPgConnection;
-      case GOOGLE_STANDARD_SQL:
-      default:
-        if (spannerGsqlConnection == null) {
-          spannerGsqlConnection = TestHarness.useSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL);
-        }
-        return spannerGsqlConnection;
-    }
+  private static TestHarness.Connection spannerEmulator;
+
+  static TestHarness.Connection getSpannerEmulator(Dialect dialect) throws SQLException {
+    spannerEmulator = TestHarness.useSpannerEmulator(dialect);
+    return spannerEmulator;
   }
 
   // Stop all instances and do cleanup if necessary
   @AfterAll
   static void stopTestHarness() throws SQLException {
-    if (spannerRealGsql != null) {
-      spannerRealGsql.stop();
+    if (spannerReal != null) {
+      spannerReal.stop();
     }
-    if (spannerGsqlConnection != null) {
-      spannerGsqlConnection.stop();
-    }
-    if (spannerPgConnection != null) {
-      spannerPgConnection.stop();
+    if (spannerEmulator != null) {
+      spannerEmulator.stop();
     }
   }
 
@@ -158,8 +132,8 @@ public class LiquibaseTests {
   @Tag("integration")
   @ParameterizedTest
   @EnumSource(Dialect.class)
-  void doSpannerRealSanityCheckTest() throws SQLException, LiquibaseException {
-    doSanityCheckTest(getSpannerReal(Dialect.GOOGLE_STANDARD_SQL));
+  void doSpannerRealSanityCheckTest(Dialect dialect) throws SQLException, LiquibaseException {
+    doSanityCheckTest(getSpannerReal(dialect));
   }
 
   void doSanityCheckTest(TestHarness.Connection liquibaseTestHarness) throws SQLException {
@@ -675,10 +649,11 @@ public class LiquibaseTests {
     doSpannerCreateAllDataTypesTest(getSpannerEmulator(dialect));
   }
 
-  @Test
   @Tag("integration")
-  void doRealSpannerCreateAllDataTypesTest() throws Exception {
-    doSpannerCreateAllDataTypesTest(getSpannerReal(Dialect.GOOGLE_STANDARD_SQL));
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doRealSpannerCreateAllDataTypesTest(Dialect dialect) throws Exception {
+    doSpannerCreateAllDataTypesTest(getSpannerReal(dialect));
   }
 
   private void doSpannerCreateAllDataTypesTest(TestHarness.Connection testHarness)

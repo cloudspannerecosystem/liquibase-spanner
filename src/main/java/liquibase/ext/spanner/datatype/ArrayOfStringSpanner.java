@@ -51,7 +51,9 @@ public class ArrayOfStringSpanner extends UnknownType {
       Dialect dialect = ((ICloudSpanner) database).getDialect();
       if (dialect == Dialect.POSTGRESQL) {
         String literal =
-            parameters[0].equals("MAX") ? "varchar" : String.format("varchar(%s)", parameters[0]);
+            parameters[0].toString().equalsIgnoreCase("MAX")
+                ? "varchar"
+                : String.format("varchar(%s)", parameters[0]);
         return new DatabaseDataType(literal + "[]");
       }
       return new DatabaseDataType(String.format("ARRAY<STRING(%s)>", parameters[0]));

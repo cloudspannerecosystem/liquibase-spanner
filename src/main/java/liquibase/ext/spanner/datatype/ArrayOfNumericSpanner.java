@@ -27,7 +27,7 @@ import liquibase.ext.spanner.ICloudSpanner;
  */
 @DataTypeInfo(
     name = "ARRAY<NUMERIC>",
-    aliases = {"java.sql.Types.ARRAY", "java.lang.Decimal[]"},
+    aliases = {"java.sql.Types.ARRAY", "java.math.BigDecimal[]"},
     minParameters = 0,
     maxParameters = 0,
     priority = LiquibaseDataType.PRIORITY_DATABASE)
