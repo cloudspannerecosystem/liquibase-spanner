@@ -113,9 +113,11 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
           dataType = dataType.replace("double precision", "float8");
           dataType = dataType.replace("double precision[]", "float8[]");
           return new DataType(dataType);
-        } catch (DatabaseException e) {
-          Scope.getCurrentScope().getLog(getClass()).warning("Error fetching data type column", e);
-          throw new DatabaseException(e);
+        } catch (DatabaseException databaseException) {
+          Scope.getCurrentScope()
+              .getLog(getClass())
+              .warning("Error fetching data type column", databaseException);
+          throw databaseException;
         }
       }
     }
