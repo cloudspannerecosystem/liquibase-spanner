@@ -14,11 +14,11 @@
 package liquibase.ext.spanner.datatype;
 
 import com.google.cloud.spanner.Dialect;
+import liquibase.change.core.LoadDataChange;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeInfo;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.LiquibaseDataType;
-import liquibase.datatype.core.UnknownType;
 import liquibase.ext.spanner.ICloudSpanner;
 
 /**
@@ -30,7 +30,7 @@ import liquibase.ext.spanner.ICloudSpanner;
     minParameters = 0,
     maxParameters = 0,
     priority = LiquibaseDataType.PRIORITY_DATABASE)
-public class ArrayOfTimestampSpanner extends UnknownType {
+public class ArrayOfTimestampSpanner extends LiquibaseDataType {
   public ArrayOfTimestampSpanner() {
     super("ARRAY<TIMESTAMP>", 0, 0);
   }
@@ -41,14 +41,14 @@ public class ArrayOfTimestampSpanner extends UnknownType {
   }
 
   @Override
+  public LoadDataChange.LOAD_DATA_TYPE getLoadTypeName() {
+    return LoadDataChange.LOAD_DATA_TYPE.UNKNOWN;
+  }
+
+  @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-
     Dialect dialect = ((ICloudSpanner) database).getDialect();
-
-    if (dialect == Dialect.POSTGRESQL) {
-      return new DatabaseDataType("timestamptz[]");
-    } else {
-      return super.toDatabaseDataType(database);
-    }
+    return new DatabaseDataType(
+        dialect == Dialect.POSTGRESQL ? "timestamptz[]" : "ARRAY<TIMESTAMP>");
   }
 }

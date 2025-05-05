@@ -115,6 +115,7 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
           return new DataType(dataType);
         } catch (DatabaseException e) {
           Scope.getCurrentScope().getLog(getClass()).warning("Error fetching data type column", e);
+          throw new DatabaseException(e);
         }
       }
     }

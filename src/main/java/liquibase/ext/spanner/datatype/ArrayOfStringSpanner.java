@@ -14,11 +14,11 @@
 package liquibase.ext.spanner.datatype;
 
 import com.google.cloud.spanner.Dialect;
+import liquibase.change.core.LoadDataChange;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeInfo;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.LiquibaseDataType;
-import liquibase.datatype.core.UnknownType;
 import liquibase.ext.spanner.ICloudSpanner;
 
 /**
@@ -34,7 +34,7 @@ import liquibase.ext.spanner.ICloudSpanner;
     minParameters = 1,
     maxParameters = 1,
     priority = LiquibaseDataType.PRIORITY_DATABASE)
-public class ArrayOfStringSpanner extends UnknownType {
+public class ArrayOfStringSpanner extends LiquibaseDataType {
   public ArrayOfStringSpanner() {
     super("ARRAY<STRING>", 1, 1);
   }
@@ -42,6 +42,11 @@ public class ArrayOfStringSpanner extends UnknownType {
   @Override
   public boolean supports(Database database) {
     return database instanceof ICloudSpanner;
+  }
+
+  @Override
+  public LoadDataChange.LOAD_DATA_TYPE getLoadTypeName() {
+    return LoadDataChange.LOAD_DATA_TYPE.UNKNOWN;
   }
 
   @Override
