@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2025 Google LLC
  *
  * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -22,21 +22,18 @@ import liquibase.datatype.LiquibaseDataType;
 import liquibase.ext.spanner.ICloudSpanner;
 
 /**
- * Maps ARRAY<STRING(len)> to dialect-specific array types: - ARRAY<STRING(len)> for GoogleSQL
- * dialect - varchar[] or varchar(n)[] for PostgreSQL dialect
- *
- * <p>Special handling is required because the length parameter appears inside the type declaration
- * (e.g., STRING(50)), rather than at the end like standard SQL types.
+ * Maps ARRAY<DATE> to dialect-specific array types: - ARRAY<DATE> for GoogleSQL dialect - date[]
+ * for PostgreSQL dialect
  */
 @DataTypeInfo(
-    name = "array<string>",
-    aliases = {"java.sql.Types.ARRAY", "java.lang.String[]"},
-    minParameters = 1,
-    maxParameters = 1,
+    name = "ARRAY<DATE>",
+    aliases = {"java.sql.Types.ARRAY", "java.sql.Date[]"},
+    minParameters = 0,
+    maxParameters = 0,
     priority = LiquibaseDataType.PRIORITY_DATABASE)
-public class ArrayOfStringSpanner extends LiquibaseDataType {
-  public ArrayOfStringSpanner() {
-    super("ARRAY<STRING>", 1, 1);
+public class ArrayOfDateSpanner extends LiquibaseDataType {
+  public ArrayOfDateSpanner() {
+    super("ARRAY<DATE>", 0, 0);
   }
 
   @Override
@@ -51,23 +48,7 @@ public class ArrayOfStringSpanner extends LiquibaseDataType {
 
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
-    Object[] parameters = getParameters();
-    if (parameters != null && parameters.length == 1) {
-      Dialect dialect = ((ICloudSpanner) database).getDialect();
-      if (dialect == Dialect.POSTGRESQL) {
-        String literal =
-            parameters[0].toString().equalsIgnoreCase("MAX")
-                ? "varchar"
-                : String.format("varchar(%s)", parameters[0]);
-        return new DatabaseDataType(literal + "[]");
-      }
-      return new DatabaseDataType(String.format("ARRAY<STRING(%s)>", parameters[0]));
-    }
-    return super.toDatabaseDataType(database);
-  }
-
-  @Override
-  public int getPriority() {
-    return PRIORITY_DATABASE;
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
+    return new DatabaseDataType(dialect == Dialect.POSTGRESQL ? "date[]" : "ARRAY<DATE>");
   }
 }

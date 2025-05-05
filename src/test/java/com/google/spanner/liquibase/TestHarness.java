@@ -122,6 +122,8 @@ public class TestHarness {
   }
 
   static GenericContainer<?> testContainer;
+  static Spanner spanner;
+  static Spanner spannerReal;
 
   //
   // Create a Spanner emulator instance
@@ -133,11 +135,12 @@ public class TestHarness {
     // Test parameters
     final String PROJECT_ID = "test-project-id";
     final String INSTANCE_ID = "test-instance-id";
-    final String DATABASE_ID = "test-database-id";
+    final String DATABASE_ID =
+        dialect == Dialect.POSTGRESQL ? "test-database-id-pg" : "test-database-id-gsql";
 
     // Use existing emulator or launch a new one
     String spannerEmulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
-    if (spannerEmulatorHost == null) {
+    if (spannerEmulatorHost == null && testContainer == null) {
 
       // Create the container
       final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:latest";
@@ -149,23 +152,23 @@ public class TestHarness {
 
       // Start the container
       testContainer.start();
-
-      // JDBC Connection
-      spannerEmulatorHost =
-          String.format("%s:%d", testContainer.getHost(), testContainer.getMappedPort(9010));
     }
+    // JDBC Connection
+    spannerEmulatorHost =
+        String.format("%s:%d", testContainer.getHost(), testContainer.getMappedPort(9010));
 
-    // Create the Spanner service
-    final Spanner service =
-        SpannerOptions.newBuilder()
-            .setProjectId(PROJECT_ID)
-            .setEmulatorHost(String.format("http://%s", spannerEmulatorHost))
-            .build()
-            .getService();
-
+    if (spanner == null) {
+      // Create the Spanner service
+      spanner =
+          SpannerOptions.newBuilder()
+              .setProjectId(PROJECT_ID)
+              .setEmulatorHost(String.format("http://%s", spannerEmulatorHost))
+              .build()
+              .getService();
+    }
     // Initialize the instance and database.
-    createInstance(service, INSTANCE_ID);
-    createDatabase(service, INSTANCE_ID, DATABASE_ID, dialect);
+    createInstance(spanner, INSTANCE_ID);
+    createDatabase(spanner, INSTANCE_ID, DATABASE_ID, dialect);
 
     final String connectionUrl =
         String.format(
@@ -181,7 +184,9 @@ public class TestHarness {
 
       @Override
       public void stop() throws SQLException {
-        service.close();
+        if (!spanner.isClosed()) {
+          spanner.close();
+        }
         try {
           ConnectionOptions.closeSpanner();
         } catch (SpannerException e) {
@@ -199,10 +204,12 @@ public class TestHarness {
   //
   // Automatically creates and drops a temporary liquibase database
   //
-  public static Connection useSpannerConnection() throws SQLException {
+  public static Connection useSpannerConnection(Dialect dialect) throws SQLException {
     final String projectId = System.getenv("SPANNER_PROJECT");
     final String instanceId = System.getenv("SPANNER_INSTANCE");
-    final String databaseId = String.format("test_database_%d", new Random().nextInt(1_000_000));
+    final String DATABASE_ID =
+        dialect == Dialect.POSTGRESQL ? "test-database-id-pg" : "test-database-id-gsql";
+    final String databaseId = String.format("%s_%d", DATABASE_ID, new Random().nextInt(1_000_000));
 
     // Ensure parameters are properly set
     if (projectId == null || instanceId == null) {
@@ -210,9 +217,11 @@ public class TestHarness {
           "Both SPANNER_PROJECT and SPANNER_INSTANCE environment variables must be set!");
     }
 
-    Spanner service = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+    if (spanner == null) {
+      spannerReal = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+    }
 
-    createDatabase(service, instanceId, databaseId, Dialect.GOOGLE_STANDARD_SQL);
+    createDatabase(spannerReal, instanceId, databaseId, dialect);
 
     final String connectionUrl =
         String.format(
@@ -230,9 +239,9 @@ public class TestHarness {
 
       @Override
       public void stop() throws SQLException {
-        dropDatabase(service, instanceId, databaseId);
+        dropDatabase(spannerReal, instanceId, databaseId);
         conn.close();
-        service.close();
+        spannerReal.close();
         try {
           ConnectionOptions.closeSpanner();
         } catch (SpannerException e) {

@@ -13,24 +13,29 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
+import liquibase.change.core.LoadDataChange;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeInfo;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.LiquibaseDataType;
-import liquibase.datatype.core.UnknownType;
 import liquibase.ext.spanner.ICloudSpanner;
 
 /**
- * ARRAY<BYTES(len)> needs special handling because it contains a length parameter that is not at
- * the end of the type definition.
+ * Maps ARRAY<BYTES(len)> to dialect-specific array types with length handling: - ARRAY<BYTES(len)>
+ * for GoogleSQL dialect - bytea[] for PostgreSQL dialect (length is not enforced)
+ *
+ * <p>This type requires special handling because the length parameter appears inside the angle
+ * brackets (e.g., ARRAY<BYTES(100)>), rather than at the end of the type definition as in most
+ * standard SQL types.
  */
 @DataTypeInfo(
     name = "array<bytes>",
-    aliases = {"java.sql.Types.ARRAY", "java.lang.String[]"},
+    aliases = {"java.sql.Types.ARRAY"},
     minParameters = 1,
     maxParameters = 1,
     priority = LiquibaseDataType.PRIORITY_DATABASE)
-public class ArrayOfBytesSpanner extends UnknownType {
+public class ArrayOfBytesSpanner extends LiquibaseDataType {
   public ArrayOfBytesSpanner() {
     super("ARRAY<BYTES>", 1, 1);
   }
@@ -41,10 +46,19 @@ public class ArrayOfBytesSpanner extends UnknownType {
   }
 
   @Override
+  public LoadDataChange.LOAD_DATA_TYPE getLoadTypeName() {
+    return LoadDataChange.LOAD_DATA_TYPE.UNKNOWN;
+  }
+
+  @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     Object[] parameters = getParameters();
     if (parameters != null && parameters.length == 1) {
-      return new DatabaseDataType(String.format("ARRAY<BYTES(%s)>", parameters[0]));
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      return new DatabaseDataType(
+          dialect == Dialect.POSTGRESQL
+              ? "bytea[]"
+              : String.format("ARRAY<BYTES(%s)>", parameters[0]));
     }
     return super.toDatabaseDataType(database);
   }
