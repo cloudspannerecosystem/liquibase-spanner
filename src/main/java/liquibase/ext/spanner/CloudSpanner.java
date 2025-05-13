@@ -69,7 +69,9 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
         OffsetDateTime utcDateTime = instant.atOffset(ZoneOffset.UTC);
         String formattedDate = utcDateTime.format(ISO_LOCAL_DATE);
         String formattedTime = utcDateTime.format(ISO_LOCAL_TIME);
-        return "TIMESTAMP '" + formattedDate + "T" + formattedTime + "Z'";
+        return this.getDialect() == Dialect.POSTGRESQL
+            ? "timestamptz '" + formattedDate + "T" + formattedTime + "Z'"
+            : "TIMESTAMP '" + formattedDate + "T" + formattedTime + "Z'";
       } catch (ParseException e) {
         return "BAD_DATE_FORMAT:" + isoDate;
       }
@@ -265,6 +267,10 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public String escapeStringForDatabase(String string) {
+    Dialect dialect = this.getDialect();
+    if (dialect == Dialect.POSTGRESQL) {
+      return string == null ? null : string.replace("'", "''");
+    }
     return string == null ? null : string.replace("'", "\\'");
   }
 

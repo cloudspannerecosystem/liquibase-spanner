@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeFactory;
 import liquibase.ext.spanner.ICloudSpanner;
@@ -38,26 +39,55 @@ public class SetNullableGeneratorSpanner extends SetNullableGenerator {
   @Override
   public Sql[] generateSql(
       SetNullableStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-    // Cloud Spanner does not have any specific syntax for adding/dropping NULLABLE constraints.
-    // Instead, an ALTER COLUMN statement must be generated that includes the entire column
-    // definition. For nullable columns, nothing should be specified regarding nullability.
-    String nullableString = statement.isNullable() ? " " : " NOT NULL";
-    String sql =
-        "ALTER TABLE "
-            + database.escapeTableName(
-                statement.getCatalogName(), statement.getSchemaName(), statement.getTableName())
-            + " ALTER COLUMN "
-            + database.escapeColumnName(
-                statement.getCatalogName(),
-                statement.getSchemaName(),
-                statement.getTableName(),
-                statement.getColumnName())
-            + " "
-            + DataTypeFactory.getInstance()
-                .fromDescription(statement.getColumnDataType(), database)
-                .toDatabaseDataType(database)
-            + nullableString;
+    // Cloud Spanner requires the full column definition to change nullability,
+    // as it does not support standalone ADD/DROP NULLABLE clauses.
+    // For nullable columns in Cloud Spanner, nullability is implicit (i.e., not explicitly stated).
+    // For PostgreSQL dialect, use ALTER COLUMN SET/DROP NOT NULL instead.
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
+    boolean isNullable = statement.isNullable();
 
-    return new Sql[] {new UnparsedSql(sql, getAffectedColumn(statement))};
+    // Determine the correct SQL clause for altering nullability based on dialect
+    String nullableClause = "";
+    if (dialect == Dialect.POSTGRESQL) {
+      nullableClause = isNullable ? " DROP NOT NULL" : " SET NOT NULL";
+    } else if (!isNullable) {
+      nullableClause = " NOT NULL";
+    }
+
+    // Build data type string
+    String dataType =
+        DataTypeFactory.getInstance()
+            .fromDescription(statement.getColumnDataType(), database)
+            .toDatabaseDataType(database)
+            .toString();
+
+    if (dialect == Dialect.POSTGRESQL) {
+      dataType = "TYPE " + dataType;
+    }
+
+    // Escape names
+    String catalog = statement.getCatalogName();
+    String schema = statement.getSchemaName();
+    String tableName = statement.getTableName();
+    String columnName = statement.getColumnName();
+
+    String escapedTableName = database.escapeTableName(catalog, schema, tableName);
+    String escapedColumnName = database.escapeColumnName(catalog, schema, tableName, columnName);
+
+    // Construct the final ALTER TABLE ... ALTER COLUMN SQL statement
+    StringBuilder sql = new StringBuilder();
+    sql.append("ALTER TABLE ")
+        .append(escapedTableName)
+        .append(" ALTER COLUMN ")
+        .append(escapedColumnName)
+        .append(" ")
+        .append(dataType);
+
+    if (dialect == Dialect.POSTGRESQL) {
+      sql.append(", ALTER COLUMN ").append(escapedColumnName).append(nullableClause);
+    } else {
+      sql.append(nullableClause);
+    }
+    return new Sql[] {new UnparsedSql(String.valueOf(sql), getAffectedColumn(statement))};
   }
 }

@@ -22,20 +22,15 @@ import liquibase.datatype.LiquibaseDataType;
 import liquibase.ext.spanner.ICloudSpanner;
 
 @DataTypeInfo(
-    name = "FLOAT32",
-    aliases = {"java.sql.Types.FLOAT", "java.lang.Float", "float"},
-    minParameters = 0,
-    maxParameters = 0,
+    name = "BYTES",
+    aliases = {"java.sql.Types.Bytes"},
+    minParameters = 1,
+    maxParameters = 1,
     priority = LiquibaseDataType.PRIORITY_DATABASE)
-public class Float32TypeSpanner extends LiquibaseDataType {
+public class BytesTypeSpanner extends LiquibaseDataType {
 
-  public Float32TypeSpanner() {
-    super("FLOAT32", 0, 0);
-  }
-
-  @Override
-  public LoadDataChange.LOAD_DATA_TYPE getLoadTypeName() {
-    return LoadDataChange.LOAD_DATA_TYPE.UNKNOWN;
+  public BytesTypeSpanner() {
+    super("BYTES", 1, 1);
   }
 
   @Override
@@ -44,16 +39,25 @@ public class Float32TypeSpanner extends LiquibaseDataType {
   }
 
   @Override
-  public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof ICloudSpanner) {
-      Dialect dialect = ((ICloudSpanner) database).getDialect();
-      return new DatabaseDataType(dialect == Dialect.POSTGRESQL ? "real" : "FLOAT32");
-    }
-    return super.toDatabaseDataType(database);
+  public LoadDataChange.LOAD_DATA_TYPE getLoadTypeName() {
+    return LoadDataChange.LOAD_DATA_TYPE.BLOB;
   }
 
   @Override
-  public int getPriority() {
-    return PRIORITY_DATABASE;
+  public DatabaseDataType toDatabaseDataType(Database database) {
+    if (database instanceof ICloudSpanner) {
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      Object[] params = getParameters();
+
+      if (dialect == Dialect.POSTGRESQL) {
+        return new DatabaseDataType("bytea");
+      } else {
+        return (params != null && params.length > 0)
+            ? new DatabaseDataType("BYTES(" + params[0] + ")")
+            : new DatabaseDataType("BYTES(MAX)");
+      }
+    } else {
+      return super.toDatabaseDataType(database);
+    }
   }
 }

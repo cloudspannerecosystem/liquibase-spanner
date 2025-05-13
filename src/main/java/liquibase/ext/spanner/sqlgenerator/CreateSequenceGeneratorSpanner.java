@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import java.math.BigInteger;
 import java.util.Objects;
 import liquibase.database.Database;
@@ -49,23 +50,36 @@ public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
   @Override
   public Sql[] generateSql(
       CreateSequenceStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
     StringBuilder queryStringBuilder = new StringBuilder();
     queryStringBuilder.append("CREATE SEQUENCE ");
     queryStringBuilder.append(
         database.escapeSequenceName(
             statement.getCatalogName(), statement.getSchemaName(), statement.getSequenceName()));
-    queryStringBuilder.append(" OPTIONS (sequence_kind='bit_reversed_positive'");
-    if (statement.getMinValue() != null) {
-      queryStringBuilder.append(", skip_range_min = ").append(statement.getMinValue());
+    if (dialect == Dialect.POSTGRESQL) {
+      queryStringBuilder.append(" bit_reversed_positive");
+      if (statement.getMinValue() != null) {
+        queryStringBuilder.append(" SKIP RANGE ").append(statement.getMinValue());
+      }
+      if (statement.getMaxValue() != null) {
+        queryStringBuilder.append(" ").append(statement.getMaxValue());
+      }
+      if (statement.getStartValue() != null) {
+        queryStringBuilder.append(" START COUNTER WITH ").append(statement.getStartValue());
+      }
+    } else {
+      queryStringBuilder.append(" OPTIONS (sequence_kind='bit_reversed_positive'");
+      if (statement.getMinValue() != null) {
+        queryStringBuilder.append(", skip_range_min = ").append(statement.getMinValue());
+      }
+      if (statement.getMaxValue() != null) {
+        queryStringBuilder.append(", skip_range_max = ").append(statement.getMaxValue());
+      }
+      if (statement.getStartValue() != null) {
+        queryStringBuilder.append(", start_with_counter = ").append(statement.getStartValue());
+      }
+      queryStringBuilder.append(")");
     }
-    if (statement.getMaxValue() != null) {
-      queryStringBuilder.append(", skip_range_max = ").append(statement.getMaxValue());
-    }
-    if (statement.getStartValue() != null) {
-      queryStringBuilder.append(", start_with_counter = ").append(statement.getStartValue());
-    }
-    queryStringBuilder.append(")");
-
     return new Sql[] {
       new UnparsedSql(queryStringBuilder.toString(), getAffectedSequence(statement))
     };

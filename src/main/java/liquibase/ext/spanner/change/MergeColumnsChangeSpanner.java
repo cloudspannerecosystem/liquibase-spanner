@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.change;
 
+import com.google.cloud.spanner.Dialect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +24,7 @@ import liquibase.change.core.AddColumnChange;
 import liquibase.change.core.DropColumnChange;
 import liquibase.change.core.MergeColumnChange;
 import liquibase.database.Database;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.statement.SqlStatement;
 import liquibase.statement.core.RawSqlStatement;
 import liquibase.structure.core.Column;
@@ -32,7 +34,7 @@ import liquibase.structure.core.Column;
  * UPDATE and DELETE statements to include a WHERE clause, even when all rows should be
  * updated/deleted. This feature is a safety precaution against accidental updates/deletes.
  *
- * <p>{@link SpannerMergeColumnsChange} will use a Partitioned DML statement to fill the data in the
+ * <p>{@link MergeColumnsChangeSpanner} will use a Partitioned DML statement to fill the data in the
  * new column.
  */
 @DatabaseChange(
@@ -44,6 +46,7 @@ public class MergeColumnsChangeSpanner extends MergeColumnChange {
 
   @Override
   public SqlStatement[] generateStatements(final Database database) {
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
     List<SqlStatement> statements = new ArrayList<>();
 
     AddColumnChange addNewColumnChange = new AddColumnChange();
@@ -55,9 +58,10 @@ public class MergeColumnsChangeSpanner extends MergeColumnChange {
     columnConfig.setType(getFinalColumnType());
     addNewColumnChange.addColumn(columnConfig);
     statements.addAll(Arrays.asList(addNewColumnChange.generateStatements(database)));
-
-    statements.add(new RawSqlStatement("SET AUTOCOMMIT=TRUE"));
-    statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='PARTITIONED_NON_ATOMIC'"));
+    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      statements.add(new RawSqlStatement("SET AUTOCOMMIT=TRUE"));
+      statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='PARTITIONED_NON_ATOMIC'"));
+    }
     String updateStatement =
         "UPDATE "
             + database.escapeTableName(getCatalogName(), getSchemaName(), getTableName())
@@ -70,8 +74,9 @@ public class MergeColumnsChangeSpanner extends MergeColumnChange {
                 database.escapeObjectName(getColumn2Name(), Column.class))
             + " WHERE TRUE";
     statements.add(new RawSqlStatement(updateStatement));
-    statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='TRANSACTIONAL'"));
-
+    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='TRANSACTIONAL'"));
+    }
     DropColumnChange dropColumn1Change = new DropColumnChange();
     dropColumn1Change.setCatalogName(getCatalogName());
     dropColumn1Change.setSchemaName(getSchemaName());

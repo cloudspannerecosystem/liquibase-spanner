@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import java.util.ArrayList;
 import liquibase.database.Database;
 import liquibase.exception.LiquibaseException;
@@ -71,25 +72,33 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
       InsertOrUpdateStatement insertOrUpdateStatement,
       Database database,
       SqlGeneratorChain sqlGeneratorChain) {
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
     InsertWithSelectGeneratorSpanner insertGenerator = new InsertWithSelectGeneratorSpanner();
     StringBuffer sql =
         new StringBuffer(
             insertGenerator.generateSql(insertOrUpdateStatement, database, sqlGeneratorChain)[0]
                 .toSql());
-    sql.append(" FROM UNNEST([1])") // only SELECT statements with a FROM may have a WHERE clause.
-        .append(" WHERE NOT EXISTS (") // only insert if the row does not already exist.
-        .append("SELECT ")
-        .append(insertOrUpdateStatement.getPrimaryKey())
-        .append(" FROM ")
-        .append(
-            database.escapeTableName(
-                insertOrUpdateStatement.getCatalogName(),
-                insertOrUpdateStatement.getSchemaName(),
-                insertOrUpdateStatement.getTableName()))
-        .append(" WHERE ")
-        .append(getWhereClause(insertOrUpdateStatement, database))
-        .append(")");
-
+    if (dialect == Dialect.POSTGRESQL) {
+      sql.append(" ON CONFLICT")
+          .append(" (")
+          .append(insertOrUpdateStatement.getPrimaryKey())
+          .append(" )")
+          .append(" DO NOTHING");
+    } else {
+      sql.append(" FROM UNNEST([1])") // only SELECT statements with a FROM may have a WHERE clause.
+          .append(" WHERE NOT EXISTS (") // only insert if the row does not already exist.
+          .append("SELECT ")
+          .append(insertOrUpdateStatement.getPrimaryKey())
+          .append(" FROM ")
+          .append(
+              database.escapeTableName(
+                  insertOrUpdateStatement.getCatalogName(),
+                  insertOrUpdateStatement.getSchemaName(),
+                  insertOrUpdateStatement.getTableName()))
+          .append(" WHERE ")
+          .append(getWhereClause(insertOrUpdateStatement, database))
+          .append(")");
+    }
     return sql.toString();
   }
 
