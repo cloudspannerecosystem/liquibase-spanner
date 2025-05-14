@@ -21,6 +21,13 @@ import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.LiquibaseDataType;
 import liquibase.ext.spanner.ICloudSpanner;
 
+/**
+ * Maps real to dialect-specific floating-point types: - FLOAT32 for GoogleSQL dialect - real for
+ * PostgreSQL dialect
+ *
+ * <p>In GoogleSQL, FLOAT32 is used for single-precision (32-bit) floating-point values. PostgreSQL
+ * uses the keyword real for the same purpose.
+ */
 @DataTypeInfo(
     name = "FLOAT32",
     aliases = {"java.sql.Types.FLOAT", "java.lang.Float", "float"},
