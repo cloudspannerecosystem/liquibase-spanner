@@ -23,8 +23,8 @@ import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.statement.DatabaseFunction;
 
 /**
- * Custom Liquibase data type for handling STRING types in Google Cloud Spanner,
- * supporting both GoogleSQL and PostgreSQL dialects.
+ * Custom Liquibase data type for handling STRING types in Google Cloud Spanner, supporting both
+ * GoogleSQL and PostgreSQL dialects.
  */
 @DataTypeInfo(
     name = "STRING",
