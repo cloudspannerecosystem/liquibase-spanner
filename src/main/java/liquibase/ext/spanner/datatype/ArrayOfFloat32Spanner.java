@@ -14,43 +14,38 @@
 package liquibase.ext.spanner.datatype;
 
 import com.google.cloud.spanner.Dialect;
+import liquibase.change.core.LoadDataChange;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeInfo;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.LiquibaseDataType;
-import liquibase.datatype.core.FloatType;
 import liquibase.ext.spanner.ICloudSpanner;
 
-/**
- * Maps real to dialect-specific floating-point types: - FLOAT32 for GoogleSQL dialect - real for
- * PostgreSQL dialect
- *
- * <p>In GoogleSQL, FLOAT32 is used for single-precision (32-bit) floating-point values. PostgreSQL
- * uses the keyword real for the same purpose.
- */
 @DataTypeInfo(
-    name = "real",
-    aliases = {"java.sql.Types.FLOAT", "java.lang.float"},
+    name = "ARRAY<FLOAT32>",
+    aliases = {"java.sql.Types.ARRAY", "java.lang.float[]"},
     minParameters = 0,
     maxParameters = 0,
     priority = LiquibaseDataType.PRIORITY_DATABASE)
-public class RealTypeSpanner extends FloatType {
+public class ArrayOfFloat32Spanner extends LiquibaseDataType {
+
+  public ArrayOfFloat32Spanner() {
+    super("ARRAY<FLOAT32>", 0, 0);
+  }
+
   @Override
   public boolean supports(Database database) {
     return database instanceof ICloudSpanner;
   }
 
   @Override
-  public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof ICloudSpanner) {
-      Dialect dialect = ((ICloudSpanner) database).getDialect();
-      return new DatabaseDataType(dialect == Dialect.POSTGRESQL ? "real" : "FLOAT32");
-    }
-    return super.toDatabaseDataType(database);
+  public LoadDataChange.LOAD_DATA_TYPE getLoadTypeName() {
+    return LoadDataChange.LOAD_DATA_TYPE.UNKNOWN;
   }
 
   @Override
-  public int getPriority() {
-    return PRIORITY_DATABASE;
+  public DatabaseDataType toDatabaseDataType(Database database) {
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
+    return new DatabaseDataType(dialect == Dialect.POSTGRESQL ? "real[]" : "ARRAY<FLOAT32>");
   }
 }

@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import java.util.Date;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeFactory;
@@ -42,6 +43,7 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
   public Sql[] generateSql(
       InsertStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     // Generate INSERT INTO (...) header.
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
     StringBuilder sql = new StringBuilder();
     sql.append("INSERT INTO ")
         .append(
@@ -65,7 +67,7 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
     sql.append(")");
 
     // Generate SELECT ... statement.
-    sql.append(" SELECT ");
+    sql.append(dialect == Dialect.POSTGRESQL ? " VALUES (" : " SELECT ");
     first = true;
     for (String column : statement.getColumnValues().keySet()) {
       if (first) {
@@ -95,6 +97,9 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
       } else {
         sql.append(newValue);
       }
+    }
+    if (dialect == Dialect.POSTGRESQL) {
+      sql.append(")");
     }
 
     return new Sql[] {new UnparsedSql(sql.toString(), getAffectedTable(statement))};

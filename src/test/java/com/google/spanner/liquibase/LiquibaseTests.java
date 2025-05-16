@@ -167,10 +167,12 @@ public class LiquibaseTests {
     doLiquibaseUpdateTest(getSpannerReal(Dialect.GOOGLE_STANDARD_SQL));
   }
 
-  @Test
-  void doEmulatorDropAllForeignKeysTest() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorDropAllForeignKeysTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
     logger.warn("Starting emulator foreign key test");
-    doDropAllForeignKeysTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+    doDropAllForeignKeysTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -184,26 +186,38 @@ public class LiquibaseTests {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
         statement.execute(
-            "CREATE TABLE Countries (Code STRING(10), Name STRING(100)) PRIMARY KEY (Code)");
+            dialect == Dialect.POSTGRESQL
+                ? "CREATE TABLE Countries (Code varchar(10), Name varchar(100), PRIMARY KEY (Code))"
+                : "CREATE TABLE Countries (Code STRING(10), Name STRING(100)) PRIMARY KEY (Code)");
         statement.execute(
-            "CREATE TABLE Singers (SingerId INT64, Name STRING(100), Country STRING(100), CONSTRAINT FK_Singers_Countries FOREIGN KEY (Country) REFERENCES Countries (Code)) PRIMARY KEY (SingerId)");
+            dialect == Dialect.POSTGRESQL
+                ? "CREATE TABLE Singers (SingerId bigint, Name varchar(100), Country varchar(100), CONSTRAINT FK_Singers_Countries FOREIGN KEY (Country) REFERENCES Countries (Code), PRIMARY KEY (SingerId))"
+                : "CREATE TABLE Singers (SingerId INT64, Name STRING(100), Country STRING(100), CONSTRAINT FK_Singers_Countries FOREIGN KEY (Country) REFERENCES Countries (Code)) PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
 
         try (ResultSet rs =
             statement.executeQuery(
-                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
+                dialect == Dialect.POSTGRESQL
+                    ? "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='fk_singers_countries'"
+                    : "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
           assertThat(rs.next()).isTrue();
           assertThat(rs.getLong(1)).isEqualTo(1L);
           assertThat(rs.next()).isFalse();
         }
 
         try (Liquibase liquibase =
-            getLiquibase(testHarness, "drop-all-foreign-key-constraints-singers.spanner.yaml")) {
+            getLiquibase(
+                testHarness,
+                dialect == Dialect.POSTGRESQL
+                    ? "drop-all-foreign-key-constraints-singers.pg.spanner.yaml"
+                    : "drop-all-foreign-key-constraints-singers.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
 
           try (ResultSet rs =
               statement.executeQuery(
-                  "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
+                  dialect == Dialect.POSTGRESQL
+                      ? "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='fk_singers_countries'"
+                      : "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='FK_Singers_Countries'")) {
             assertThat(rs.next()).isTrue();
             assertThat(rs.getLong(1)).isEqualTo(0L);
             assertThat(rs.next()).isFalse();
@@ -218,9 +232,11 @@ public class LiquibaseTests {
     }
   }
 
-  @Test
-  void doEmulatorMergeColumnsTest() throws Exception {
-    doMergeColumnsTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorMergeColumnsTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doMergeColumnsTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -234,7 +250,9 @@ public class LiquibaseTests {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
         statement.execute(
-            "CREATE TABLE Singers (SingerId INT64, FirstName STRING(100), LastName STRING(100)) PRIMARY KEY (SingerId)");
+            dialect == Dialect.POSTGRESQL
+                ? "CREATE TABLE Singers (SingerId bigint, FirstName varchar(100), LastName varchar(100), PRIMARY KEY (SingerId))"
+                : "CREATE TABLE Singers (SingerId INT64, FirstName STRING(100), LastName STRING(100)) PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
 
         Object[][] singers =
@@ -266,7 +284,7 @@ public class LiquibaseTests {
           try (ResultSet rs = statement.executeQuery("SELECT * FROM Singers ORDER BY SingerId")) {
             for (int i = 1; i <= singers.length; i++) {
               assertThat(rs.next()).isTrue();
-              assertThat(rs.getString("FullName"))
+              assertThat(rs.getString(dialect == Dialect.POSTGRESQL ? "fullname" : "FullName"))
                   .isEqualTo(String.format("FirstName%dsome-stringLastName%d", i, i));
             }
             assertThat(rs.next()).isFalse();
@@ -280,9 +298,11 @@ public class LiquibaseTests {
     }
   }
 
-  @Test
-  void doEmulatorModifyDataTypeTest() throws Exception {
-    doModifyDataTypeTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorModifyDataTypeTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doModifyDataTypeTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -296,48 +316,71 @@ public class LiquibaseTests {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
         statement.execute(
-            "CREATE TABLE Singers (SingerId INT64, LastName STRING(100) NOT NULL, SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)");
+            dialect == Dialect.POSTGRESQL
+                ? "CREATE TABLE Singers (SingerId bigint, LastName varchar(100) NOT NULL, SingerInfo bytea, PRIMARY KEY (SingerId))"
+                : "CREATE TABLE Singers (SingerId INT64, LastName STRING(100) NOT NULL, SingerInfo BYTES(MAX)) PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
 
         try (ResultSet rs =
             statement.executeQuery(
-                "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
+                dialect == Dialect.POSTGRESQL
+                    ? "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='singers' AND COLUMN_NAME='lastname'"
+                    : "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
           assertThat(rs.next()).isTrue();
-          assertThat(rs.getString(1)).isEqualTo("STRING(100)");
+          assertThat(rs.getString(1))
+              .isEqualTo(dialect == Dialect.POSTGRESQL ? "character varying(100)" : "STRING(100)");
           assertThat(rs.getString(2)).isEqualTo("NO");
           assertThat(rs.next()).isFalse();
         }
         try (ResultSet rs =
             statement.executeQuery(
-                "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
+                dialect == Dialect.POSTGRESQL
+                    ? "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='singers' AND COLUMN_NAME='singerinfo'"
+                    : "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
           assertThat(rs.next()).isTrue();
-          assertThat(rs.getString(1)).isEqualTo("BYTES(MAX)");
+          assertThat(rs.getString(1))
+              .isEqualTo(dialect == Dialect.POSTGRESQL ? "bytea" : "BYTES(MAX)");
           assertThat(rs.getString(2)).isEqualTo("YES");
           assertThat(rs.next()).isFalse();
         }
 
         try (Liquibase liquibase =
-            getLiquibase(testHarness, "modify-data-type-singers-lastname.spanner.yaml")) {
+            getLiquibase(
+                testHarness,
+                dialect == Dialect.POSTGRESQL
+                    ? "modify-data-type-singers-lastname.pg.spanner.yaml"
+                    : "modify-data-type-singers-lastname.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
 
           try (ResultSet rs =
               statement.executeQuery(
-                  "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
+                  dialect == Dialect.POSTGRESQL
+                      ? "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='singers' AND COLUMN_NAME='lastname'"
+                      : "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='LastName'")) {
             assertThat(rs.next()).isTrue();
-            assertThat(rs.getString(1)).isEqualTo("STRING(1000)");
+            assertThat(rs.getString(1))
+                .isEqualTo(
+                    dialect == Dialect.POSTGRESQL ? "character varying(1000)" : "STRING(1000)");
             assertThat(rs.getString(2)).isEqualTo("NO");
             assertThat(rs.next()).isFalse();
           }
         }
 
         try (Liquibase liquibase =
-            getLiquibase(testHarness, "modify-data-type-singers-singerinfo.spanner.yaml")) {
+            getLiquibase(
+                testHarness,
+                dialect == Dialect.POSTGRESQL
+                    ? "modify-data-type-singers-singerinfo.pg.spanner.yaml"
+                    : "modify-data-type-singers-singerinfo.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
           try (ResultSet rs =
               statement.executeQuery(
-                  "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
+                  dialect == Dialect.POSTGRESQL
+                      ? "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='singers' AND COLUMN_NAME='singerinfo'"
+                      : "SELECT SPANNER_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Singers' AND COLUMN_NAME='SingerInfo'")) {
             assertThat(rs.next()).isTrue();
-            assertThat(rs.getString(1)).isEqualTo("STRING(MAX)");
+            assertThat(rs.getString(1))
+                .isEqualTo(dialect == Dialect.POSTGRESQL ? "character varying" : "STRING(MAX)");
             assertThat(rs.getString(2)).isEqualTo("YES");
             assertThat(rs.next()).isFalse();
           }
@@ -350,9 +393,11 @@ public class LiquibaseTests {
     }
   }
 
-  @Test
-  void doEmulatorLoadDataTest() throws Exception {
-    doLoadDataTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorLoadDataTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doLoadDataTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -366,16 +411,27 @@ public class LiquibaseTests {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
         statement.execute(
-            "CREATE TABLE Singers ("
-                + "SingerId INT64,"
-                + "Name STRING(100),"
-                + "Description STRING(MAX),"
-                + "SingerInfo BYTES(MAX),"
-                + "AnyGood BOOL,"
-                + "Birthdate DATE,"
-                + "LastConcertTimestamp TIMESTAMP,"
-                + "ExternalID STRING(36),"
-                + ") PRIMARY KEY (SingerId)");
+            dialect == Dialect.POSTGRESQL
+                ? "CREATE TABLE Singers ("
+                    + "SingerId bigint,"
+                    + "Name varchar(100),"
+                    + "Description varchar,"
+                    + "SingerInfo bytea,"
+                    + "AnyGood boolean,"
+                    + "Birthdate date,"
+                    + "LastConcertTimestamp timestamptz,"
+                    + "ExternalID varchar(36),"
+                    + "PRIMARY KEY (SingerId))"
+                : "CREATE TABLE Singers ("
+                    + "SingerId INT64,"
+                    + "Name STRING(100),"
+                    + "Description STRING(MAX),"
+                    + "SingerInfo BYTES(MAX),"
+                    + "AnyGood BOOL,"
+                    + "Birthdate DATE,"
+                    + "LastConcertTimestamp TIMESTAMP,"
+                    + "ExternalID STRING(36),"
+                    + ") PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
         try (Liquibase liquibase = getLiquibase(testHarness, "load-data-singers.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
@@ -384,13 +440,18 @@ public class LiquibaseTests {
             int index = 0;
             while (rs.next()) {
               index++;
-              assertThat(rs.getLong("SingerId")).isEqualTo(index);
-              assertThat(rs.getString("Name")).isEqualTo("Name " + index);
-              assertThat(rs.getString("Description"))
+              assertThat(rs.getLong(dialect == Dialect.POSTGRESQL ? "singerid" : "SingerId"))
+                  .isEqualTo(index);
+              assertThat(rs.getString(dialect == Dialect.POSTGRESQL ? "name" : "Name"))
+                  .ignoringCase()
+                  .isEqualTo("Name " + index);
+              assertThat(
+                      rs.getString(dialect == Dialect.POSTGRESQL ? "description" : "Description"))
                   .isEqualTo("This is a CLOB description " + index);
-              assertThat(rs.getBytes("SingerInfo"))
+              assertThat(rs.getBytes(dialect == Dialect.POSTGRESQL ? "singerinfo" : "SingerInfo"))
                   .isEqualTo(ByteArray.copyFrom("singerinfo " + index).toByteArray());
-              assertThat(rs.getBoolean("AnyGood")).isEqualTo(index % 2 == 0);
+              assertThat(rs.getBoolean(dialect == Dialect.POSTGRESQL ? "anygood" : "AnyGood"))
+                  .isEqualTo(index % 2 == 0);
             }
             assertThat(index).isEqualTo(3);
           }
@@ -403,9 +464,11 @@ public class LiquibaseTests {
     }
   }
 
-  @Test
-  void doEmulatorLoadDataWithSingleQuotesTest() throws Exception {
-    doLoadDataWithSingleQuotesTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorLoadDataWithSingleQuotesTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doLoadDataWithSingleQuotesTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -419,10 +482,15 @@ public class LiquibaseTests {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
         statement.execute(
-            "CREATE TABLE TableWithEscapedStringData ("
-                + "Id INT64,"
-                + "ColString STRING(100),"
-                + ") PRIMARY KEY (Id)");
+            dialect == Dialect.POSTGRESQL
+                ? "CREATE TABLE TableWithEscapedStringData ("
+                    + "Id bigint,"
+                    + "ColString varchar(100),"
+                    + "PRIMARY KEY (Id))"
+                : "CREATE TABLE TableWithEscapedStringData ("
+                    + "Id INT64,"
+                    + "ColString STRING(100),"
+                    + ") PRIMARY KEY (Id)");
         statement.execute("RUN BATCH");
         try (Liquibase liquibase =
             getLiquibase(testHarness, "load-data-with-single-quotes.spanner.yaml")) {
@@ -433,8 +501,8 @@ public class LiquibaseTests {
             int index = 0;
             while (rs.next()) {
               index++;
-              assertThat(rs.getLong("Id")).isEqualTo(index);
-              assertThat(rs.getString("ColString"))
+              assertThat(rs.getLong(dialect == Dialect.POSTGRESQL ? "id" : "Id")).isEqualTo(index);
+              assertThat(rs.getString(dialect == Dialect.POSTGRESQL ? "colstring" : "ColString"))
                   .isEqualTo("Shouldn't have an issue inserting this as row " + index);
             }
             assertThat(index).isEqualTo(3);
@@ -448,9 +516,11 @@ public class LiquibaseTests {
     }
   }
 
-  @Test
-  void doEmulatorLoadUpdateDataTest() throws Exception {
-    doLoadUpdateDataTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorLoadUpdateDataTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doLoadUpdateDataTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -464,16 +534,27 @@ public class LiquibaseTests {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
         statement.execute(
-            "CREATE TABLE Singers ("
-                + "SingerId INT64,"
-                + "Name STRING(100),"
-                + "Description STRING(MAX),"
-                + "SingerInfo BYTES(MAX),"
-                + "AnyGood BOOL,"
-                + "Birthdate DATE,"
-                + "LastConcertTimestamp TIMESTAMP,"
-                + "ExternalID STRING(36),"
-                + ") PRIMARY KEY (SingerId)");
+            dialect == Dialect.POSTGRESQL
+                ? "CREATE TABLE Singers ("
+                    + "SingerId bigint,"
+                    + "Name varchar(100),"
+                    + "Description varchar,"
+                    + "SingerInfo bytea,"
+                    + "AnyGood boolean,"
+                    + "Birthdate date,"
+                    + "LastConcertTimestamp timestamptz,"
+                    + "ExternalID varchar(36),"
+                    + "PRIMARY KEY (SingerId))"
+                : "CREATE TABLE Singers ("
+                    + "SingerId INT64,"
+                    + "Name STRING(100),"
+                    + "Description STRING(MAX),"
+                    + "SingerInfo BYTES(MAX),"
+                    + "AnyGood BOOL,"
+                    + "Birthdate DATE,"
+                    + "LastConcertTimestamp TIMESTAMP,"
+                    + "ExternalID STRING(36),"
+                    + ") PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
         // Insert one record that will be updated by Liquibase.
         CloudSpannerJdbcConnection cs = con.unwrap(CloudSpannerJdbcConnection.class);
@@ -507,11 +588,17 @@ public class LiquibaseTests {
             int index = 0;
             while (rs.next()) {
               index++;
-              assertThat(rs.getLong("SingerId")).isEqualTo(index);
-              assertThat(rs.getString("Name")).isEqualTo("Name " + index);
-              assertThat(rs.getString("Description")).isEqualTo("Description " + index);
-              assertThat(rs.getBytes("SingerInfo")).isNull();
-              assertThat(rs.getBoolean("AnyGood")).isEqualTo(index % 2 == 0);
+              assertThat(rs.getLong(dialect == Dialect.POSTGRESQL ? "singerid" : "SingerId"))
+                  .isEqualTo(index);
+              assertThat(rs.getString(dialect == Dialect.POSTGRESQL ? "name" : "Name"))
+                  .isEqualTo("Name " + index);
+              assertThat(
+                      rs.getString(dialect == Dialect.POSTGRESQL ? "description" : "Description"))
+                  .isEqualTo("Description " + index);
+              assertThat(rs.getBytes(dialect == Dialect.POSTGRESQL ? "singerinfo" : "SingerInfo"))
+                  .isNull();
+              assertThat(rs.getBoolean(dialect == Dialect.POSTGRESQL ? "anygood" : "AnyGood"))
+                  .isEqualTo(index % 2 == 0);
             }
             assertThat(index).isEqualTo(3);
           }
@@ -551,9 +638,11 @@ public class LiquibaseTests {
     }
   }
 
-  @Test
-  void doEmulatorCreateSequenceTest() throws Exception {
-    doLiquibaseCreateSequenceTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorCreateSequenceTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doLiquibaseCreateSequenceTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -565,8 +654,14 @@ public class LiquibaseTests {
   void doLiquibaseCreateSequenceTest(TestHarness.Connection testHarness) throws Exception {
     try (Liquibase liquibase = getLiquibase(testHarness, "create-sequence.spanner.yaml")) {
       // Verify that there is no sequence in the database.
+      String catalog = liquibase.getDatabase().getDefaultCatalogName();
+      String schema = liquibase.getDatabase().getDefaultSchemaName();
       String sql =
-          "select name from information_schema.sequences where catalog='' and schema='' and name='IdSequence'";
+          dialect == Dialect.POSTGRESQL
+              ? String.format(
+                  "select sequence_name from information_schema.sequences where sequence_catalog='%s' and sequence_schema='%s' and sequence_name='idsequence'",
+                  catalog, schema)
+              : "select name from information_schema.sequences where catalog='' and schema='' and name='IdSequence'";
       Connection connection =
           ((JdbcConnection) liquibase.getDatabase().getConnection()).getUnderlyingConnection();
       try (ResultSet sequences = connection.createStatement().executeQuery(sql)) {
@@ -579,7 +674,8 @@ public class LiquibaseTests {
       // Verify that the sequence was created.
       try (ResultSet sequences = connection.createStatement().executeQuery(sql)) {
         assertThat(sequences.next()).isTrue();
-        assertThat(sequences.getString(1)).isEqualTo("IdSequence");
+        assertThat(sequences.getString(1))
+            .isEqualTo(dialect == Dialect.POSTGRESQL ? "idsequence" : "IdSequence");
         assertThat(sequences.next()).isFalse();
       }
     }
@@ -688,7 +784,7 @@ public class LiquibaseTests {
                 new ColDesc("coldate", "date"),
                 new ColDesc("coldecimal", "numeric"),
                 new ColDesc("coldouble", "float8"),
-                new ColDesc("colfloat", "float8"),
+                new ColDesc("colfloat", "real"),
                 new ColDesc("colint", "bigint"),
                 new ColDesc("colmediumint", "bigint"),
                 new ColDesc("colnumber", "numeric"),
@@ -724,7 +820,7 @@ public class LiquibaseTests {
                 new ColDesc("ColDate", "DATE"),
                 new ColDesc("ColDecimal", "NUMERIC"),
                 new ColDesc("ColDouble", "FLOAT64"),
-                new ColDesc("ColFloat", "FLOAT64"),
+                new ColDesc("ColFloat", "FLOAT32"),
                 new ColDesc("ColInt", "INT64"),
                 new ColDesc("ColMediumInt", "INT64"),
                 new ColDesc("ColNumber", "NUMERIC"),
@@ -794,8 +890,10 @@ public class LiquibaseTests {
     }
   }
 
-  @Test
-  void doEmulatorSpannerGenerateChangeLogForInterleavedTableTest() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorSpannerGenerateChangeLogForInterleavedTableTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
     doSpannerGenerateChangeLogForInterleavedTableTest(getSpannerEmulator(dialect));
   }
 
@@ -812,15 +910,15 @@ public class LiquibaseTests {
         // Create a parent and child table manually.
         statement.addBatch(
             dialect == Dialect.POSTGRESQL
-                ? "CREATE TABLE Singers (SingerId BIGINT, Name VARCHAR(200), PRIMARY KEY (SingerId))"
+                ? "CREATE TABLE Singers (SingerId bigint, Name varchar(200), PRIMARY KEY (SingerId))"
                 : "CREATE TABLE Singers (SingerId INT64, Name STRING(200)) PRIMARY KEY (SingerId)");
         statement.addBatch(
             dialect == Dialect.POSTGRESQL
-                ? "CREATE TABLE Albums (SingerId BIGINT, AlbumId BIGINT, Title VARCHAR, PRIMARY KEY (SingerId, AlbumId), INTERLEAVE IN PARENT Singers)"
+                ? "CREATE TABLE Albums (SingerId bigint, AlbumId bigint, Title varchar, PRIMARY KEY (SingerId, AlbumId)) INTERLEAVE IN PARENT Singers"
                 : "CREATE TABLE Albums (SingerId INT64, AlbumId INT64, Title STRING(MAX)) PRIMARY KEY (SingerId, AlbumId), INTERLEAVE IN PARENT Singers");
         statement.addBatch(
             dialect == Dialect.POSTGRESQL
-                ? "CREATE TABLE Concerts (ConcertId BIGINT, SingerId BIGINT, CONSTRAINT FK_Concerts_Singers FOREIGN KEY (SingerId) REFERENCES Singers (SingerId), PRIMARY KEY (ConcertId))"
+                ? "CREATE TABLE Concerts (ConcertId bigint, SingerId bigint, CONSTRAINT FK_Concerts_Singers FOREIGN KEY (SingerId) REFERENCES Singers (SingerId), PRIMARY KEY (ConcertId))"
                 : "CREATE TABLE Concerts (ConcertId INT64, SingerId INT64, CONSTRAINT FK_Concerts_Singers FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)) PRIMARY KEY (ConcertId)");
         statement.executeBatch();
 
@@ -851,7 +949,7 @@ public class LiquibaseTests {
           assertEquals(1, createForeignKeys.getLength());
           Node createForeignKey = createForeignKeys.item(0);
           assertEquals(
-              "FK_Concerts_Singers",
+              dialect == Dialect.POSTGRESQL ? "fk_concerts_singers" : "FK_Concerts_Singers",
               createForeignKey.getAttributes().getNamedItem("constraintName").getNodeValue());
         } finally {
           statement.addBatch("DROP TABLE Concerts");
@@ -1058,9 +1156,11 @@ public class LiquibaseTests {
     return results;
   }
 
-  @Test
-  void doEmulatorSetNullableTest() throws Exception {
-    doSetNullableTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorSetNullableTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doSetNullableTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -1075,10 +1175,15 @@ public class LiquibaseTests {
       Statement statement = connection.createStatement();
       statement.execute("START BATCH DDL");
       statement.execute(
-          "CREATE TABLE Singers (\n"
-              + "  SingerId INT64 NOT NULL,\n"
-              + "  LastName STRING(100),\n"
-              + ") PRIMARY KEY (SingerId)");
+          dialect == Dialect.POSTGRESQL
+              ? "CREATE TABLE Singers (\n"
+                  + "  SingerId bigint NOT NULL,\n"
+                  + "  LastName varchar(100),\n"
+                  + "PRIMARY KEY (SingerId))"
+              : "CREATE TABLE Singers (\n"
+                  + "  SingerId INT64 NOT NULL,\n"
+                  + "  LastName STRING(100),\n"
+                  + ") PRIMARY KEY (SingerId)");
       statement.execute("RUN BATCH");
       assertThat(isNullable(connection, "Singers", "LastName")).isTrue();
 
@@ -1096,7 +1201,10 @@ public class LiquibaseTests {
 
         // Manually make the column NOT NULL.
         statement.execute("START BATCH DDL");
-        statement.execute("ALTER TABLE Singers ALTER COLUMN LastName STRING(100) NOT NULL");
+        statement.execute(
+            dialect == Dialect.POSTGRESQL
+                ? "ALTER TABLE Singers ALTER COLUMN LastName TYPE varchar(100), ALTER COLUMN LastName SET NOT NULL"
+                : "ALTER TABLE Singers ALTER COLUMN LastName STRING(100) NOT NULL");
         statement.execute("RUN BATCH");
         assertThat(isNullable(currentConnection, "Singers", "LastName")).isFalse();
       }
@@ -1129,9 +1237,11 @@ public class LiquibaseTests {
     return false;
   }
 
-  @Test
-  void doEmulatorCreateViewTest() throws Exception {
-    doCreateViewTest(getSpannerEmulator(Dialect.GOOGLE_STANDARD_SQL));
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void doEmulatorCreateViewTest(Dialect dialect) throws Exception {
+    this.dialect = dialect;
+    doCreateViewTest(getSpannerEmulator(dialect));
   }
 
   @Test
@@ -1145,7 +1255,9 @@ public class LiquibaseTests {
       try (Statement statement = con.createStatement()) {
         statement.execute("START BATCH DDL");
         statement.execute(
-            "CREATE TABLE Singers (SingerId INT64, FirstName STRING(100), LastName STRING(100)) PRIMARY KEY (SingerId)");
+            dialect == Dialect.POSTGRESQL
+                ? "CREATE TABLE Singers (SingerId bigint, FirstName varchar(100), LastName varchar(100), PRIMARY KEY (SingerId))"
+                : "CREATE TABLE Singers (SingerId INT64, FirstName STRING(100), LastName STRING(100)) PRIMARY KEY (SingerId)");
         statement.execute("RUN BATCH");
         Object[][] singers =
             new Object[][] {
@@ -1178,7 +1290,10 @@ public class LiquibaseTests {
           try (ResultSet rs = statement.executeQuery("SELECT * FROM V_Singers ORDER BY LastName")) {
             for (char prefix : prefixes) {
               assertThat(rs.next()).isTrue();
-              assertThat(rs.getString("LastName")).startsWith(String.format("%s LastName", prefix));
+              assertThat(
+                      rs.getString(dialect == Dialect.POSTGRESQL ? "lastname" : "LastName")
+                          .toLowerCase())
+                  .startsWith(String.format("%s LastName", prefix).toLowerCase());
             }
             assertThat(rs.next()).isFalse();
           }
