@@ -78,7 +78,7 @@ dependencies {
         }
     }
     // Cloud Spanner related
-    implementation platform('com.google.cloud:libraries-bom:26.57.0')
+    implementation platform('com.google.cloud:libraries-bom:26.60.0')
     implementation("com.google.cloud:google-cloud-spanner-jdbc")
 
     // Liquibase Core - needed for testing and docker container
@@ -87,9 +87,9 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.17.0")
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.12.1")
-    testImplementation("org.testcontainers:testcontainers:1.20.6")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.12.2")
+    testImplementation("org.testcontainers:testcontainers:1.21.0")
     testImplementation("net.java.dev.jna:jna:5.17.0")
     testImplementation("com.google.truth:truth:1.4.4") {
         exclude group: 'com.google.guava', module: 'guava'
@@ -107,14 +107,14 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
 
     // For testing runtime
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
     
     // For Spanner mock server testing
     testImplementation(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
-    testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '2.63.1', classifier: 'testlib')
+    testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '2.66.0', classifier: 'testlib')
 
     // For Liquibase to work without throwing NoClassDefFound/NoSuchMethodError
-    testRuntimeOnly("info.picocli:picocli:4.7.6")
+    testRuntimeOnly("info.picocli:picocli:4.7.7")
 }
 
 
@@ -175,7 +175,7 @@ tasks.named('liquibaseHarnessTest', Test).configure {
       languageVersion = JavaLanguageVersion.of(11)
   }
   dependencies {
-      testImplementation("org.mockito:mockito-core:5.16.1")
+      testImplementation("org.mockito:mockito-core:5.17.0")
   }
 }
 

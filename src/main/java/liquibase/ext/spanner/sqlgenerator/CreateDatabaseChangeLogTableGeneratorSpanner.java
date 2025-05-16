@@ -44,7 +44,7 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
           + "    contexts      string(MAX),\n"
           + "    labels        string(MAX),\n"
           + "    deployment_id string(MAX),\n"
-          + ") primary key (id, author, filename);";
+          + ") primary key (id, author, filename)";
 
   final String createPostgresqlTableSQL =
       ""
@@ -65,7 +65,7 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
           + "    labels        varchar,\n"
           + "    deployment_id varchar,\n"
           + "    PRIMARY KEY (id, author, filename)\n"
-          + ");";
+          + ")";
 
   @Override
   public boolean supports(CreateDatabaseChangeLogTableStatement statement, Database database) {
