@@ -13,14 +13,22 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.ClobType;
 import liquibase.ext.spanner.ICloudSpanner;
 
-/** CLOB is translated to STRING(MAX). */
+/**
+ * Maps CLOB to dialect-specific types: - STRING(MAX) for GoogleSQL dialect - varchar for PostgreSQL
+ * dialect
+ *
+ * <p>This ensures compatibility with Cloud Spanner's handling of large text fields in both
+ * dialects.
+ */
 public class ClobTypeSpanner extends ClobType {
   private static final DatabaseDataType CLOB = new DatabaseDataType("STRING(MAX)");
+  private static final DatabaseDataType CLOB_PG = new DatabaseDataType("varchar");
 
   @Override
   public boolean supports(Database database) {
@@ -30,7 +38,8 @@ public class ClobTypeSpanner extends ClobType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
-      return CLOB;
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      return dialect == Dialect.POSTGRESQL ? CLOB_PG : CLOB;
     } else {
       return super.toDatabaseDataType(database);
     }

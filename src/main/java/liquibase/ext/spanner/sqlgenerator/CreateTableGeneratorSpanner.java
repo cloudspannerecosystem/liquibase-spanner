@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
 import liquibase.ext.spanner.ICloudSpanner;
@@ -47,8 +48,10 @@ public class CreateTableGeneratorSpanner extends CreateTableGenerator {
     Sql[] res = super.generateSql(statement, database, sqlGeneratorChain);
     // If there is no PK constraint, leave it as it is and let validate method above throw the
     // error.
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
     if (statement.getPrimaryKeyConstraint() == null
-        || statement.getPrimaryKeyConstraint().getColumns() == null) {
+        || statement.getPrimaryKeyConstraint().getColumns() == null
+        || dialect == Dialect.POSTGRESQL) {
       return res;
     }
 

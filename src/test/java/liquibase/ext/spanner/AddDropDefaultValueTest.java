@@ -189,7 +189,7 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     String timestamp = convertToUtcTimestamp("2008-02-12T12:34:03");
     String[] expectedSql =
         new String[] {
-          "ALTER TABLE Singers ADD timestampColumn timestamp",
+          "ALTER TABLE Singers ADD timestampColumn TIMESTAMP",
           "ALTER TABLE Singers ALTER COLUMN timestampColumn SET DEFAULT (TIMESTAMP "
               + timestamp
               + ")",
@@ -299,7 +299,7 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
   void testCreateColumnWithDefaultValueDateFromYaml() throws Exception {
     String timestamp = convertToUtcTimestamp("2008-02-12T12:34:03");
     String expectedSql =
-        "ALTER TABLE Singers ADD timestampColumn timestamp DEFAULT (TIMESTAMP " + timestamp + ")";
+        "ALTER TABLE Singers ADD timestampColumn TIMESTAMP DEFAULT (TIMESTAMP " + timestamp + ")";
 
     addUpdateDdlStatementsResponse(expectedSql);
 

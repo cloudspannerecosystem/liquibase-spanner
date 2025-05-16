@@ -16,8 +16,10 @@ package liquibase.ext.spanner;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -25,6 +27,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.Objects;
 import liquibase.Scope;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
@@ -77,6 +80,10 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public String getCurrentDateTimeFunction() {
+    Dialect dialect = this.getDialect();
+    if (Objects.requireNonNull(dialect) == Dialect.POSTGRESQL) {
+      return "CURRENT_TIMESTAMP";
+    }
     return "CURRENT_TIMESTAMP()";
   }
 
@@ -259,5 +266,23 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   @Override
   public String escapeStringForDatabase(String string) {
     return string == null ? null : string.replace("'", "\\'");
+  }
+
+  @Override
+  public Dialect getDialect() {
+    try {
+      DatabaseConnection conn = getConnection();
+
+      if (conn instanceof JdbcConnection) {
+        Connection underlying = ((JdbcConnection) conn).getUnderlyingConnection();
+        if (underlying.isWrapperFor(CloudSpannerJdbcConnection.class)) {
+          return underlying.unwrap(CloudSpannerJdbcConnection.class).getDialect();
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException("Failed to get dialect from connection", e);
+    }
+
+    return null;
   }
 }
