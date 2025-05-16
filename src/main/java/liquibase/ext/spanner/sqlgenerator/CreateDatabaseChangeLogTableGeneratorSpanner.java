@@ -43,7 +43,7 @@ public class CreateDatabaseChangeLogTableGeneratorSpanner
           + "    contexts      string(MAX),\n"
           + "    labels        string(MAX),\n"
           + "    deployment_id string(MAX),\n"
-          + ") primary key (id, author, filename);";
+          + ") primary key (id, author, filename)";
 
   @Override
   public boolean supports(CreateDatabaseChangeLogTableStatement statement, Database database) {
