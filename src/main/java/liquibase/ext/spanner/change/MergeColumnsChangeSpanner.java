@@ -58,7 +58,10 @@ public class MergeColumnsChangeSpanner extends MergeColumnChange {
     columnConfig.setType(getFinalColumnType());
     addNewColumnChange.addColumn(columnConfig);
     statements.addAll(Arrays.asList(addNewColumnChange.generateStatements(database)));
-    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+    if (dialect == Dialect.POSTGRESQL) {
+      statements.add(new RawSqlStatement("set autocommit=true"));
+      statements.add(new RawSqlStatement("set spanner.autocommit_dml_mode='partitioned_non_atomic'"));
+    }else{
       statements.add(new RawSqlStatement("SET AUTOCOMMIT=TRUE"));
       statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='PARTITIONED_NON_ATOMIC'"));
     }
@@ -74,7 +77,9 @@ public class MergeColumnsChangeSpanner extends MergeColumnChange {
                 database.escapeObjectName(getColumn2Name(), Column.class))
             + " WHERE TRUE";
     statements.add(new RawSqlStatement(updateStatement));
-    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+    if (dialect == Dialect.POSTGRESQL) {
+      statements.add(new RawSqlStatement("set spanner.autocommit_dml_mode='transactional'"));
+    }else{
       statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='TRANSACTIONAL'"));
     }
     DropColumnChange dropColumn1Change = new DropColumnChange();
