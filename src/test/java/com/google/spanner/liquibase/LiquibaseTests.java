@@ -539,7 +539,7 @@ public class LiquibaseTests {
                     + "SingerId bigint,"
                     + "Name varchar(100),"
                     + "Description varchar,"
-                    + "SingerInfo bytea,"
+                    + "SingerInfo varchar,"
                     + "AnyGood boolean,"
                     + "Birthdate date,"
                     + "LastConcertTimestamp timestamptz,"
@@ -560,7 +560,7 @@ public class LiquibaseTests {
         CloudSpannerJdbcConnection cs = con.unwrap(CloudSpannerJdbcConnection.class);
         boolean wasAutoCommit = cs.getAutoCommit();
         cs.setAutoCommit(true);
-        cs.write(
+        Mutation.WriteBuilder builder =
             Mutation.newInsertBuilder("Singers")
                 .set("SingerId")
                 .to(2L)
@@ -568,8 +568,6 @@ public class LiquibaseTests {
                 .to("Some initial name")
                 .set("Description")
                 .to("Some initial description")
-                .set("SingerInfo")
-                .to(ByteArray.copyFrom("Some initial singer info"))
                 .set("AnyGood")
                 .to(false)
                 .set("Birthdate")
@@ -577,11 +575,24 @@ public class LiquibaseTests {
                 .set("LastConcertTimestamp")
                 .to(Timestamp.ofTimeMicroseconds(12345678))
                 .set("ExternalId")
-                .to("some initial external id")
-                .build());
+                .to("some initial external id");
+
+        // Handle SingerInfo based on dialect
+        if (dialect == Dialect.POSTGRESQL) {
+          builder.set("SingerInfo").to("Some initial singer info");
+        } else {
+          builder.set("SingerInfo").to(ByteArray.copyFrom("Some initial singer info"));
+        }
+
+        cs.write(builder.build());
         cs.setAutoCommit(wasAutoCommit);
+
         try (Liquibase liquibase =
-            getLiquibase(testHarness, "load-update-data-singers.spanner.yaml")) {
+            getLiquibase(
+                testHarness,
+                dialect == Dialect.POSTGRESQL
+                    ? "load-update-data-singers.spanner-pg.yaml"
+                    : "load-update-data-singers.spanner.yaml")) {
           liquibase.update(new Contexts("test"));
 
           try (ResultSet rs = statement.executeQuery("SELECT * FROM Singers ORDER BY SingerId")) {
@@ -595,8 +606,11 @@ public class LiquibaseTests {
               assertThat(
                       rs.getString(dialect == Dialect.POSTGRESQL ? "description" : "Description"))
                   .isEqualTo("Description " + index);
-              assertThat(rs.getBytes(dialect == Dialect.POSTGRESQL ? "singerinfo" : "SingerInfo"))
-                  .isNull();
+              if (dialect == Dialect.POSTGRESQL) {
+                assertThat(rs.getString("singerinfo")).isEqualTo("test");
+              } else {
+                assertThat(rs.getBytes("SingerInfo")).isNull();
+              }
               assertThat(rs.getBoolean(dialect == Dialect.POSTGRESQL ? "anygood" : "AnyGood"))
                   .isEqualTo(index % 2 == 0);
             }

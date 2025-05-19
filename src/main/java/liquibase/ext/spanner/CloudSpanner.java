@@ -62,21 +62,28 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   @Override
   public String getDateLiteral(final String isoDate) {
     // Construct the literal based on whether it is a DATE or TIMESTAMP
-    if (isDateTime(isoDate)) {
-      try {
+    if (isoDate == null || isoDate.trim().equalsIgnoreCase("null")) {
+      return this.getDialect() == Dialect.POSTGRESQL ? "CAST(NULL AS timestamptz)" : "NULL";
+    }
+    try {
+      if (isDateTime(isoDate)) {
         Date date = new ISODateFormat().parse(isoDate);
         Instant instant = date.toInstant();
         OffsetDateTime utcDateTime = instant.atOffset(ZoneOffset.UTC);
         String formattedDate = utcDateTime.format(ISO_LOCAL_DATE);
         String formattedTime = utcDateTime.format(ISO_LOCAL_TIME);
         return this.getDialect() == Dialect.POSTGRESQL
-            ? "timestamptz '" + formattedDate + "T" + formattedTime + "Z'"
+            ? "'" + formattedDate + "T" + formattedTime + "Z'" + "::timestamptz"
             : "TIMESTAMP '" + formattedDate + "T" + formattedTime + "Z'";
-      } catch (ParseException e) {
-        return "BAD_DATE_FORMAT:" + isoDate;
+
+      } else {
+        String formattedDate = super.getDateLiteral(isoDate);
+        return this.getDialect() == Dialect.POSTGRESQL
+            ? formattedDate + "::date"
+            : "DATE " + formattedDate;
       }
-    } else {
-      return "DATE " + super.getDateLiteral(isoDate);
+    } catch (ParseException e) {
+      return "BAD_DATE_FORMAT:" + isoDate;
     }
   }
 
