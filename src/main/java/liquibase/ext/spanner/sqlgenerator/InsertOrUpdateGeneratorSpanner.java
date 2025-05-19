@@ -86,9 +86,10 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
     if (dialect == Dialect.POSTGRESQL) {
       // This ensures that if the row already exists, it will be updated with new values.
       sql.append(" ON CONFLICT (")
-          .append(Arrays.stream(insertOrUpdateStatement.getPrimaryKey().split(","))
-              .map(String::trim)
-              .collect(Collectors.joining(", ")))
+          .append(
+              Arrays.stream(insertOrUpdateStatement.getPrimaryKey().split(","))
+                  .map(String::trim)
+                  .collect(Collectors.joining(", ")))
           .append(") DO ");
       List<String> updateClauses = new ArrayList<>();
       for (String columnKey : insertOrUpdateStatement.getColumnValues().keySet()) {
@@ -101,8 +102,7 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
         // If there's nothing to update, fall back to DO NOTHING
         sql.append("NOTHING");
       } else {
-        sql.append("UPDATE SET ")
-        .append(String.join(", ", updateClauses));
+        sql.append("UPDATE SET ").append(String.join(", ", updateClauses));
       }
 
     } else {

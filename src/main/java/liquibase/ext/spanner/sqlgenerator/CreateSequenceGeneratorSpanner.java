@@ -28,6 +28,8 @@ import liquibase.sqlgenerator.core.CreateSequenceGenerator;
 import liquibase.statement.core.CreateSequenceStatement;
 
 public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
+  public static final String MIN_MAX_VALUE_ERROR =
+      "Both minValue and maxValue must be set together or not at all.";
 
   @Override
   public ValidationErrors validate(
@@ -44,6 +46,12 @@ public class CreateSequenceGeneratorSpanner extends CreateSequenceGenerator {
           "incrementBy", statement.getIncrementBy(), database, CloudSpanner.class);
     }
 
+    // Validate that both minValue and maxValue are either both set or both null
+    boolean hasMin = statement.getMinValue() != null;
+    boolean hasMax = statement.getMaxValue() != null;
+    if (hasMin ^ hasMax) {
+      errors.addError(MIN_MAX_VALUE_ERROR);
+    }
     return errors;
   }
 

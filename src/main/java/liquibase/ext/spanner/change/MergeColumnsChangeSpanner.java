@@ -60,8 +60,9 @@ public class MergeColumnsChangeSpanner extends MergeColumnChange {
     statements.addAll(Arrays.asList(addNewColumnChange.generateStatements(database)));
     if (dialect == Dialect.POSTGRESQL) {
       statements.add(new RawSqlStatement("set autocommit=true"));
-      statements.add(new RawSqlStatement("set spanner.autocommit_dml_mode='partitioned_non_atomic'"));
-    }else{
+      statements.add(
+          new RawSqlStatement("set spanner.autocommit_dml_mode='partitioned_non_atomic'"));
+    } else {
       statements.add(new RawSqlStatement("SET AUTOCOMMIT=TRUE"));
       statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='PARTITIONED_NON_ATOMIC'"));
     }
@@ -79,7 +80,7 @@ public class MergeColumnsChangeSpanner extends MergeColumnChange {
     statements.add(new RawSqlStatement(updateStatement));
     if (dialect == Dialect.POSTGRESQL) {
       statements.add(new RawSqlStatement("set spanner.autocommit_dml_mode='transactional'"));
-    }else{
+    } else {
       statements.add(new RawSqlStatement("SET AUTOCOMMIT_DML_MODE='TRANSACTIONAL'"));
     }
     DropColumnChange dropColumn1Change = new DropColumnChange();
