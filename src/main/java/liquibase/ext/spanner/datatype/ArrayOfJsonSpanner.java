@@ -21,28 +21,16 @@ import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.LiquibaseDataType;
 import liquibase.ext.spanner.ICloudSpanner;
 
-/**
- * Maps real to dialect-specific floating-point types: - FLOAT32 for GoogleSQL dialect - real for
- * PostgreSQL dialect
- *
- * <p>In GoogleSQL, FLOAT32 is used for single-precision (32-bit) floating-point values. PostgreSQL
- * uses the keyword real for the same purpose.
- */
 @DataTypeInfo(
-    name = "FLOAT32",
-    aliases = {"java.sql.Types.FLOAT", "java.lang.Float", "float"},
+    name = "ARRAY<JSON>",
+    aliases = {"java.sql.Types.ARRAY", "java.lang.string[]"},
     minParameters = 0,
     maxParameters = 0,
     priority = LiquibaseDataType.PRIORITY_DATABASE)
-public class Float32TypeSpanner extends LiquibaseDataType {
+public class ArrayOfJsonSpanner extends LiquibaseDataType {
 
-  public Float32TypeSpanner() {
-    super("FLOAT32", 0, 0);
-  }
-
-  @Override
-  public LoadDataChange.LOAD_DATA_TYPE getLoadTypeName() {
-    return LoadDataChange.LOAD_DATA_TYPE.UNKNOWN;
+  public ArrayOfJsonSpanner() {
+    super("ARRAY<JSON>", 0, 0);
   }
 
   @Override
@@ -51,16 +39,13 @@ public class Float32TypeSpanner extends LiquibaseDataType {
   }
 
   @Override
-  public DatabaseDataType toDatabaseDataType(Database database) {
-    if (database instanceof ICloudSpanner) {
-      Dialect dialect = ((ICloudSpanner) database).getDialect();
-      return new DatabaseDataType(dialect == Dialect.POSTGRESQL ? "real" : "FLOAT32");
-    }
-    return super.toDatabaseDataType(database);
+  public LoadDataChange.LOAD_DATA_TYPE getLoadTypeName() {
+    return LoadDataChange.LOAD_DATA_TYPE.UNKNOWN;
   }
 
   @Override
-  public int getPriority() {
-    return PRIORITY_DATABASE;
+  public DatabaseDataType toDatabaseDataType(Database database) {
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
+    return new DatabaseDataType(dialect == Dialect.POSTGRESQL ? "jsonb[]" : "ARRAY<JSON>");
   }
 }

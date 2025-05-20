@@ -13,7 +13,11 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import liquibase.database.Database;
 import liquibase.exception.LiquibaseException;
 import liquibase.ext.spanner.ICloudSpanner;
@@ -71,24 +75,53 @@ public class InsertOrUpdateGeneratorSpanner extends InsertOrUpdateGenerator {
       InsertOrUpdateStatement insertOrUpdateStatement,
       Database database,
       SqlGeneratorChain sqlGeneratorChain) {
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
     InsertWithSelectGeneratorSpanner insertGenerator = new InsertWithSelectGeneratorSpanner();
-    StringBuffer sql =
-        new StringBuffer(
-            insertGenerator.generateSql(insertOrUpdateStatement, database, sqlGeneratorChain)[0]
-                .toSql());
-    sql.append(" FROM UNNEST([1])") // only SELECT statements with a FROM may have a WHERE clause.
-        .append(" WHERE NOT EXISTS (") // only insert if the row does not already exist.
-        .append("SELECT ")
-        .append(insertOrUpdateStatement.getPrimaryKey())
-        .append(" FROM ")
-        .append(
-            database.escapeTableName(
-                insertOrUpdateStatement.getCatalogName(),
-                insertOrUpdateStatement.getSchemaName(),
-                insertOrUpdateStatement.getTableName()))
-        .append(" WHERE ")
-        .append(getWhereClause(insertOrUpdateStatement, database))
-        .append(")");
+    String baseInsertSql =
+        insertGenerator.generateSql(insertOrUpdateStatement, database, sqlGeneratorChain)[0]
+            .toSql();
+
+    StringBuilder sql = new StringBuilder(baseInsertSql);
+
+    if (dialect == Dialect.POSTGRESQL) {
+      // This ensures that if the row already exists, it will be updated with new values.
+      sql.append(" ON CONFLICT (")
+          .append(
+              Arrays.stream(insertOrUpdateStatement.getPrimaryKey().split(","))
+                  .map(String::trim)
+                  .collect(Collectors.joining(", ")))
+          .append(") DO ");
+      List<String> updateClauses = new ArrayList<>();
+      for (String columnKey : insertOrUpdateStatement.getColumnValues().keySet()) {
+        if (insertOrUpdateStatement.getAllowColumnUpdate(columnKey)) {
+          String escapedCol = database.escapeColumnName(null, null, null, columnKey);
+          updateClauses.add(escapedCol + " = excluded." + escapedCol);
+        }
+      }
+      if (updateClauses.isEmpty()) {
+        // If there's nothing to update, fall back to DO NOTHING
+        sql.append("NOTHING");
+      } else {
+        sql.append("UPDATE SET ").append(String.join(", ", updateClauses));
+      }
+
+    } else {
+      // Cloud Spanner workaround: simulate "INSERT IF NOT EXISTS" using SELECT-FROM-UNNEST.
+      // This logic predates Spanner's native UPSERT support and is kept for backward compatibility.
+      sql.append(" FROM UNNEST([1])") // Only SELECTs with FROM can have WHERE
+          .append(" WHERE NOT EXISTS (")
+          .append("SELECT ")
+          .append(insertOrUpdateStatement.getPrimaryKey())
+          .append(" FROM ")
+          .append(
+              database.escapeTableName(
+                  insertOrUpdateStatement.getCatalogName(),
+                  insertOrUpdateStatement.getSchemaName(),
+                  insertOrUpdateStatement.getTableName()))
+          .append(" WHERE ")
+          .append(getWhereClause(insertOrUpdateStatement, database))
+          .append(")");
+    }
 
     return sql.toString();
   }

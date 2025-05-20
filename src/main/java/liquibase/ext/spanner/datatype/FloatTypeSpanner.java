@@ -20,8 +20,8 @@ import liquibase.datatype.core.FloatType;
 import liquibase.ext.spanner.ICloudSpanner;
 
 public class FloatTypeSpanner extends FloatType {
-  private static final DatabaseDataType FLOAT64 = new DatabaseDataType("FLOAT64");
-  private static final DatabaseDataType FLOAT8 = new DatabaseDataType("float8");
+  private static final DatabaseDataType FLOAT_32 = new DatabaseDataType("FLOAT32");
+  private static final DatabaseDataType REAL = new DatabaseDataType("real");
 
   @Override
   public boolean supports(Database database) {
@@ -32,7 +32,7 @@ public class FloatTypeSpanner extends FloatType {
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
       Dialect dialect = ((ICloudSpanner) database).getDialect();
-      return dialect == Dialect.POSTGRESQL ? FLOAT8 : FLOAT64;
+      return dialect == Dialect.POSTGRESQL ? REAL : FLOAT_32;
     } else {
       return super.toDatabaseDataType(database);
     }
