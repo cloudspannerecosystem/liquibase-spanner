@@ -13,14 +13,22 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
 import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.core.XMLType;
 import liquibase.ext.spanner.ICloudSpanner;
 
-/** XML is translated to STRING(MAX) as Cloud Spanner does not have a built-in type for XML. */
+/**
+ * Maps XML to dialect-specific string types: - STRING(MAX) for GoogleSQL dialect, as it does not
+ * support a native XML type - varchar for PostgreSQL dialect
+ *
+ * <p>This allows storing XML content as plain text while maintaining compatibility across Cloud
+ * Spanner dialects.
+ */
 public class XmlTypeSpanner extends XMLType {
   private static final DatabaseDataType XML = new DatabaseDataType("STRING(MAX)");
+  private static final DatabaseDataType XML_PG = new DatabaseDataType("varchar");
 
   @Override
   public boolean supports(Database database) {
@@ -30,7 +38,8 @@ public class XmlTypeSpanner extends XMLType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
-      return XML;
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      return dialect == Dialect.POSTGRESQL ? XML_PG : XML;
     } else {
       return super.toDatabaseDataType(database);
     }

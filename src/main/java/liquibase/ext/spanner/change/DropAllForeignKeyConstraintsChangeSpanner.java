@@ -37,14 +37,18 @@ public class DropAllForeignKeyConstraintsChangeSpanner extends DropAllForeignKey
     try (PreparedStatement ps =
         connection.prepareStatement(
             "SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG=? AND TABLE_SCHEMA=? AND TABLE_NAME=? AND CONSTRAINT_TYPE='FOREIGN KEY'")) {
-      ps.setString(1, MoreObjects.firstNonNull(getBaseTableCatalogName(), ""));
-      ps.setString(2, MoreObjects.firstNonNull(getBaseTableSchemaName(), ""));
+      String catalogName =
+          MoreObjects.firstNonNull(getBaseTableCatalogName(), database.getDefaultCatalogName());
+      String schemaName =
+          MoreObjects.firstNonNull(getBaseTableSchemaName(), database.getDefaultSchemaName());
+      ps.setString(1, catalogName);
+      ps.setString(2, schemaName);
       ps.setString(3, getBaseTableName());
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
           DropForeignKeyConstraintChange drop = new DropForeignKeyConstraintChange();
-          drop.setBaseTableCatalogName(getBaseTableCatalogName());
-          drop.setBaseTableSchemaName(getBaseTableSchemaName());
+          drop.setBaseTableCatalogName(catalogName);
+          drop.setBaseTableSchemaName(schemaName);
           drop.setBaseTableName(getBaseTableName());
           drop.setConstraintName(rs.getString(1));
           sqlStatements.addAll(Arrays.asList(drop.generateStatements(database)));
