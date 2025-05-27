@@ -28,6 +28,7 @@ import liquibase.snapshot.CachedRow;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.InvalidExampleException;
 import liquibase.snapshot.JdbcDatabaseSnapshot;
+import liquibase.snapshot.SnapshotGenerator;
 import liquibase.snapshot.jvm.IndexSnapshotGenerator;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.*;
@@ -216,5 +217,10 @@ public class IndexSnapshotGeneratorSpanner extends IndexSnapshotGenerator {
       }
       return null;
     }
+  }
+
+  @Override
+  public Class<? extends SnapshotGenerator>[] replaces() {
+    return new Class[] {IndexSnapshotGenerator.class};
   }
 }

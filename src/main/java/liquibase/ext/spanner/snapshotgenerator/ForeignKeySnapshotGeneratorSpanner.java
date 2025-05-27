@@ -56,5 +56,5 @@ public class ForeignKeySnapshotGeneratorSpanner extends ForeignKeySnapshotGenera
   @Override
   public Class<? extends SnapshotGenerator>[] replaces() {
     return new Class[] {ForeignKeySnapshotGenerator.class};
-  };
+  }
 }
