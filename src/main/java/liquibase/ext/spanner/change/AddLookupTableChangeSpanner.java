@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.change;
 
+import com.google.cloud.spanner.Dialect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +49,7 @@ public class AddLookupTableChangeSpanner extends AddLookupTableChange {
     String existingTableCatalogName = getExistingTableCatalogName();
     String existingTableSchemaName = getExistingTableSchemaName();
 
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
     SqlStatement[] createTablesSQL =
         new SqlStatement[] {
           new RawSqlStatement(
@@ -58,9 +60,11 @@ public class AddLookupTableChangeSpanner extends AddLookupTableChange {
                   + database.escapeObjectName(getNewColumnName(), Column.class)
                   + " "
                   + getNewColumnDataType()
-                  + " NOT NULL) PRIMARY KEY ("
+                  + (dialect == Dialect.POSTGRESQL
+                      ? "NOT NULL, PRIMARY KEY ("
+                      : " NOT NULL) PRIMARY KEY (")
                   + database.escapeObjectName(getNewColumnName(), Column.class)
-                  + ")"),
+                  + (dialect == Dialect.POSTGRESQL ? "))" : ")")),
           new RawSqlStatement(
               "INSERT INTO "
                   + database.escapeTableName(

@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.snapshotgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import java.util.ArrayList;
 import java.util.List;
 import liquibase.database.Database;
@@ -44,35 +45,46 @@ public class SequenceSnapshotGeneratorSpanner extends SequenceSnapshotGenerator 
       List<String> parameter = new ArrayList<>(2);
       parameter.add(schema.getCatalog().getName());
       parameter.add(schema.isDefault() ? "" : schema.getName());
-
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
       StringBuilder sql =
-          new StringBuilder("SELECT seq.NAME AS SEQUENCE_NAME, ")
-              .append("seq_kind.OPTION_VALUE AS SEQUENCE_KIND, ")
-              .append("skip_max.OPTION_VALUE AS SKIP_RANGE_MAX, ")
-              .append("skip_min.OPTION_VALUE AS SKIP_RANGE_MIN, ")
-              .append("start_counter.OPTION_VALUE AS START_VALUE ")
-              .append("FROM INFORMATION_SCHEMA.SEQUENCES AS seq ")
-              .append("LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS seq_kind ")
-              .append("ON seq.CATALOG = seq_kind.CATALOG ")
-              .append("AND seq.SCHEMA = seq_kind.SCHEMA ")
-              .append("AND seq.NAME = seq_kind.NAME ")
-              .append("AND seq_kind.OPTION_NAME = 'sequence_kind' ")
-              .append("LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_max ")
-              .append("ON seq.CATALOG = skip_max.CATALOG ")
-              .append("AND seq.SCHEMA = skip_max.SCHEMA ")
-              .append("AND seq.NAME = skip_max.NAME ")
-              .append("AND skip_max.OPTION_NAME = 'skip_range_max' ")
-              .append("LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_min ")
-              .append("ON seq.CATALOG = skip_min.CATALOG ")
-              .append("AND seq.SCHEMA = skip_min.SCHEMA ")
-              .append("AND seq.NAME = skip_min.NAME ")
-              .append("AND skip_min.OPTION_NAME = 'skip_range_min' ")
-              .append("LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS start_counter ")
-              .append("ON seq.CATALOG = start_counter.CATALOG ")
-              .append("AND seq.SCHEMA = start_counter.SCHEMA ")
-              .append("AND seq.NAME = start_counter.NAME ")
-              .append("AND start_counter.OPTION_NAME = 'start_with_counter' ")
-              .append("WHERE seq.CATALOG = ? AND seq.SCHEMA = ?;");
+          dialect == Dialect.POSTGRESQL
+              ? new StringBuilder("SELECT ")
+                  .append("sequence_name, ")
+                  .append("sequence_catalog, ")
+                  .append("sequence_schema, ")
+                  .append("start_value, ")
+                  .append("sequence_kind, ")
+                  .append("skip_range_min, ")
+                  .append("skip_range_max ")
+                  .append("FROM information_schema.sequences ")
+                  .append("WHERE sequence_catalog = ? AND sequence_schema = ?;")
+              : new StringBuilder("SELECT seq.NAME AS SEQUENCE_NAME, ")
+                  .append("seq_kind.OPTION_VALUE AS SEQUENCE_KIND, ")
+                  .append("skip_max.OPTION_VALUE AS SKIP_RANGE_MAX, ")
+                  .append("skip_min.OPTION_VALUE AS SKIP_RANGE_MIN, ")
+                  .append("start_counter.OPTION_VALUE AS START_VALUE ")
+                  .append("FROM INFORMATION_SCHEMA.SEQUENCES AS seq ")
+                  .append("LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS seq_kind ")
+                  .append("ON seq.CATALOG = seq_kind.CATALOG ")
+                  .append("AND seq.SCHEMA = seq_kind.SCHEMA ")
+                  .append("AND seq.NAME = seq_kind.NAME ")
+                  .append("AND seq_kind.OPTION_NAME = 'sequence_kind' ")
+                  .append("LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_max ")
+                  .append("ON seq.CATALOG = skip_max.CATALOG ")
+                  .append("AND seq.SCHEMA = skip_max.SCHEMA ")
+                  .append("AND seq.NAME = skip_max.NAME ")
+                  .append("AND skip_max.OPTION_NAME = 'skip_range_max' ")
+                  .append("LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_min ")
+                  .append("ON seq.CATALOG = skip_min.CATALOG ")
+                  .append("AND seq.SCHEMA = skip_min.SCHEMA ")
+                  .append("AND seq.NAME = skip_min.NAME ")
+                  .append("AND skip_min.OPTION_NAME = 'skip_range_min' ")
+                  .append("LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS start_counter ")
+                  .append("ON seq.CATALOG = start_counter.CATALOG ")
+                  .append("AND seq.SCHEMA = start_counter.SCHEMA ")
+                  .append("AND seq.NAME = start_counter.NAME ")
+                  .append("AND start_counter.OPTION_NAME = 'start_with_counter' ")
+                  .append("WHERE seq.CATALOG = ? AND seq.SCHEMA = ?;");
 
       return new RawParameterizedSqlStatement(sql.toString(), parameter.toArray());
     }

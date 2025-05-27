@@ -13,11 +13,24 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import liquibase.database.Database;
+import liquibase.datatype.DataTypeInfo;
 import liquibase.datatype.DatabaseDataType;
+import liquibase.datatype.LiquibaseDataType;
 import liquibase.datatype.core.DateTimeType;
 import liquibase.ext.spanner.ICloudSpanner;
 
+/**
+ * Maps DATETIME to dialect-specific timestamp types: - TIMESTAMP for GoogleSQL dialect -
+ * timestamptz for PostgreSQL dialect
+ */
+@DataTypeInfo(
+    name = "timestamp",
+    aliases = {"java.sql.Types.TIMESTAMP", "java.sql.Timestamp", "timestamptz", "datetime"},
+    minParameters = 0,
+    maxParameters = 0,
+    priority = LiquibaseDataType.PRIORITY_DATABASE)
 public class TimestampTypeSpanner extends DateTimeType {
 
   @Override
@@ -28,7 +41,8 @@ public class TimestampTypeSpanner extends DateTimeType {
   @Override
   public DatabaseDataType toDatabaseDataType(Database database) {
     if (database instanceof ICloudSpanner) {
-      return new DatabaseDataType("TIMESTAMP");
+      Dialect dialect = ((ICloudSpanner) database).getDialect();
+      return new DatabaseDataType(dialect == Dialect.POSTGRESQL ? "timestamptz" : "TIMESTAMP");
     } else {
       return super.toDatabaseDataType(database);
     }
