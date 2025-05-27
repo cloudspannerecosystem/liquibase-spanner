@@ -78,11 +78,11 @@ dependencies {
         }
     }
     // Cloud Spanner related
-    implementation platform('com.google.cloud:libraries-bom:26.60.0')
+    implementation platform('com.google.cloud:libraries-bom:26.61.0')
     implementation("com.google.cloud:google-cloud-spanner-jdbc")
 
     // Liquibase Core - needed for testing and docker container
-    implementation("org.liquibase:liquibase-core:4.31.1")
+    implementation("org.liquibase:liquibase-core:4.32.0")
     implementation("org.yaml:snakeyaml:2.4")
     implementation("org.apache.commons:commons-lang3:3.17.0")
 
@@ -100,7 +100,7 @@ dependencies {
     testImplementation ('org.liquibase:liquibase-test-harness:1.0.10'){
         exclude group: 'org.firebirdsql.jdbc', module: 'jaybird'
     }
-    testImplementation('org.apache.groovy:groovy-all:4.0.26') {
+    testImplementation('org.apache.groovy:groovy-all:4.0.27') {
         exclude module: 'org.codehaus.groovy:groovy-testng'
         exclude module: 'org.codehaus.groovy:groovy-swing'
     }
@@ -175,7 +175,7 @@ tasks.named('liquibaseHarnessTest', Test).configure {
       languageVersion = JavaLanguageVersion.of(11)
   }
   dependencies {
-      testImplementation("org.mockito:mockito-core:5.17.0")
+      testImplementation("org.mockito:mockito-core:5.18.0")
   }
 }
 
