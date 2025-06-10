@@ -2,11 +2,16 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.connection.SpannerPool;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -26,6 +31,29 @@ public class SimpleMockServerTest extends AbstractMockServerTest {
     assertThat(mockAdmin.getRequests()).hasSize(1);
     assertThat(mockAdmin.getRequests().get(0)).isInstanceOf(UpdateDatabaseDdlRequest.class);
     assertThat(getUpdateDdlStatementsList(0)).containsExactly(statement).inOrder();
+
+    // This test does not use Liquibase but JDBC directly, so it is expected to send requests that
+    // do not contain a Liquibase client lib token.
+    assertThat(receivedRequestWithNonLiquibaseToken.get()).isTrue();
+    // Clear the flag to prevent the check after each test to fail.
+    receivedRequestWithNonLiquibaseToken.set(false);
+  }
+
+
+  @Test
+  void testAutocommitDmlMode() throws SQLException {
+    mockSpanner.putStatementResult(StatementResult.update(com.google.cloud.spanner.Statement.of("update foo set bar=1 where true"), 10000L));
+
+    // Configure the mock server to return POSTGRESQL as the dialect that is used by the database.
+    mockSpanner.putStatementResult(StatementResult.detectDialectResult(Dialect.POSTGRESQL));
+
+    try (Connection con = createConnection("/projects/p/instances/i/databases/pg_db"); Statement stmt = con.createStatement()) {
+      stmt.execute("set spanner.autocommit_dml_mode='partitioned_non_atomic'");
+      stmt.execute("update foo set bar=1 where true");
+    }
+    assertThat(mockSpanner.getRequestsOfType(BeginTransactionRequest.class)).hasSize(1);
+    BeginTransactionRequest request = mockSpanner.getRequestsOfType(BeginTransactionRequest.class).get(0);
+    assertThat(request.getOptions().hasPartitionedDml()).isTrue();
 
     // This test does not use Liquibase but JDBC directly, so it is expected to send requests that
     // do not contain a Liquibase client lib token.
