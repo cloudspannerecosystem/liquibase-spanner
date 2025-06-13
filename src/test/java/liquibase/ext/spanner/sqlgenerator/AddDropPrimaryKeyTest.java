@@ -16,6 +16,7 @@ package liquibase.ext.spanner.sqlgenerator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.cloud.spanner.Dialect;
 import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
@@ -23,9 +24,10 @@ import liquibase.Liquibase;
 import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
@@ -36,10 +38,11 @@ public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testAddPrimaryKeySingersFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddPrimaryKeySingersFromYaml(Dialect dialect) throws Exception {
     for (String file : new String[] {"add-primary-key-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         CommandExecutionException exception =
             assertThrows(
@@ -52,10 +55,11 @@ public class AddDropPrimaryKeyTest extends AbstractMockServerTest {
     assertThat(mockAdmin.getRequests()).isEmpty();
   }
 
-  @Test
-  void testDropPrimaryKeySingersFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testDropPrimaryKeySingersFromYaml(Dialect dialect) throws Exception {
     for (String file : new String[] {"drop-primary-key-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         CommandExecutionException exception =
             assertThrows(

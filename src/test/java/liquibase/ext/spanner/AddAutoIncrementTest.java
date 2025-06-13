@@ -41,7 +41,7 @@ public class AddAutoIncrementTest extends AbstractMockServerTest {
   @EnumSource(Dialect.class)
   void testAddAutoIncrementSingersFromYaml(Dialect dialect) throws Exception {
     for (String file : new String[] {"add-auto-increment-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         CommandExecutionException exception =
             assertThrows(

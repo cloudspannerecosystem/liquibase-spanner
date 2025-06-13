@@ -91,18 +91,19 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
       Dialect dialect = ((ICloudSpanner) database).getDialect();
       if (dialect == Dialect.POSTGRESQL) {
         try {
-          StringBuilder sql =
-              new StringBuilder("SELECT SPANNER_TYPE FROM INFORMATION_SCHEMA.COLUMNS\n")
-                  .append("WHERE TABLE_SCHEMA = ?\n")
-                  .append("AND TABLE_NAME = ?\n")
-                  .append("AND COLUMN_NAME = ?");
+          String sql =
+              "SELECT SPANNER_TYPE FROM INFORMATION_SCHEMA.COLUMNS "
+                  + "WHERE TABLE_SCHEMA = ? "
+                  + "AND TABLE_NAME = ? "
+                  + "AND COLUMN_NAME = ?";
+
           String dataType =
               Scope.getCurrentScope()
                   .getSingleton(ExecutorService.class)
                   .getExecutor("jdbc", database)
                   .queryForObject(
                       new RawParameterizedSqlStatement(
-                          sql.toString(),
+                          sql,
                           column.getSchema().getName(),
                           column.getRelation().getName(),
                           column.getName()),

@@ -17,6 +17,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.common.base.Predicate;
@@ -28,14 +29,15 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class LoadUpdateDataTest extends AbstractMockServerTest {
+  CloudSpanner db;
   private static final String INSERT =
       "INSERT INTO Singers (SingerId, Name, Description, SingerInfo, AnyGood, Birthdate, LastConcertTimestamp, ExternalID) "
           + "SELECT @id, @name, @description, @singerinfo, @anygood, @birthdate, @lastconcert, @externalid FROM UNNEST([1]) "
@@ -47,8 +49,83 @@ public class LoadUpdateDataTest extends AbstractMockServerTest {
           + "ExternalID = @externalid, LastConcertTimestamp = @lastconcert, "
           + "Name = @name, SingerInfo = @singerinfo WHERE SingerId = @id";
 
-  @BeforeAll
-  static void setupResults() throws ParseException {
+  private static final String INSERT_PG =
+      "INSERT INTO Singers (SingerId, Name, Description, SingerInfo, AnyGood, Birthdate, LastConcertTimestamp, ExternalID) "
+          + "SELECT @id, @name::varchar, @description::varchar, @singerinfo::varchar, @anygood::boolean, @birthdate, @lastconcert, @externalid::varchar "
+          + "ON CONFLICT (SingerId) "
+          + "DO UPDATE SET "
+          + "SingerId = excluded.SingerId, "
+          + "Name = excluded.Name, "
+          + "Description = excluded.Description, "
+          + "SingerInfo = excluded.SingerInfo, "
+          + "AnyGood = excluded.AnyGood, "
+          + "Birthdate = excluded.Birthdate, "
+          + "LastConcertTimestamp = excluded.LastConcertTimestamp, "
+          + "ExternalID = excluded.ExternalID";
+
+  private static final String UPDATE_PG =
+      "UPDATE Singers SET "
+          + "AnyGood = @anygood, Birthdate = @birthdate, Description = @description, "
+          + "ExternalID = @externalid, LastConcertTimestamp = @lastconcert, "
+          + "Name = @name, SingerInfo = @singerinfo WHERE SingerId = @id";
+
+  @BeforeEach
+  void resetServer() {
+    mockSpanner.reset();
+    mockAdmin.reset();
+  }
+
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testLoadUpdateDataFromYaml(Dialect dialect) throws Exception {
+
+    for (String file :
+        new String[] {
+          dialect == Dialect.POSTGRESQL
+              ? "load-update-data-singers.spanner-pg.yaml"
+              : "load-update-data-singers.spanner.yaml"
+        }) {
+      try (Connection con = createConnection(dialect);
+          Liquibase liquibase = getLiquibase(con, file)) {
+        db = (CloudSpanner) liquibase.getDatabase();
+        registerInsertUpdateStatements(dialect);
+        liquibase.update(new Contexts("test"));
+      }
+    }
+
+    Iterable<ExecuteSqlRequest> sqlRequests =
+        Iterables.filter(mockSpanner.getRequests(), ExecuteSqlRequest.class);
+    Iterator<ExecuteSqlRequest> requests =
+        Iterables.filter(
+                sqlRequests,
+                new Predicate<ExecuteSqlRequest>() {
+                  @Override
+                  public boolean apply(ExecuteSqlRequest request) {
+                    return request.getSql().startsWith("INSERT INTO Singers")
+                        || request.getSql().startsWith("UPDATE Singers");
+                  }
+                })
+            .iterator();
+    for (int id : new int[] {1, 2, 3}) {
+      assertThat(requests.hasNext()).isTrue();
+      ExecuteSqlRequest request = requests.next();
+      assertThat(request.getSql()).startsWith("INSERT");
+      if (dialect == Dialect.POSTGRESQL) {
+        assertThat(request.getSql()).contains("SELECT " + id);
+      } else {
+        assertThat(request.getSql())
+            .endsWith(
+                "WHERE NOT EXISTS (SELECT SingerId FROM Singers WHERE SingerId = " + id + ")");
+      }
+      assertThat(requests.hasNext()).isTrue();
+      request = requests.next();
+      assertThat(request.getSql()).startsWith("UPDATE");
+      assertThat(request.getSql()).endsWith("WHERE SingerId = " + id);
+    }
+    assertThat(requests.hasNext()).isFalse();
+  }
+
+  private void registerInsertUpdateStatements(Dialect dialect) throws ParseException {
     Date[] birthdates =
         new Date[] {
           Date.fromYearMonthDay(1997, 10, 1),
@@ -79,14 +156,15 @@ public class LoadUpdateDataTest extends AbstractMockServerTest {
           "'f1f4c7d2-9ae8-4fdb-94f6-7931736c9cd1'",
         };
 
-    CloudSpanner db = new CloudSpanner();
+    String insertTemplate = dialect == Dialect.POSTGRESQL ? INSERT_PG : INSERT;
+    String updateTemplate = dialect == Dialect.POSTGRESQL ? UPDATE_PG : UPDATE;
     for (int id : new int[] {1, 2, 3}) {
       String insert =
-          INSERT
+          insertTemplate
               .replaceAll("@id", String.valueOf(id))
               .replaceAll("@name", "'Name " + id + "'")
               .replaceAll("@description", "'Description " + id + "'")
-              .replaceAll("@singerinfo", "NULL")
+              .replaceAll("@singerinfo", dialect == Dialect.POSTGRESQL ? "'test'" : "NULL")
               .replaceAll("@anygood", String.valueOf(id % 2 == 0).toUpperCase())
               .replaceAll(
                   "@birthdate",
@@ -96,11 +174,11 @@ public class LoadUpdateDataTest extends AbstractMockServerTest {
               .replaceAll("@externalid", uuids[id - 1]);
       mockSpanner.putStatementResult(StatementResult.update(Statement.of(insert), 1L));
       String update =
-          UPDATE
+          updateTemplate
               .replaceAll("@id", String.valueOf(id))
               .replaceAll("@name", "'Name " + id + "'")
               .replaceAll("@description", "'Description " + id + "'")
-              .replaceAll("@singerinfo", "NULL")
+              .replaceAll("@singerinfo", dialect == Dialect.POSTGRESQL ? "'test'" : "NULL")
               .replaceAll("@anygood", String.valueOf(id % 2 == 0).toUpperCase())
               .replaceAll(
                   "@birthdate",
@@ -110,48 +188,5 @@ public class LoadUpdateDataTest extends AbstractMockServerTest {
               .replaceAll("@externalid", uuids[id - 1]);
       mockSpanner.putStatementResult(StatementResult.update(Statement.of(update), 1L));
     }
-  }
-
-  @BeforeEach
-  void resetServer() {
-    mockSpanner.reset();
-    mockAdmin.reset();
-  }
-
-  @Test
-  void testLoadUpdateDataFromYaml() throws Exception {
-    for (String file : new String[] {"load-update-data-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-      }
-    }
-
-    Iterable<ExecuteSqlRequest> sqlRequests =
-        Iterables.filter(mockSpanner.getRequests(), ExecuteSqlRequest.class);
-    Iterator<ExecuteSqlRequest> requests =
-        Iterables.filter(
-                sqlRequests,
-                new Predicate<ExecuteSqlRequest>() {
-                  @Override
-                  public boolean apply(ExecuteSqlRequest request) {
-                    return request.getSql().startsWith("INSERT INTO Singers")
-                        || request.getSql().startsWith("UPDATE Singers");
-                  }
-                })
-            .iterator();
-    for (int id : new int[] {1, 2, 3}) {
-      assertThat(requests.hasNext()).isTrue();
-      ExecuteSqlRequest request = requests.next();
-      assertThat(request.getSql()).startsWith("INSERT");
-      assertThat(request.getSql())
-          .endsWith("WHERE NOT EXISTS (SELECT SingerId FROM Singers WHERE SingerId = " + id + ")");
-
-      assertThat(requests.hasNext()).isTrue();
-      request = requests.next();
-      assertThat(request.getSql()).startsWith("UPDATE");
-      assertThat(request.getSql()).endsWith("WHERE SingerId = " + id);
-    }
-    assertThat(requests.hasNext()).isFalse();
   }
 }

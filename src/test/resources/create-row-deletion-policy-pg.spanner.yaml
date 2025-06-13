@@ -17,30 +17,27 @@ databaseChangeLog:
   - preConditions:
       onFail: HALT
       onError: HALT
-
   - changeSet:
-      id: v0.1-create-table
-      author: spanner-liquibase-tests
-      changes:
-        - createTable:
-            tableName: Concerts
-            columns:
-              - column:
-                  name: ConcertId
-                  type: INT64
-                  constraints:
-                    nullable: false
-                    primaryKey: true
-              - column:
-                  name: StartTime
-                  type: Timestamp
-              - column:
-                  name: EndTime
-                  type: Timestamp
-
-  - changeSet:
-      id: v0.2-add-check-constraint
+      id:     v0.1-create-row-deletion-policy
       author: spanner-liquibase-tests
       changes:
         - sql: |
-            ALTER TABLE Concerts ADD CONSTRAINT start_before_end CHECK (StartTime < EndTime);
+            CREATE TABLE MyTable(
+            Key bigint,
+            CreatedAt timestamptz,
+            PRIMARY KEY (Key)),
+            ROW DELETION POLICY (OLDER_THAN(<var>timestamp_column</var>, INTERVAL <var>num_days</var> DAY));
+  - changeSet:
+      id: v0.1-alter-row-deletion-policy
+      author: spanner-liquibase-tests
+      changes:
+        - sql: |
+            ALTER TABLE MyTable
+            REPLACE ROW DELETION POLICY (OLDER_THAN(ModifiedAt, INTERVAL 7 DAY));
+  - changeSet:
+      id: v0.1-drop-row-deletion-policy
+      author: spanner-liquibase-tests
+      changes:
+        - sql: |
+            ALTER TABLE MyTable
+            DROP ROW DELETION POLICY;

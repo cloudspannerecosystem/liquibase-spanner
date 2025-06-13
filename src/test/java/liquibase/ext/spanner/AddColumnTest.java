@@ -15,14 +15,16 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class AddColumnTest extends AbstractMockServerTest {
@@ -33,16 +35,20 @@ public class AddColumnTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testAddSingerInfoToSingersFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddSingerInfoToSingersFromYaml(Dialect dialect) throws Exception {
     // The following statement does not include the COLUMN keyword. According to the Cloud Spanner
     // documentation the keyword is required, but the documentation is slightly off here. The COLUMN
     // keyword is actually optional in Cloud Spanner (as in most other DBMS's).
-    String expectedSql = "ALTER TABLE Singers ADD SingerInfo BYTES(MAX)";
-    addUpdateDdlStatementsResponse(expectedSql);
+    String expectedSql =
+        dialect == Dialect.POSTGRESQL
+            ? "ALTER TABLE Singers ADD SingerInfo bytea"
+            : "ALTER TABLE Singers ADD SingerInfo BYTES(MAX)";
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"add-singerinfo-to-singers-table.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -55,18 +61,25 @@ public class AddColumnTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testAddTrackAndLyricsToSongsFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddTrackAndLyricsToSongsFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
-        new String[] {
-          "ALTER TABLE Songs ADD Track INT64 NOT NULL", "ALTER TABLE Songs ADD Lyrics STRING(MAX)"
-        };
+        dialect == Dialect.POSTGRESQL
+            ? new String[] {
+              "ALTER TABLE Songs ADD Track bigint NOT NULL", "ALTER TABLE Songs ADD Lyrics varchar"
+            }
+            : new String[] {
+              "ALTER TABLE Songs ADD Track INT64 NOT NULL",
+              "ALTER TABLE Songs ADD Lyrics STRING(MAX)"
+            };
+
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"add-track-and-lyrics-to-songs-table.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -81,19 +94,25 @@ public class AddColumnTest extends AbstractMockServerTest {
     }
   }
 
-  @Test
-  void testAddSingerToConcertsFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddSingerToConcertsFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
-        new String[] {
-          "ALTER TABLE Concerts ADD SingerId INT64 NOT NULL",
-          "ALTER TABLE Concerts ADD CONSTRAINT FK_Concerts_Singer FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)"
-        };
+        dialect == Dialect.POSTGRESQL
+            ? new String[] {
+              "ALTER TABLE Concerts ADD SingerId bigint NOT NULL",
+              "ALTER TABLE Concerts ADD CONSTRAINT FK_Concerts_Singer FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)"
+            }
+            : new String[] {
+              "ALTER TABLE Concerts ADD SingerId INT64 NOT NULL",
+              "ALTER TABLE Concerts ADD CONSTRAINT FK_Concerts_Singer FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)"
+            };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"add-singer-to-concerts-table.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }

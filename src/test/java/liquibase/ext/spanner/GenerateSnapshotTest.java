@@ -15,15 +15,19 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static liquibase.ext.spanner.JdbcMetadataQueries.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser;
 import com.google.common.collect.ImmutableList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
+import com.google.protobuf.Value;
+import com.google.spanner.v1.*;
+import java.util.*;
 import liquibase.CatalogAndSchema;
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -40,158 +44,50 @@ import liquibase.structure.core.Sequence;
 import liquibase.structure.core.Table;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class GenerateSnapshotTest extends AbstractMockServerTest {
 
   @BeforeAll
-  static void setupResults() {
+  static void beforeAll() {
     mockSpanner.putStatementResult(
         StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_SCHEMAS)
-                .bind("p1")
-                .to("%")
-                .bind("p2")
-                .to("%")
-                .build(),
-            JdbcMetadataQueries.createGetSchemasResultSet()));
+            Statement.of(
+                "select view_definition from information_schema.views where table_name='Singers' and table_schema='' and table_catalog=''"),
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    StructType.Field.newBuilder()
+                                        .setName("VIEW_DEFINITION")
+                                        .setType(Type.newBuilder().setCode(TypeCode.STRING)))))
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE)))
+                .build()));
     mockSpanner.putStatementResult(
         StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
-                .bind("p1")
-                .to("") // Catalog
-                .bind("p2")
-                .to("") // Schema
-                .bind("p3")
-                .to("%") // Table
-                .bind("p4")
-                .to("TABLE")
-                .bind("p5")
-                .to("NON_EXISTENT_TYPE") // This is a trick in the JDBC driver to simplify the query
-                .build(),
-            JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of("Singers"))));
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_TABLES)
-                .bind("p1")
-                .to("") // Catalog
-                .bind("p2")
-                .to("") // Schema
-                .bind("p3")
-                .to("%") // Table
-                .bind("p4")
-                .to("VIEW")
-                .bind("p5")
-                .to("NON_EXISTENT_TYPE") // This is a trick in the JDBC driver to simplify the query
-                .build(),
-            JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of())));
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_PRIMARY_KEYS)
-                .bind("p1")
-                .to("") // Catalog
-                .bind("p2")
-                .to("") // Schema
-                .bind("p3")
-                .to("SINGERS") // Table
-                .build(),
-            JdbcMetadataQueries.createGetPrimaryKeysResultSet(ImmutableList.of())));
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_IMPORTED_KEYS)
-                .bind("p1")
-                .to("") // Catalog
-                .bind("p2")
-                .to("") // Schema
-                .bind("p3")
-                .to("SINGERS") // Table
-                .build(),
-            JdbcMetadataQueries.createGetImportedKeysResultSet(ImmutableList.of())));
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_INDEX_INFO)
-                .bind("p1")
-                .to("") // Catalog
-                .bind("p2")
-                .to("") // Schema
-                .bind("p3")
-                .to("SINGERS") // Table
-                .bind("p4")
-                .to("%") // Index
-                .bind("p5")
-                .to("%") // Unique
-                .build(),
-            JdbcMetadataQueries.createGetIndexInfoResultSet(
-                ImmutableList.of(
-                    new IndexMetaData(
-                        "Singers", false, "Idx_Singers_FirstName", false, 1, "FirstName", true),
-                    new IndexMetaData(
-                        "Singers",
-                        false,
-                        "Idx_Singers_FirstName",
-                        false,
-                        null,
-                        "LastName",
-                        null)))));
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_COLUMNS)
-                .bind("p1")
-                .to("") // Catalog
-                .bind("p2")
-                .to("") // Schema
-                .bind("p3")
-                .to("%") // Table
-                .bind("p4")
-                .to("%") // Column
-                .build(),
-            JdbcMetadataQueries.createGetColumnsResultSet(
-                ImmutableList.of(
-                    new ColumnMetaData(
-                        "Singers",
-                        "SingerId",
-                        java.sql.Types.BIGINT,
-                        "INT64",
-                        8,
-                        java.sql.DatabaseMetaData.columnNoNulls),
-                    new ColumnMetaData(
-                        "Singers",
-                        "FirstName",
-                        java.sql.Types.NVARCHAR,
-                        "STRING(100)",
-                        100,
-                        java.sql.DatabaseMetaData.columnNullable),
-                    new ColumnMetaData(
-                        "Singers",
-                        "LastName",
-                        java.sql.Types.NVARCHAR,
-                        "STRING(200)",
-                        200,
-                        java.sql.DatabaseMetaData.columnNoNulls)))));
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_SCHEMAS)
-                .bind("p1")
-                .to("%")
-                .bind("p2")
-                .to("%")
-                .build(),
-            JdbcMetadataQueries.createGetSchemasResultSet()));
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(JdbcMetadataQueries.GET_SEQUENCES)
-                .bind("p1")
-                .to("") // Catalog
-                .bind("p2")
-                .to("") // Schema
-                .build(),
-            JdbcMetadataQueries.createGetSequenceResultSet(
-                ImmutableList.of(
-                    new SequenceMetadata(
-                        "testSequence", "bit_reversed_positive", 100, 5000000, 1)))));
+            Statement.of(
+                "select view_definition from information_schema.views where table_name='Singers' and table_schema='public' and table_catalog='db_pg'"),
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    StructType.Field.newBuilder()
+                                        .setName("VIEW_DEFINITION")
+                                        .setType(Type.newBuilder().setCode(TypeCode.STRING)))))
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE)))
+                .build()));
   }
 
   @BeforeEach
@@ -200,14 +96,18 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testGenerateSnapshot() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testGenerateSnapshot(Dialect dialect) throws Exception {
+    String schemaName = dialect == Dialect.POSTGRESQL ? "PUBLIC" : "";
+    String catalog = dialect == Dialect.POSTGRESQL ? "DB_PG" : "";
+    putMockResultsForSchemas(dialect);
     try (Liquibase liquibase =
-        getLiquibase(createConnectionUrl(), "create-snapshot.spanner.yaml")) {
+        getLiquibase(createConnection(dialect), "create-snapshot.spanner.yaml")) {
       SnapshotGeneratorFactory factory = SnapshotGeneratorFactory.getInstance();
       Database database = liquibase.getDatabase();
       SnapshotControl control = new SnapshotControl(database);
-      CatalogAndSchema schema = new CatalogAndSchema("", "");
+      CatalogAndSchema schema = new CatalogAndSchema(catalog, schemaName);
       DatabaseSnapshot snapshot = factory.createSnapshot(schema, database, control);
       Set<Schema> schemaSet = snapshot.get(Schema.class);
       assertThat(schemaSet).hasSize(1);
@@ -219,12 +119,18 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
       Table singers = tables.iterator().next();
       assertThat(singers.getName()).isEqualTo("Singers");
       assertThat(singers.getColumns()).hasSize(3);
-      assertThat(singers.getColumn("SingerId").getType().getTypeName()).isEqualTo("INT64");
-      assertThat(singers.getColumn("SingerId").getType().toString()).isEqualTo("INT64");
-      assertThat(singers.getColumn("FirstName").getType().getTypeName()).isEqualTo("STRING(100)");
-      assertThat(singers.getColumn("FirstName").getType().toString()).isEqualTo("STRING(100)");
-      assertThat(singers.getColumn("LastName").getType().getTypeName()).isEqualTo("STRING(200)");
-      assertThat(singers.getColumn("LastName").getType().toString()).isEqualTo("STRING(200)");
+      assertThat(singers.getColumn("SingerId").getType().getTypeName())
+          .isEqualTo(dialect == Dialect.POSTGRESQL ? "bigint" : "INT64");
+      assertThat(singers.getColumn("SingerId").getType().toString())
+          .isEqualTo(dialect == Dialect.POSTGRESQL ? "bigint" : "INT64");
+      assertThat(singers.getColumn("FirstName").getType().getTypeName())
+          .isEqualTo(dialect == Dialect.POSTGRESQL ? "varchar" : "STRING(100)");
+      assertThat(singers.getColumn("FirstName").getType().toString())
+          .isEqualTo(dialect == Dialect.POSTGRESQL ? "varchar" : "STRING(100)");
+      assertThat(singers.getColumn("LastName").getType().getTypeName())
+          .isEqualTo(dialect == Dialect.POSTGRESQL ? "varchar" : "STRING(200)");
+      assertThat(singers.getColumn("LastName").getType().toString())
+          .isEqualTo(dialect == Dialect.POSTGRESQL ? "varchar" : "STRING(200)");
 
       Set<Index> indexes = snapshot.get(Index.class);
       assertEquals(1, indexes.size());
@@ -295,5 +201,387 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
         }
       }
     }
+  }
+
+  void putMockResultsForSchemas(Dialect dialect) {
+    String[] columns = new String[] {"SingerId", "FirstName", "LastName"};
+    String schema = dialect == Dialect.POSTGRESQL ? "PUBLIC" : "";
+    String catalog = dialect == Dialect.POSTGRESQL ? "DB_PG" : "";
+    AbstractStatementParser.ParametersInfo params;
+    String sql;
+    AbstractStatementParser parser = dialect == Dialect.POSTGRESQL ? PARSER_PG : PARSER;
+
+    sql =
+        dialect == Dialect.POSTGRESQL
+            ? readSqlFromFile(GET_TABLES, dialect)
+            : parser.removeCommentsAndTrim(readSqlFromFile(GET_TABLES, dialect));
+    params = parser.convertPositionalParametersToNamedParameters('?', sql);
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to(catalog) // Catalog
+                .bind("p2")
+                .to(schema) // Schema
+                .bind("p3")
+                .to("%") // Table
+                .bind("p4")
+                .to("VIEW")
+                .bind("p5")
+                .to("NON_EXISTENT_TYPE") // This is a trick in the JDBC driver to simplify the
+                // query
+                .build(),
+            JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of("Singers"))));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to(catalog) // Catalog
+                .bind("p2")
+                .to(schema) // Schema
+                .bind("p3")
+                .to("%") // Table
+                .bind("p4")
+                .to("TABLE")
+                .bind("p5")
+                .to("NON_EXISTENT_TYPE") // This is a trick in the JDBC driver to simplify the
+                // query
+                .build(),
+            JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of("Singers"))));
+    sql =
+        dialect == Dialect.POSTGRESQL
+            ? readSqlFromFile(GET_PRIMARY_KEYS, dialect)
+            : parser.removeCommentsAndTrim(readSqlFromFile(GET_PRIMARY_KEYS, dialect));
+    params = parser.convertPositionalParametersToNamedParameters('?', sql);
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to(catalog) // Catalog
+                .bind("p2")
+                .to(schema) // Schema
+                .bind("p3")
+                .to("SINGERS") // Table
+                .build(),
+            JdbcMetadataQueries.createGetPrimaryKeysResultSet(ImmutableList.of())));
+    sql =
+        dialect == Dialect.POSTGRESQL
+            ? readSqlFromFile(GET_IMPORTED_KEYS, dialect)
+            : parser.removeCommentsAndTrim(readSqlFromFile(GET_IMPORTED_KEYS, dialect));
+    params = parser.convertPositionalParametersToNamedParameters('?', sql);
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to(catalog) // Catalog
+                .bind("p2")
+                .to(schema) // Schema
+                .bind("p3")
+                .to("SINGERS") // Table
+                .build(),
+            JdbcMetadataQueries.createGetImportedKeysResultSet(ImmutableList.of())));
+    sql =
+        dialect == Dialect.POSTGRESQL
+            ? readSqlFromFile(GET_INDEX_INFO, dialect)
+            : parser.removeCommentsAndTrim(readSqlFromFile(GET_INDEX_INFO, dialect));
+    params = parser.convertPositionalParametersToNamedParameters('?', sql);
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to(catalog) // Catalog
+                .bind("p2")
+                .to(schema) // Schema
+                .bind("p3")
+                .to("SINGERS") // Table
+                .bind("p4")
+                .to("%") // Index
+                .bind("p5")
+                .to("%") // Unique
+                .build(),
+            JdbcMetadataQueries.createGetIndexInfoResultSet(
+                ImmutableList.of(
+                    new IndexMetaData(
+                        "Singers", false, "Idx_Singers_FirstName", false, 1, "FirstName", true),
+                    new IndexMetaData(
+                        "Singers", false, "Idx_Singers_FirstName", false, 2, "LastName", true)))));
+    sql =
+        dialect == Dialect.POSTGRESQL
+            ? readSqlFromFile(GET_COLUMNS, dialect)
+            : parser.removeCommentsAndTrim(readSqlFromFile(GET_COLUMNS, dialect));
+    params = parser.convertPositionalParametersToNamedParameters('?', sql);
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to(catalog) // Catalog
+                .bind("p2")
+                .to(schema) // Schema
+                .bind("p3")
+                .to("%") // Table
+                .bind("p4")
+                .to("%") // Column
+                .build(),
+            JdbcMetadataQueries.createGetColumnsResultSet(
+                ImmutableList.of(
+                    new ColumnMetaData(
+                        "Singers",
+                        "SingerId",
+                        java.sql.Types.BIGINT,
+                        "INT64",
+                        8,
+                        java.sql.DatabaseMetaData.columnNoNulls),
+                    new ColumnMetaData(
+                        "Singers",
+                        "FirstName",
+                        java.sql.Types.NVARCHAR,
+                        "STRING(100)",
+                        100,
+                        java.sql.DatabaseMetaData.columnNullable),
+                    new ColumnMetaData(
+                        "Singers",
+                        "LastName",
+                        java.sql.Types.NVARCHAR,
+                        "STRING(200)",
+                        200,
+                        java.sql.DatabaseMetaData.columnNoNulls)))));
+    sql =
+        dialect == Dialect.POSTGRESQL
+            ? readSqlFromFile(GET_SCHEMAS, dialect)
+            : parser.removeCommentsAndTrim(readSqlFromFile(GET_SCHEMAS, dialect));
+    params = parser.convertPositionalParametersToNamedParameters('?', sql);
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to("%")
+                .bind("p2")
+                .to("%")
+                .build(),
+            JdbcMetadataQueries.createGetSchemasResultSet(schema)));
+    if (dialect == Dialect.POSTGRESQL) {
+      params =
+          parser.convertPositionalParametersToNamedParameters(
+              '?', JdbcMetadataQueries.GET_SEQUENCES_PG);
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.newBuilder(params.sqlWithNamedParameters)
+                  .bind("p1")
+                  .to(catalog.toLowerCase()) // Catalog
+                  .bind("p2")
+                  .to(schema.toLowerCase()) // Schema
+                  .build(),
+              JdbcMetadataQueries.createGetSequenceResultSet(
+                  ImmutableList.of(
+                      new SequenceMetadata(
+                          "testSequence", "bit_reversed_positive", 100, 5000000, 1)))));
+    } else {
+      params =
+          parser.convertPositionalParametersToNamedParameters(
+              '?', JdbcMetadataQueries.GET_SEQUENCES);
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.newBuilder(params.sqlWithNamedParameters)
+                  .bind("p1")
+                  .to(catalog) // Catalog
+                  .bind("p2")
+                  .to(schema) // Schema
+                  .build(),
+              JdbcMetadataQueries.createGetSequenceResultSet(
+                  ImmutableList.of(
+                      new SequenceMetadata(
+                          "testSequence", "bit_reversed_positive", 100, 5000000, 1)))));
+    }
+    for (String column : columns) {
+
+      params =
+          parser.convertPositionalParametersToNamedParameters('?', GET_COLUMN_DEFAULT_STATEMENT);
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.newBuilder(params.sqlWithNamedParameters)
+                  .bind("p1")
+                  .to(catalog.toLowerCase())
+                  .bind("p2")
+                  .to(schema.toLowerCase())
+                  .bind("p3")
+                  .to("Singers")
+                  .bind("p4")
+                  .to(column)
+                  .build(),
+              ResultSet.newBuilder()
+                  .setMetadata(
+                      ResultSetMetadata.newBuilder()
+                          .setRowType(
+                              StructType.newBuilder()
+                                  .addFields(
+                                      StructType.Field.newBuilder()
+                                          .setName("COLUMN_DEF")
+                                          .setType(
+                                              Type.newBuilder().setCode(TypeCode.STRING).build())
+                                          .build())
+                                  .build())
+                          .build())
+                  .addRows(
+                      ListValue.newBuilder()
+                          .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build())
+                          .build())
+                  .build()));
+
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.newBuilder(params.sqlWithNamedParameters)
+                  .bind("p1")
+                  .to(catalog.toLowerCase())
+                  .bind("p2")
+                  .to(schema)
+                  .bind("p3")
+                  .to("Singers")
+                  .bind("p4")
+                  .to(column)
+                  .build(),
+              ResultSet.newBuilder()
+                  .setMetadata(
+                      ResultSetMetadata.newBuilder()
+                          .setRowType(
+                              StructType.newBuilder()
+                                  .addFields(
+                                      StructType.Field.newBuilder()
+                                          .setName("COLUMN_DEF")
+                                          .setType(
+                                              Type.newBuilder().setCode(TypeCode.STRING).build())
+                                          .build())
+                                  .build())
+                          .build())
+                  .addRows(
+                      ListValue.newBuilder()
+                          .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build())
+                          .build())
+                  .build()));
+
+      params = parser.convertPositionalParametersToNamedParameters('?', GET_SPANNER_TYPE_STATEMENT);
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.newBuilder(params.sqlWithNamedParameters)
+                  .bind("p1")
+                  .to(schema.toLowerCase())
+                  .bind("p2")
+                  .to("Singers")
+                  .bind("p3")
+                  .to(column)
+                  .build(),
+              ResultSet.newBuilder()
+                  .setMetadata(
+                      ResultSetMetadata.newBuilder()
+                          .setRowType(
+                              StructType.newBuilder()
+                                  .addFields(
+                                      StructType.Field.newBuilder()
+                                          .setName("SPANNER_TYPE")
+                                          .setType(
+                                              Type.newBuilder().setCode(TypeCode.STRING).build())
+                                          .build())
+                                  .build())
+                          .build())
+                  .addRows(
+                      ListValue.newBuilder()
+                          .addValues(Value.newBuilder().setStringValue("varchar").build())
+                          .build())
+                  .build()));
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.newBuilder(params.sqlWithNamedParameters)
+                  .bind("p1")
+                  .to(schema)
+                  .bind("p2")
+                  .to("Singers")
+                  .bind("p3")
+                  .to(column)
+                  .build(),
+              ResultSet.newBuilder()
+                  .setMetadata(
+                      ResultSetMetadata.newBuilder()
+                          .setRowType(
+                              StructType.newBuilder()
+                                  .addFields(
+                                      StructType.Field.newBuilder()
+                                          .setName("SPANNER_TYPE")
+                                          .setType(
+                                              Type.newBuilder().setCode(TypeCode.STRING).build())
+                                          .build())
+                                  .build())
+                          .build())
+                  .addRows(
+                      ListValue.newBuilder()
+                          .addValues(Value.newBuilder().setStringValue("varchar").build())
+                          .build())
+                  .build()));
+    }
+    Map<String, String> columnTypes = new HashMap<>();
+    columnTypes.put("SingerId", "bigint");
+    columnTypes.put("FirstName", "varchar");
+    columnTypes.put("LastName", "varchar");
+
+    for (Map.Entry<String, String> entry : columnTypes.entrySet()) {
+      String column = entry.getKey();
+      String type = entry.getValue();
+
+      params = parser.convertPositionalParametersToNamedParameters('?', GET_SPANNER_TYPE_STATEMENT);
+
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.newBuilder(params.sqlWithNamedParameters)
+                  .bind("p1")
+                  .to(schema.toLowerCase())
+                  .bind("p2")
+                  .to("Singers")
+                  .bind("p3")
+                  .to(column)
+                  .build(),
+              ResultSet.newBuilder()
+                  .setMetadata(
+                      ResultSetMetadata.newBuilder()
+                          .setRowType(
+                              StructType.newBuilder()
+                                  .addFields(
+                                      StructType.Field.newBuilder()
+                                          .setName("SPANNER_TYPE")
+                                          .setType(
+                                              Type.newBuilder().setCode(TypeCode.STRING).build())
+                                          .build())
+                                  .build())
+                          .build())
+                  .addRows(
+                      ListValue.newBuilder()
+                          .addValues(Value.newBuilder().setStringValue(type).build())
+                          .build())
+                  .build()));
+    }
+    sql =
+        "select view_definition from information_schema.views where table_name='Singers' and table_schema=? and table_catalog=?";
+    params = parser.convertPositionalParametersToNamedParameters('?', sql);
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to(catalog)
+                .bind("p2")
+                .to(schema)
+                .build(),
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    StructType.Field.newBuilder()
+                                        .setName("VIEW_DEFINITION")
+                                        .setType(
+                                            Type.newBuilder().setCode(TypeCode.STRING).build())))
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build())
+                        .build())
+                .build()));
   }
 }
