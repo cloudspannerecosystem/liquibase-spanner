@@ -15,6 +15,7 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.common.base.Predicate;
@@ -25,9 +26,10 @@ import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class AddLookupTableTest extends AbstractMockServerTest {
@@ -38,22 +40,28 @@ public class AddLookupTableTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testAddLookupTableSingersCountriesFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddLookupTableSingersCountriesFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
-        new String[] {
-          "CREATE TABLE Countries (Name STRING(100) NOT NULL) PRIMARY KEY (Name)",
-          "ALTER TABLE Singers ADD CONSTRAINT FK_Singers_Countries FOREIGN KEY (Country) REFERENCES Countries (Name)",
-        };
+        dialect == Dialect.POSTGRESQL
+            ? new String[] {
+              "CREATE TABLE Countries (Name varchar(100) NOT NULL, PRIMARY KEY (Name))",
+              "ALTER TABLE Singers ADD CONSTRAINT FK_Singers_Countries FOREIGN KEY (Country) REFERENCES Countries (Name)",
+            }
+            : new String[] {
+              "CREATE TABLE Countries (Name STRING(100) NOT NULL) PRIMARY KEY (Name)",
+              "ALTER TABLE Singers ADD CONSTRAINT FK_Singers_Countries FOREIGN KEY (Country) REFERENCES Countries (Name)",
+            };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
     final String insert =
         "INSERT INTO Countries (Name) SELECT DISTINCT Country FROM Singers WHERE Country IS NOT NULL";
     mockSpanner.putStatementResult(StatementResult.update(Statement.of(insert), 100L));
 
     for (String file : new String[] {"add-lookup-table-singers-countries.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }

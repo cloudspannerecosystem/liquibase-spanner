@@ -55,7 +55,9 @@ public class StringTypeSpanner extends LiquibaseDataType {
       Object[] params = getParameters();
 
       if (dialect == Dialect.POSTGRESQL) {
-        return (params != null && params.length > 0)
+        return (params != null
+                && params.length > 0
+                && !params[0].toString().equalsIgnoreCase("MAX"))
             ? new DatabaseDataType("varchar(" + params[0] + ")")
             : new DatabaseDataType("varchar");
       } else {

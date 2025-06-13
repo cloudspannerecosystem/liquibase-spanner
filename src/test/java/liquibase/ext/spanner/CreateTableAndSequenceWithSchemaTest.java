@@ -15,15 +15,17 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class CreateTableAndSequenceWithSchemaTest extends AbstractMockServerTest {
@@ -34,20 +36,27 @@ public class CreateTableAndSequenceWithSchemaTest extends AbstractMockServerTest
     mockAdmin.reset();
   }
 
-  @Test
-  void testCreateTableWithSchemaFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateTableWithSchemaFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
-        new String[] {
-          "CREATE SCHEMA new_schema",
-          "CREATE TABLE new_schema.Singers2 (id INT64 NOT NULL, textCol STRING(MAX)) PRIMARY KEY (id)",
-          "CREATE SEQUENCE new_schema.test_sequence OPTIONS (sequence_kind='bit_reversed_positive', start_with_counter = 100)"
-        };
+        dialect == Dialect.POSTGRESQL
+            ? new String[] {
+              "CREATE SCHEMA new_schema",
+              "CREATE TABLE new_schema.Singers2 (id bigint NOT NULL, textCol varchar, PRIMARY KEY (id))",
+              "CREATE SEQUENCE new_schema.test_sequence bit_reversed_positive START COUNTER WITH 100"
+            }
+            : new String[] {
+              "CREATE SCHEMA new_schema",
+              "CREATE TABLE new_schema.Singers2 (id INT64 NOT NULL, textCol STRING(MAX)) PRIMARY KEY (id)",
+              "CREATE SEQUENCE new_schema.test_sequence OPTIONS (sequence_kind='bit_reversed_positive', start_with_counter = 100)"
+            };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"create-table-and-sequence-with-schema.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         // Update to version v0.1.
         liquibase.update(new Contexts("test"), new LabelExpression("version 0.1"));

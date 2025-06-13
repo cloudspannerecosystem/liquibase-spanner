@@ -15,6 +15,7 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.protobuf.AbstractMessage;
@@ -27,9 +28,10 @@ import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class MergeColumnsTest extends AbstractMockServerTest {
@@ -49,20 +51,23 @@ public class MergeColumnsTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testMergeSingersFirstNamdAndLastNameFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testMergeSingersFirstNamdAndLastNameFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
         new String[] {
-          "ALTER TABLE Singers ADD FullName STRING(500)",
+          dialect == Dialect.POSTGRESQL
+              ? "ALTER TABLE Singers ADD FullName varchar(500)"
+              : "ALTER TABLE Singers ADD FullName STRING(500)",
           "ALTER TABLE Singers DROP COLUMN FirstName",
           "ALTER TABLE Singers DROP COLUMN LastName",
         };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"merge-singers-firstname-and-lastname.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
