@@ -39,9 +39,6 @@ public class AddCheckConstraintsTest extends AbstractMockServerTest {
   @ParameterizedTest
   @EnumSource(Dialect.class)
   void testCreateTableWithCheckConstraintsFromYaml(Dialect dialect) throws Exception {
-
-    // mockSpanner.putStatementResult(MockSpannerServiceImpl.StatementResult.update(com.google.cloud.spanner.Statement.of("update foo set bar=1 where true"), 10000L));
-
     String[] expectedSql =
         dialect == Dialect.POSTGRESQL
             ? new String[] {

@@ -41,7 +41,7 @@ public class CreateTableWithGeneratedColumns extends AbstractMockServerTest {
     String[] expectedSql =
         dialect == Dialect.POSTGRESQL
             ? new String[] {
-              "CREATE TABLE table_test_generated_column (id bigint NOT NULL, FirstName varchar(200), LastName varchar(200), FullName varchar(400) AS (FirstName || ' ' || LastName) STORED, PRIMARY KEY (id))"
+              "CREATE TABLE table_test_generated_column (id bigint NOT NULL, FirstName varchar(200), LastName varchar(200), FullName varchar(400) generated always as (FirstName || ' ' || LastName) STORED, PRIMARY KEY (id))"
             }
             : new String[] {
               "CREATE TABLE table_test_generated_column (id INT64 NOT NULL, FirstName STRING(200), LastName STRING(200), FullName STRING(400) AS (FirstName || ' ' || LastName) STORED) PRIMARY KEY (id)"

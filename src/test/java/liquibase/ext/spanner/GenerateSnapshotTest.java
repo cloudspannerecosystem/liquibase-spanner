@@ -17,6 +17,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static liquibase.ext.spanner.JdbcMetadataQueries.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -158,7 +159,7 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
 
     if (object instanceof DatabaseObject) {
       DatabaseObject dbObject = (DatabaseObject) object;
-      // assertThat(dbObject.getSnapshotId()).isNotNull();
+      assertThat(dbObject.getSnapshotId()).isNotNull();
       assertWithMessage("Object: " + dbObject.getClass() + " Should have snapshotId")
           .that(dbObject.getSnapshotId())
           .isNotNull();
@@ -179,7 +180,8 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                               if (setValue instanceof DatabaseObject) {
                                 try {
                                   verifySnapshotIdsInDatabaseObjects(setValue, visited);
-                                } catch (NoSuchFieldException ignored) {
+                                } catch (NoSuchFieldException e) {
+                                  fail("Unexpected NoSuchFieldException: " + e.getMessage());
                                 }
                               }
                             });
@@ -193,8 +195,8 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                 if (value instanceof DatabaseObject) {
                   try {
                     verifySnapshotIdsInDatabaseObjects(value, visited);
-                  } catch (NoSuchFieldException ignored) {
-
+                  } catch (NoSuchFieldException e) {
+                    fail("Unexpected NoSuchFieldException: " + e.getMessage());
                   }
                 }
               });

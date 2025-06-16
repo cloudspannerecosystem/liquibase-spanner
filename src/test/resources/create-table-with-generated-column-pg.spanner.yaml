@@ -38,5 +38,5 @@ databaseChangeLog:
                   name: LastName
                   type: STRING(200)
               - column:
-                  name: FullName varchar(400) AS (FirstName || ' ' || LastName) STORED
+                  name: FullName varchar(400) generated always as (FirstName || ' ' || LastName) STORED
                   computed: true

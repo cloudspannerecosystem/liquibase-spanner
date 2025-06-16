@@ -137,8 +137,6 @@ public abstract class AbstractMockServerTest {
   protected static MockSpannerServiceImpl mockSpanner;
   protected static MockDatabaseAdminImpl mockAdmin;
   protected static Server server;
-  protected static Server server2;
-  // protected static Server mockServer;
   private static InetSocketAddress address;
   protected static AtomicBoolean receivedRequestWithNonLiquibaseToken = new AtomicBoolean();
   private static String invalidClientLibToken;
@@ -219,7 +217,7 @@ public abstract class AbstractMockServerTest {
 
   private static void registerDefaultResults() {
 
-    Map<String, String> columnTypes =
+    Map<String, String> databaseChangeLogColumnTypes =
         ImmutableMap.<String, String>builder()
             .put("ID", "character varying")
             .put("AUTHOR", "character varying")
@@ -408,7 +406,7 @@ public abstract class AbstractMockServerTest {
       AbstractStatementParser.ParametersInfo paramsSpannerDefault =
           parser.convertPositionalParametersToNamedParameters('?', GET_COLUMN_DEFAULT_STATEMENT);
 
-      for (Map.Entry<String, String> entry : columnTypes.entrySet()) {
+      for (Map.Entry<String, String> entry : databaseChangeLogColumnTypes.entrySet()) {
         String column = entry.getKey();
         String type = entry.getValue();
 

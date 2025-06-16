@@ -37,7 +37,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class LoadUpdateDataTest extends AbstractMockServerTest {
-  CloudSpanner db;
   private static final String INSERT =
       "INSERT INTO Singers (SingerId, Name, Description, SingerInfo, AnyGood, Birthdate, LastConcertTimestamp, ExternalID) "
           + "SELECT @id, @name, @description, @singerinfo, @anygood, @birthdate, @lastconcert, @externalid FROM UNNEST([1]) "
@@ -78,7 +77,7 @@ public class LoadUpdateDataTest extends AbstractMockServerTest {
   @ParameterizedTest
   @EnumSource(Dialect.class)
   void testLoadUpdateDataFromYaml(Dialect dialect) throws Exception {
-
+    CloudSpanner db;
     for (String file :
         new String[] {
           dialect == Dialect.POSTGRESQL
@@ -88,7 +87,7 @@ public class LoadUpdateDataTest extends AbstractMockServerTest {
       try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         db = (CloudSpanner) liquibase.getDatabase();
-        registerInsertUpdateStatements(dialect);
+        registerInsertUpdateStatements(db, dialect);
         liquibase.update(new Contexts("test"));
       }
     }
@@ -125,7 +124,8 @@ public class LoadUpdateDataTest extends AbstractMockServerTest {
     assertThat(requests.hasNext()).isFalse();
   }
 
-  private void registerInsertUpdateStatements(Dialect dialect) throws ParseException {
+  private void registerInsertUpdateStatements(CloudSpanner db, Dialect dialect)
+      throws ParseException {
     Date[] birthdates =
         new Date[] {
           Date.fromYearMonthDay(1997, 10, 1),

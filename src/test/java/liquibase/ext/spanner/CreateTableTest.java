@@ -33,7 +33,7 @@ public class CreateTableTest extends AbstractMockServerTest {
   void testCreateSingersTableFromYaml(Dialect dialect) throws Exception {
     String expectedSql =
         dialect == Dialect.POSTGRESQL
-            ? "CREATE TABLE Singers (SingerId bigint, FirstName varchar(255), LastName varchar(255) NOT NULL, SingerInfo bytea, `hash\\`s` varchar(40), PRIMARY KEY (SingerId))"
+            ? "CREATE TABLE Singers (SingerId bigint, FirstName varchar(255), LastName varchar(255) NOT NULL, SingerInfo bytea, \"hash`s\" varchar(40), PRIMARY KEY (SingerId))"
             : "CREATE TABLE Singers (SingerId INT64, FirstName STRING(255), LastName STRING(255) NOT NULL, SingerInfo BYTES(MAX), `hash\\`s` STRING(40)) PRIMARY KEY (SingerId)";
     addUpdateDdlStatementsResponse(dialect, expectedSql);
 

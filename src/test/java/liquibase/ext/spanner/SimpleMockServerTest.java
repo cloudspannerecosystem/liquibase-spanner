@@ -9,6 +9,7 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import java.sql.SQLException;
 import liquibase.Liquibase;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +17,12 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class SimpleMockServerTest extends AbstractMockServerTest {
+
+  @BeforeEach
+  void resetServer() {
+    mockSpanner.reset();
+    mockAdmin.reset();
+  }
 
   @ParameterizedTest
   @EnumSource(Dialect.class)
@@ -33,12 +40,9 @@ public class SimpleMockServerTest extends AbstractMockServerTest {
                   ? "CREATE TABLE FOO (ID bigint, PRIMARY KEY (ID))"
                   : "CREATE TABLE FOO (ID INT64) PRIMARY KEY (ID)");
     }
-    assertThat(mockAdmin.getRequests()).hasSize(dialect == Dialect.POSTGRESQL ? 2 : 1);
-    assertThat(mockAdmin.getRequests().get(dialect == Dialect.POSTGRESQL ? 1 : 0))
-        .isInstanceOf(UpdateDatabaseDdlRequest.class);
-    assertThat(getUpdateDdlStatementsList(dialect == Dialect.POSTGRESQL ? 1 : 0))
-        .containsExactly(statement)
-        .inOrder();
+    assertThat(mockAdmin.getRequests()).hasSize(1);
+    assertThat(mockAdmin.getRequests().get(0)).isInstanceOf(UpdateDatabaseDdlRequest.class);
+    assertThat(getUpdateDdlStatementsList(0)).containsExactly(statement).inOrder();
 
     // This test does not use Liquibase but JDBC directly, so it is expected to send requests that
     // do not contain a Liquibase client lib token.

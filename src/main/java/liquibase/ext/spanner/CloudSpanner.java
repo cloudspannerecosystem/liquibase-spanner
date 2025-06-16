@@ -259,17 +259,20 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   protected String getQuotingStartCharacter() {
-    return "`";
+    Dialect dialect = this.getDialect();
+    return dialect == Dialect.POSTGRESQL ? "\"" : "`";
   }
 
   @Override
   protected String getQuotingEndCharacter() {
-    return "`";
+    Dialect dialect = this.getDialect();
+    return dialect == Dialect.POSTGRESQL ? "\"" : "`";
   }
 
   @Override
   protected String getQuotingEndReplacement() {
-    return "\\`";
+    Dialect dialect = this.getDialect();
+    return dialect == Dialect.POSTGRESQL ? "\"" : "\\`";
   }
 
   @Override
