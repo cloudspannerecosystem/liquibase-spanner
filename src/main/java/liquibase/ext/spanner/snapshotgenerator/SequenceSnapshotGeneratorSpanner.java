@@ -44,20 +44,18 @@ public class SequenceSnapshotGeneratorSpanner extends SequenceSnapshotGenerator 
     if (database instanceof ICloudSpanner) {
       List<String> parameter = new ArrayList<>(2);
       parameter.add(schema.getCatalog().getName());
-      parameter.add(schema.isDefault() ? "" : schema.getName());
+      parameter.add(schema.isDefault() ? database.getDefaultSchemaName() : schema.getName());
       Dialect dialect = ((ICloudSpanner) database).getDialect();
       StringBuilder sql =
           dialect == Dialect.POSTGRESQL
               ? new StringBuilder("SELECT ")
-                  .append("sequence_name, ")
-                  .append("sequence_catalog, ")
-                  .append("sequence_schema, ")
-                  .append("start_value, ")
-                  .append("sequence_kind, ")
-                  .append("skip_range_min, ")
-                  .append("skip_range_max ")
+                  .append("sequence_name AS SEQUENCE_NAME, ")
+                  .append("sequence_kind AS SEQUENCE_KIND, ")
+                  .append("skip_range_max AS SKIP_RANGE_MAX, ")
+                  .append("skip_range_min AS SKIP_RANGE_MIN, ")
+                  .append("start_value AS START_VALUE ")
                   .append("FROM information_schema.sequences ")
-                  .append("WHERE sequence_catalog = ? AND sequence_schema = ?;")
+                  .append("WHERE sequence_catalog = ? AND sequence_schema = ?")
               : new StringBuilder("SELECT seq.NAME AS SEQUENCE_NAME, ")
                   .append("seq_kind.OPTION_VALUE AS SEQUENCE_KIND, ")
                   .append("skip_max.OPTION_VALUE AS SKIP_RANGE_MAX, ")

@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+#Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,30 +17,26 @@ databaseChangeLog:
   - preConditions:
       onFail: HALT
       onError: HALT
-
   - changeSet:
-      id: v0.1-create-table
+      id: v0.1-create-table-with-computed-column
+      labels: version 0.1
       author: spanner-liquibase-tests
       changes:
         - createTable:
-            tableName: Concerts
+            tableName: table_test_generated_column
             columns:
               - column:
-                  name: ConcertId
-                  type: INT64
+                  name: id
+                  type: BIGINT
                   constraints:
-                    nullable: false
                     primaryKey: true
+                    nullable: false
               - column:
-                  name: StartTime
-                  type: Timestamp
+                  name: FirstName
+                  type: STRING(200)
               - column:
-                  name: EndTime
-                  type: Timestamp
-
-  - changeSet:
-      id: v0.2-add-check-constraint
-      author: spanner-liquibase-tests
-      changes:
-        - sql: |
-            ALTER TABLE Concerts ADD CONSTRAINT start_before_end CHECK (StartTime < EndTime);
+                  name: LastName
+                  type: STRING(200)
+              - column:
+                  name: FullName varchar(400) generated always as (FirstName || ' ' || LastName) STORED
+                  computed: true

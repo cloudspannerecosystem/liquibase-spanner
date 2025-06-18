@@ -17,30 +17,22 @@ databaseChangeLog:
   - preConditions:
       onFail: HALT
       onError: HALT
-
   - changeSet:
-      id: v0.1-create-table
-      author: spanner-liquibase-tests
-      changes:
-        - createTable:
-            tableName: Concerts
-            columns:
-              - column:
-                  name: ConcertId
-                  type: INT64
-                  constraints:
-                    nullable: false
-                    primaryKey: true
-              - column:
-                  name: StartTime
-                  type: Timestamp
-              - column:
-                  name: EndTime
-                  type: Timestamp
-
-  - changeSet:
-      id: v0.2-add-check-constraint
+      id:     v0.1-create-interleave-table
       author: spanner-liquibase-tests
       changes:
         - sql: |
-            ALTER TABLE Concerts ADD CONSTRAINT start_before_end CHECK (StartTime < EndTime);
+            START BATCH DDL;
+            CREATE TABLE Singers (
+            SingerId   bigint NOT NULL PRIMARY KEY,
+            FirstName  varchar(1024),
+            LastName   varchar(1024),
+            SingerInfo bytea,
+            );
+            CREATE TABLE Albums (
+            SingerId     bigint NOT NULL,
+            AlbumId      bigint NOT NULL,
+            AlbumTitle   varchar,
+            PRIMARY KEY (SingerId, AlbumId))
+            INTERLEAVE IN PARENT Singers ON DELETE CASCADE;
+            RUN BATCH;

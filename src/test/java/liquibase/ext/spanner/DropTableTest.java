@@ -15,14 +15,16 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class DropTableTest extends AbstractMockServerTest {
@@ -33,13 +35,14 @@ public class DropTableTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testDropSingersTableFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testDropSingersTableFromYaml(Dialect dialect) throws Exception {
     String expectedSql = "DROP TABLE Singers";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"drop-singers-table.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
