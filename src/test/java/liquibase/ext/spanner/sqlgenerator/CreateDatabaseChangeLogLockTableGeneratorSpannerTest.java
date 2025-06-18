@@ -16,9 +16,13 @@ package liquibase.ext.spanner.sqlgenerator;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-import liquibase.database.Database;
+import com.google.cloud.spanner.Dialect;
+import java.sql.SQLException;
+import liquibase.ext.spanner.CloudSpanner;
+import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.sql.Sql;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 
 class CreateDatabaseChangeLogLockTableGeneratorSpannerTest {
@@ -26,27 +30,45 @@ class CreateDatabaseChangeLogLockTableGeneratorSpannerTest {
   private static final String DEFAULT_CHANGELOGLOCK = "DATABASECHANGELOGLOCK";
   private static final String CUSTOM_CHANGELOGLOCK = "customChangeLogLock";
 
-  private Database database = Mockito.mock(Database.class);
+  private ICloudSpanner database = Mockito.mock(CloudSpanner.class);
 
   private final CreateDatabaseChangeLogLockTableGeneratorSpanner generator =
       new CreateDatabaseChangeLogLockTableGeneratorSpanner();
 
-  @Test
-  public void shouldUseConfiguredDatabaseChangeLogLockTableName() {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  public void shouldUseConfiguredDatabaseChangeLogLockTableName(Dialect dialect)
+      throws SQLException {
     givenDatabaseChangeLogLockTableNameIs(CUSTOM_CHANGELOGLOCK);
+    when(database.getDialect()).thenReturn(dialect);
 
     Sql[] sql = generator.generateSql(null, database, null);
 
-    assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + CUSTOM_CHANGELOGLOCK));
+    assertTrue(
+        sql[0]
+            .toSql()
+            .startsWith(
+                dialect == Dialect.POSTGRESQL
+                    ? "CREATE TABLE public." + CUSTOM_CHANGELOGLOCK
+                    : "CREATE TABLE " + CUSTOM_CHANGELOGLOCK));
   }
 
-  @Test
-  public void shouldUseDefaultDatabaseChangeLogTableNameIfNotConfigured() {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  public void shouldUseDefaultDatabaseChangeLogTableNameIfNotConfigured(Dialect dialect)
+      throws SQLException {
     givenDatabaseChangeLogLockTableNameIs(null);
+    when(database.getDialect()).thenReturn(dialect);
 
     Sql[] sql = generator.generateSql(null, database, null);
 
-    assertTrue(sql[0].toSql().startsWith("CREATE TABLE " + DEFAULT_CHANGELOGLOCK));
+    assertTrue(
+        sql[0]
+            .toSql()
+            .startsWith(
+                dialect == Dialect.POSTGRESQL
+                    ? "CREATE TABLE public." + DEFAULT_CHANGELOGLOCK
+                    : "CREATE TABLE " + DEFAULT_CHANGELOGLOCK));
   }
 
   private void givenDatabaseChangeLogLockTableNameIs(String tableName) {

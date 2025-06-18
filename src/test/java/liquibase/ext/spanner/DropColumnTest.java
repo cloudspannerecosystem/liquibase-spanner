@@ -15,14 +15,16 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class DropColumnTest extends AbstractMockServerTest {
@@ -33,13 +35,14 @@ public class DropColumnTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testDropColumnSingerInfoFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testDropColumnSingerInfoFromYaml(Dialect dialect) throws Exception {
     String expectedSql = "ALTER TABLE Singers DROP COLUMN SingerInfo";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"drop-column-singerinfo.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -52,18 +55,19 @@ public class DropColumnTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testDropColumnsTrackAndLyricsFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testDropColumnsTrackAndLyricsFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
         new String[] {
           "ALTER TABLE Songs DROP COLUMN Track", "ALTER TABLE Songs DROP COLUMN Lyrics"
         };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"drop-columns-track-and-lyrics.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }

@@ -15,6 +15,7 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
@@ -31,9 +32,10 @@ import liquibase.Liquibase;
 import liquibase.util.ISODateFormat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class AddDropDefaultValueTest extends AbstractMockServerTest {
@@ -77,18 +79,19 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testAddDefaultValueFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddDefaultValueFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
         new String[] {
           "ALTER TABLE Singers ALTER COLUMN LastName SET DEFAULT ('some-name')",
         };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"add-default-value-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -103,19 +106,25 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     }
   }
 
-  @Test
-  void testAddDefaultValueBooleanFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddDefaultValueBooleanFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
-        new String[] {
-          "ALTER TABLE Singers ADD booleanColumn BOOL",
-          "ALTER TABLE Singers ALTER COLUMN booleanColumn SET DEFAULT (TRUE)",
-        };
+        dialect == Dialect.POSTGRESQL
+            ? new String[] {
+              "ALTER TABLE Singers ADD booleanColumn boolean",
+              "ALTER TABLE Singers ALTER COLUMN booleanColumn SET DEFAULT (TRUE)",
+            }
+            : new String[] {
+              "ALTER TABLE Singers ADD booleanColumn BOOL",
+              "ALTER TABLE Singers ALTER COLUMN booleanColumn SET DEFAULT (TRUE)",
+            };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"add-default-value-boolean-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -130,19 +139,25 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     }
   }
 
-  @Test
-  void testAddDefaultValueNumericFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddDefaultValueNumericFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
-        new String[] {
-          "ALTER TABLE Singers ADD numericColumn INT64",
-          "ALTER TABLE Singers ALTER COLUMN numericColumn SET DEFAULT (1000000)",
-        };
+        dialect == Dialect.POSTGRESQL
+            ? new String[] {
+              "ALTER TABLE Singers ADD numericColumn bigint",
+              "ALTER TABLE Singers ALTER COLUMN numericColumn SET DEFAULT (1000000)",
+            }
+            : new String[] {
+              "ALTER TABLE Singers ADD numericColumn INT64",
+              "ALTER TABLE Singers ALTER COLUMN numericColumn SET DEFAULT (1000000)",
+            };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"add-default-value-numeric-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -157,19 +172,25 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     }
   }
 
-  @Test
-  void testAddDefaultValueComputedFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddDefaultValueComputedFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
-        new String[] {
-          "ALTER TABLE Singers ADD uuid_column STRING(36)",
-          "ALTER TABLE Singers ALTER COLUMN uuid_column SET DEFAULT (GENERATE_UUID())",
-        };
+        dialect == Dialect.POSTGRESQL
+            ? new String[] {
+              "ALTER TABLE Singers ADD uuid_column varchar(36)",
+              "ALTER TABLE Singers ALTER COLUMN uuid_column SET DEFAULT (GENERATE_UUID())",
+            }
+            : new String[] {
+              "ALTER TABLE Singers ADD uuid_column STRING(36)",
+              "ALTER TABLE Singers ALTER COLUMN uuid_column SET DEFAULT (GENERATE_UUID())",
+            };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"add-default-value-computed-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -184,22 +205,30 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     }
   }
 
-  @Test
-  void testAddDefaultValueTimestampFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddDefaultValueTimestampFromYaml(Dialect dialect) throws Exception {
     String timestamp = convertToUtcTimestamp("2008-02-12T12:34:03");
     String[] expectedSql =
-        new String[] {
-          "ALTER TABLE Singers ADD timestampColumn timestamp",
-          "ALTER TABLE Singers ALTER COLUMN timestampColumn SET DEFAULT (TIMESTAMP "
-              + timestamp
-              + ")",
-        };
+        dialect == Dialect.POSTGRESQL
+            ? new String[] {
+              "ALTER TABLE Singers ADD timestampColumn timestamptz",
+              "ALTER TABLE Singers ALTER COLUMN timestampColumn SET DEFAULT ("
+                  + timestamp
+                  + "::timestamptz)"
+            }
+            : new String[] {
+              "ALTER TABLE Singers ADD timestampColumn TIMESTAMP",
+              "ALTER TABLE Singers ALTER COLUMN timestampColumn SET DEFAULT (TIMESTAMP "
+                  + timestamp
+                  + ")",
+            };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"add-default-value-date-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -214,15 +243,18 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     }
   }
 
-  @Test
-  void testCreateColumnWithDefaultValueFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateColumnWithDefaultValueFromYaml(Dialect dialect) throws Exception {
     String expectedSql =
-        "ALTER TABLE Singers ADD stringColumn STRING(1000) DEFAULT ('some_string')";
+        dialect == Dialect.POSTGRESQL
+            ? "ALTER TABLE Singers ADD stringColumn varchar(1000) DEFAULT ('some_string')"
+            : "ALTER TABLE Singers ADD stringColumn STRING(1000) DEFAULT ('some_string')";
 
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"create-column-with-default-value.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -235,14 +267,18 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testCreateColumnWithDefaultValueBooleanFromYaml() throws Exception {
-    String expectedSql = "ALTER TABLE Singers ADD booleanColumn BOOL DEFAULT (TRUE)";
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateColumnWithDefaultValueBooleanFromYaml(Dialect dialect) throws Exception {
+    String expectedSql =
+        dialect == Dialect.POSTGRESQL
+            ? "ALTER TABLE Singers ADD booleanColumn boolean DEFAULT (TRUE)"
+            : "ALTER TABLE Singers ADD booleanColumn BOOL DEFAULT (TRUE)";
 
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"create-column-with-default-value-boolean.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -255,14 +291,18 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testCreateColumnWithDefaultValueNumericFromYaml() throws Exception {
-    String expectedSql = "ALTER TABLE Singers ADD numericColumn INT64 DEFAULT (100000)";
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateColumnWithDefaultValueNumericFromYaml(Dialect dialect) throws Exception {
+    String expectedSql =
+        dialect == Dialect.POSTGRESQL
+            ? "ALTER TABLE Singers ADD numericColumn bigint DEFAULT (100000)"
+            : "ALTER TABLE Singers ADD numericColumn INT64 DEFAULT (100000)";
 
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"create-column-with-default-value-numeric.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -275,14 +315,18 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testCreateColumnWithDefaultValueComputedFromYaml() throws Exception {
-    String expectedSql = "ALTER TABLE Singers ADD uuid_column STRING(36) DEFAULT (GENERATE_UUID())";
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateColumnWithDefaultValueComputedFromYaml(Dialect dialect) throws Exception {
+    String expectedSql =
+        dialect == Dialect.POSTGRESQL
+            ? "ALTER TABLE Singers ADD uuid_column varchar(36) DEFAULT (GENERATE_UUID())"
+            : "ALTER TABLE Singers ADD uuid_column STRING(36) DEFAULT (GENERATE_UUID())";
 
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"create-column-with-default-value-computed.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -295,16 +339,23 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testCreateColumnWithDefaultValueDateFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateColumnWithDefaultValueDateFromYaml(Dialect dialect) throws Exception {
     String timestamp = convertToUtcTimestamp("2008-02-12T12:34:03");
     String expectedSql =
-        "ALTER TABLE Singers ADD timestampColumn timestamp DEFAULT (TIMESTAMP " + timestamp + ")";
+        dialect == Dialect.POSTGRESQL
+            ? "ALTER TABLE Singers ADD timestampColumn timestamptz DEFAULT ("
+                + timestamp
+                + "::timestamptz)"
+            : "ALTER TABLE Singers ADD timestampColumn TIMESTAMP DEFAULT (TIMESTAMP "
+                + timestamp
+                + ")";
 
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"create-column-with-default-value-date.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -317,13 +368,14 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testDropDefaultValueFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testDropDefaultValueFromYaml(Dialect dialect) throws Exception {
     String expectedSql = "ALTER TABLE Singers ALTER COLUMN LastName DROP DEFAULT";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"drop-default-value-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }

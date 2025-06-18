@@ -16,8 +16,10 @@ package liquibase.ext.spanner;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -25,6 +27,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.Objects;
 import liquibase.Scope;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
@@ -59,24 +62,37 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
   @Override
   public String getDateLiteral(final String isoDate) {
     // Construct the literal based on whether it is a DATE or TIMESTAMP
-    if (isDateTime(isoDate)) {
-      try {
+    if (isoDate == null || isoDate.trim().equalsIgnoreCase("null")) {
+      return this.getDialect() == Dialect.POSTGRESQL ? "CAST(NULL AS timestamptz)" : "NULL";
+    }
+    try {
+      if (isDateTime(isoDate)) {
         Date date = new ISODateFormat().parse(isoDate);
         Instant instant = date.toInstant();
         OffsetDateTime utcDateTime = instant.atOffset(ZoneOffset.UTC);
         String formattedDate = utcDateTime.format(ISO_LOCAL_DATE);
         String formattedTime = utcDateTime.format(ISO_LOCAL_TIME);
-        return "TIMESTAMP '" + formattedDate + "T" + formattedTime + "Z'";
-      } catch (ParseException e) {
-        return "BAD_DATE_FORMAT:" + isoDate;
+        return this.getDialect() == Dialect.POSTGRESQL
+            ? "'" + formattedDate + "T" + formattedTime + "Z'" + "::timestamptz"
+            : "TIMESTAMP '" + formattedDate + "T" + formattedTime + "Z'";
+
+      } else {
+        String formattedDate = super.getDateLiteral(isoDate);
+        return this.getDialect() == Dialect.POSTGRESQL
+            ? formattedDate + "::date"
+            : "DATE " + formattedDate;
       }
-    } else {
-      return "DATE " + super.getDateLiteral(isoDate);
+    } catch (ParseException e) {
+      return "BAD_DATE_FORMAT:" + isoDate;
     }
   }
 
   @Override
   public String getCurrentDateTimeFunction() {
+    Dialect dialect = this.getDialect();
+    if (Objects.requireNonNull(dialect) == Dialect.POSTGRESQL) {
+      return "CURRENT_TIMESTAMP";
+    }
     return "CURRENT_TIMESTAMP()";
   }
 
@@ -243,21 +259,46 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   protected String getQuotingStartCharacter() {
-    return "`";
+    Dialect dialect = this.getDialect();
+    return dialect == Dialect.POSTGRESQL ? "\"" : "`";
   }
 
   @Override
   protected String getQuotingEndCharacter() {
-    return "`";
+    Dialect dialect = this.getDialect();
+    return dialect == Dialect.POSTGRESQL ? "\"" : "`";
   }
 
   @Override
   protected String getQuotingEndReplacement() {
-    return "\\`";
+    Dialect dialect = this.getDialect();
+    return dialect == Dialect.POSTGRESQL ? "\"" : "\\`";
   }
 
   @Override
   public String escapeStringForDatabase(String string) {
+    Dialect dialect = this.getDialect();
+    if (dialect == Dialect.POSTGRESQL) {
+      return string == null ? null : string.replace("'", "''");
+    }
     return string == null ? null : string.replace("'", "\\'");
+  }
+
+  @Override
+  public Dialect getDialect() {
+    try {
+      DatabaseConnection conn = getConnection();
+
+      if (conn instanceof JdbcConnection) {
+        Connection underlying = ((JdbcConnection) conn).getUnderlyingConnection();
+        if (underlying.isWrapperFor(CloudSpannerJdbcConnection.class)) {
+          return underlying.unwrap(CloudSpannerJdbcConnection.class).getDialect();
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException("Failed to get dialect from connection", e);
+    }
+
+    return null;
   }
 }

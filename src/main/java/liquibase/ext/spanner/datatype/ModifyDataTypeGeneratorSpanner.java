@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.datatype;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.common.base.MoreObjects;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,26 +46,52 @@ public class ModifyDataTypeGeneratorSpanner extends ModifyDataTypeGenerator {
   @Override
   public Sql[] generateSql(
       ModifyDataTypeStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-    // Cloud Spanner requires NOT NULL to be specified if the column is to retain any NOT NULL
-    // constraint.
-    String nullableString = isColumnNullable(statement, database) ? "" : " NOT NULL";
-    String sql =
-        "ALTER TABLE "
-            + database.escapeTableName(
-                statement.getCatalogName(), statement.getSchemaName(), statement.getTableName())
-            + " ALTER COLUMN "
-            + database.escapeColumnName(
-                statement.getCatalogName(),
-                statement.getSchemaName(),
-                statement.getTableName(),
-                statement.getColumnName())
-            + " "
-            + DataTypeFactory.getInstance()
-                .fromDescription(statement.getNewDataType(), database)
-                .toDatabaseDataType(database)
-            + nullableString;
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
+    boolean isNullable = isColumnNullable(statement, database);
 
-    return new Sql[] {new UnparsedSql(sql, getAffectedTable(statement))};
+    // Determine nullable clause
+    String nullableClause = "";
+    if (dialect == Dialect.POSTGRESQL) {
+      nullableClause = isNullable ? " DROP NOT NULL" : " SET NOT NULL";
+    } else if (!isNullable) {
+      nullableClause = " NOT NULL";
+    }
+
+    // Build data type string
+    String dataType =
+        String.valueOf(
+            DataTypeFactory.getInstance()
+                .fromDescription(statement.getNewDataType(), database)
+                .toDatabaseDataType(database));
+
+    if (dialect == Dialect.POSTGRESQL) {
+      dataType = "TYPE " + dataType;
+    }
+
+    // Escape names
+    String catalog = statement.getCatalogName();
+    String schema = statement.getSchemaName();
+    String tableName = statement.getTableName();
+    String columnName = statement.getColumnName();
+
+    String escapedTableName = database.escapeTableName(catalog, schema, tableName);
+    String escapedColumnName = database.escapeColumnName(catalog, schema, tableName, columnName);
+
+    // Construct SQL
+    StringBuilder sql = new StringBuilder();
+    sql.append("ALTER TABLE ")
+        .append(escapedTableName)
+        .append(" ALTER COLUMN ")
+        .append(escapedColumnName)
+        .append(" ")
+        .append(dataType);
+
+    if (dialect == Dialect.POSTGRESQL) {
+      sql.append(", ALTER COLUMN ").append(escapedColumnName).append(nullableClause);
+    } else {
+      sql.append(nullableClause);
+    }
+    return new Sql[] {new UnparsedSql(String.valueOf(sql), getAffectedTable(statement))};
   }
 
   private boolean isColumnNullable(ModifyDataTypeStatement statement, Database database) {
@@ -72,8 +99,11 @@ public class ModifyDataTypeGeneratorSpanner extends ModifyDataTypeGenerator {
     try (PreparedStatement ps =
         connection.prepareStatement(
             "SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_CATALOG=? AND TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?")) {
-      ps.setString(1, MoreObjects.firstNonNull(statement.getCatalogName(), ""));
-      ps.setString(2, MoreObjects.firstNonNull(statement.getSchemaName(), ""));
+      ps.setString(
+          1,
+          MoreObjects.firstNonNull(statement.getCatalogName(), database.getDefaultCatalogName()));
+      ps.setString(
+          2, MoreObjects.firstNonNull(statement.getSchemaName(), database.getDefaultSchemaName()));
       ps.setString(3, statement.getTableName());
       ps.setString(4, statement.getColumnName());
       try (ResultSet rs = ps.executeQuery()) {

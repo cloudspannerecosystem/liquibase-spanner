@@ -18,8 +18,10 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractStatementParser;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import java.sql.Connection;
@@ -28,21 +30,51 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.testcontainers.shaded.com.google.common.collect.Iterables;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class LoadDataTest extends AbstractMockServerTest {
   private static final String INSERT =
       "INSERT INTO Singers(SingerId, Name, Description, SingerInfo, AnyGood, Birthdate, LastConcertTimestamp, ExternalID) "
-          + "VALUES(@p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)";
+          + "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 
-  @BeforeAll
-  static void setupResults() throws ParseException {
+  @BeforeEach
+  void resetServer() {
+    mockSpanner.reset();
+    mockAdmin.reset();
+  }
+
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testLoadDataFromYaml(Dialect dialect) throws Exception {
+    setupResults(dialect);
+    for (String file : new String[] {"load-data-singers.spanner.yaml"}) {
+      try (Connection con = createConnection(dialect);
+          Liquibase liquibase = getLiquibase(con, file)) {
+        liquibase.update(new Contexts("test"));
+      }
+    }
+    Iterator<ExecuteBatchDmlRequest> requests =
+        Iterables.filter(mockSpanner.getRequests(), ExecuteBatchDmlRequest.class).iterator();
+    assertThat(requests.hasNext()).isTrue();
+    ExecuteBatchDmlRequest request = requests.next();
+    assertThat(requests.hasNext()).isFalse();
+    assertThat(request.getStatementsList()).hasSize(3);
+    for (int id : new int[] {1, 2, 3}) {
+      assertThat(request.getStatements(id - 1).getSql().replaceAll("(@p\\d+|\\$\\d+|\\?)", "?"))
+          .isEqualTo(INSERT);
+      // INT64 fields are encoded as string values.
+      assertThat(request.getStatements(id - 1).getParams().getFieldsMap().get("p1"))
+          .isEqualTo(Value.newBuilder().setStringValue(String.valueOf(id)).build());
+    }
+  }
+
+  static void setupResults(Dialect dialect) throws ParseException {
     Date[] birthdates =
         new Date[] {
           Date.fromYearMonthDay(1997, 10, 1),
@@ -72,11 +104,13 @@ public class LoadDataTest extends AbstractMockServerTest {
           "9bff9ea5-024c-49b4-8f24-46570e515aff",
           "f1f4c7d2-9ae8-4fdb-94f6-7931736c9cd1",
         };
-
+    AbstractStatementParser parser = dialect == Dialect.POSTGRESQL ? PARSER_PG : PARSER;
+    AbstractStatementParser.ParametersInfo params =
+        parser.convertPositionalParametersToNamedParameters('?', INSERT);
     for (int id : new int[] {1, 2, 3}) {
       mockSpanner.putStatementResult(
           StatementResult.update(
-              Statement.newBuilder(INSERT)
+              Statement.newBuilder(params.sqlWithNamedParameters)
                   .bind("p1")
                   .to(id)
                   .bind("p2")
@@ -95,34 +129,6 @@ public class LoadDataTest extends AbstractMockServerTest {
                   .to(uuids[id - 1])
                   .build(),
               1L));
-    }
-  }
-
-  @BeforeEach
-  void resetServer() {
-    mockSpanner.reset();
-    mockAdmin.reset();
-  }
-
-  @Test
-  void testLoadDataFromYaml() throws Exception {
-    for (String file : new String[] {"load-data-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
-          Liquibase liquibase = getLiquibase(con, file)) {
-        liquibase.update(new Contexts("test"));
-      }
-    }
-    Iterator<ExecuteBatchDmlRequest> requests =
-        Iterables.filter(mockSpanner.getRequests(), ExecuteBatchDmlRequest.class).iterator();
-    assertThat(requests.hasNext()).isTrue();
-    ExecuteBatchDmlRequest request = requests.next();
-    assertThat(requests.hasNext()).isFalse();
-    assertThat(request.getStatementsList()).hasSize(3);
-    for (int id : new int[] {1, 2, 3}) {
-      assertThat(request.getStatements(id - 1).getSql()).isEqualTo(INSERT);
-      // INT64 fields are encoded as string values.
-      assertThat(request.getStatements(id - 1).getParams().getFieldsMap().get("p1"))
-          .isEqualTo(Value.newBuilder().setStringValue(String.valueOf(id)).build());
     }
   }
 }

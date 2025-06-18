@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.sqlgenerator;
 
+import com.google.cloud.spanner.Dialect;
 import java.util.Date;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeFactory;
@@ -42,6 +43,7 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
   public Sql[] generateSql(
       InsertStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
     // Generate INSERT INTO (...) header.
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
     StringBuilder sql = new StringBuilder();
     sql.append("INSERT INTO ")
         .append(
@@ -79,16 +81,19 @@ public class InsertWithSelectGeneratorSpanner extends InsertGenerator {
       } else if ((newValue instanceof String)
           && !looksLikeFunctionCall(((String) newValue), database)) {
         sql.append(
-            DataTypeFactory.getInstance()
-                .fromObject(newValue, database)
-                .objectToSql(newValue, database));
+                DataTypeFactory.getInstance()
+                    .fromObject(newValue, database)
+                    .objectToSql(newValue, database))
+            .append(dialect == Dialect.POSTGRESQL ? "::varchar" : "");
       } else if (newValue instanceof Date) {
         sql.append(database.getDateLiteral(((Date) newValue)));
       } else if (newValue instanceof Boolean) {
-        if (((Boolean) newValue)) {
-          sql.append(DataTypeFactory.getInstance().getTrueBooleanValue(database));
-        } else {
-          sql.append(DataTypeFactory.getInstance().getFalseBooleanValue(database));
+        sql.append(
+            ((Boolean) newValue)
+                ? DataTypeFactory.getInstance().getTrueBooleanValue(database)
+                : DataTypeFactory.getInstance().getFalseBooleanValue(database));
+        if (dialect == Dialect.POSTGRESQL) {
+          sql.append("::boolean");
         }
       } else if (newValue instanceof DatabaseFunction) {
         sql.append(database.generateDatabaseFunctionValue((DatabaseFunction) newValue));
