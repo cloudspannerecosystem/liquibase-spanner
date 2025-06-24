@@ -87,7 +87,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.17.0")
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.2")
     testImplementation("org.testcontainers:testcontainers:1.21.0")
     testImplementation("net.java.dev.jna:jna:5.17.0")
     testImplementation("com.google.truth:truth:1.4.4") {
