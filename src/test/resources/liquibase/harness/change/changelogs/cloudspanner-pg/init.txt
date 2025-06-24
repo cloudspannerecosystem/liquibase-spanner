@@ -1,0 +1,36 @@
+DROP TABLE IF EXISTS authors;
+
+CREATE TABLE authors (
+    id bigint NOT NULL,
+    first_name varchar(1024),
+    last_name varchar(1024),
+    email varchar(1024),
+    birthdate DATE,
+    added timestamptz,
+    PRIMARY KEY (id));
+
+
+INSERT INTO authors (id, first_name, last_name, email, birthdate, added)
+VALUES (1, 'Alice', 'Doe', 'alice@example.com', '1990-07-15', '2012-12-25T10:45:00Z');
+
+INSERT INTO authors (id, first_name, last_name, email, birthdate, added)
+VALUES (2, 'John', 'Smith', 'john@example.com', '1985-11-22', '2015-08-10T14:30:00Z');
+
+DROP TABLE IF EXISTS posts;
+
+CREATE TABLE posts (
+    id bigint NOT NULL,
+    author_id bigint NOT NULL,
+    title varchar(1024),
+    description varchar(1024),
+    content varchar(1024),
+    inserted_date DATE,
+    PRIMARY KEY (id));
+
+
+INSERT INTO posts (id, author_id, title, description, content, inserted_date)
+VALUES (1, 1, 'libero', 'perspiciatis', 'Saepe laboriosam cupiditate consequatur distinctio.', '2020-07-14');
+
+INSERT INTO posts (id, author_id, title, description, content, inserted_date)
+VALUES (2, 2, 'rerum', 'voluptates', 'Consequuntur assumenda adipisci vel repellendus.', '1982-02-25');
+

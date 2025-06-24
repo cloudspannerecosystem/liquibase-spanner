@@ -1,0 +1,14 @@
+{
+  "snapshot": {
+    "objects": {
+      "liquibase.structure.core.Column": [
+        {
+          "column": {
+            "name": "dateTimeColumn",
+            "nullable": true
+          }
+        }
+      ]
+    }
+  }
+}

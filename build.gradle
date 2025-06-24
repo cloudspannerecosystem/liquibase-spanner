@@ -97,7 +97,7 @@ dependencies {
 
     // For using the Liquibase test harness
     testImplementation 'junit:junit:4.13.2'
-    testImplementation ('org.liquibase:liquibase-test-harness:1.0.10'){
+    testImplementation ('org.liquibase:liquibase-test-harness:1.0.11'){
         exclude group: 'org.firebirdsql.jdbc', module: 'jaybird'
     }
     testImplementation('org.apache.groovy:groovy-all:4.0.27') {
@@ -128,6 +128,7 @@ test {
     excludeTags "integration"
     exclude '**/CloudSpannerBaseHarnessSuiteTest*'
     exclude '**/CloudSpannerAdvancedHarnessSuiteTest*'
+    exclude '**/CloudSpannerFoundationalHarnessSuiteTest*'
   }
 }
 
@@ -158,6 +159,7 @@ tasks.register('integrationTest', Test) {
     includeTags "integration"
     exclude '**/CloudSpannerBaseHarnessSuiteTest*'
     exclude '**/CloudSpannerAdvancedHarnessSuiteTest*'
+    exclude '**/CloudSpannerFoundationalHarnessSuiteTest*'
   }
 }
 

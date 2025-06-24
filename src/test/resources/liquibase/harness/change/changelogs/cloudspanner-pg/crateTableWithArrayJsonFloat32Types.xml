@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="1" author="spanner-liquibase-tests">
+        <createTable tableName="vdt_create_table_test">
+            <column name="id" type="INT64">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="col_json" type="JSON"/>
+            <column name="col_float32" type="FLOAT32"/>
+            <column name="col_array_bool" type="ARRAY&lt;BOOL&gt;"/>
+            <column name="col_array_string" type="ARRAY&lt;STRING(100)&gt;"/>
+            <column name="col_array_byte" type="ARRAY&lt;BYTES(100)&gt;"/>
+            <column name="col_array_date" type="ARRAY&lt;DATE&gt;"/>
+            <column name="col_array_timestamp" type="ARRAY&lt;TIMESTAMP&gt;"/>
+            <column name="col_array_float64" type="ARRAY&lt;FLOAT64&gt;"/>
+            <column name="col_array_float32" type="ARRAY&lt;FLOAT32&gt;"/>
+            <column name="col_array_int" type="ARRAY&lt;INT64&gt;"/>
+            <column name="col_array_json" type="ARRAY&lt;JSON&gt;"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

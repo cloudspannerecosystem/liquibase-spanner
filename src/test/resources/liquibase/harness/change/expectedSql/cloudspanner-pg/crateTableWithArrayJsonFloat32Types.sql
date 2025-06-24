@@ -1,0 +1,1 @@
+CREATE TABLE vdt_create_table_test (id bigint NOT NULL, col_json jsonb, col_float32 real, col_array_bool boolean[], col_array_string varchar(100)[], col_array_byte bytea[], col_array_date date[], col_array_timestamp timestamptz[], col_array_float64 float8[], col_array_float32 real[], col_array_int bigint[], col_array_json jsonb[], PRIMARY KEY (id))
