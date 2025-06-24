@@ -106,7 +106,7 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
 
     // For testing runtime
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.13.2")
     
     // For Spanner mock server testing
     testImplementation(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
