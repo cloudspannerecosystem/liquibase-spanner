@@ -1,0 +1,44 @@
+{
+  "loadData": [
+    {
+      "description": "perspiciatis",
+      "id": 1,
+      "inserted_date": "2020-07-14",
+      "author_id": 1,
+      "title": "libero",
+      "content": "Saepe laboriosam cupiditate consequatur distinctio."
+    },
+    {
+      "description": "voluptates",
+      "id": 2,
+      "inserted_date": "1982-02-25",
+      "author_id": 2,
+      "title": "rerum",
+      "content": "Consequuntur assumenda adipisci vel repellendus."
+    },
+    {
+      "description": "test1@example.com",
+      "id": 6,
+      "inserted_date": "2000-01-01",
+      "author_id": 1,
+      "title": "Title1",
+      "content": "Content1"
+    },
+    {
+      "description": "test2@example.com",
+      "id": 7,
+      "inserted_date": "2000-01-01",
+      "author_id": 2,
+      "title": "Title2",
+      "content": "Content2"
+    },
+    {
+      "description": "test3@example.com",
+      "id": 8,
+      "inserted_date": "2000-01-01",
+      "author_id": 3,
+      "title": "Title3",
+      "content": "Content3"
+    }
+  ]
+}

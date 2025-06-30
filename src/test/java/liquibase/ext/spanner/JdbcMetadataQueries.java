@@ -42,7 +42,7 @@ class JdbcMetadataQueries {
           + "ON seq.CATALOG = start_counter.CATALOG AND seq.SCHEMA = start_counter.SCHEMA AND seq.NAME = start_counter.NAME AND start_counter.OPTION_NAME = 'start_with_counter' "
           + "WHERE seq.CATALOG = ? AND seq.SCHEMA = ?";
   static final String GET_SEQUENCES_PG =
-      "SELECT sequence_name AS SEQUENCE_NAME, sequence_kind AS SEQUENCE_KIND, skip_range_max AS SKIP_RANGE_MAX, skip_range_min AS SKIP_RANGE_MIN, start_value AS START_VALUE FROM information_schema.sequences WHERE sequence_catalog = ? AND sequence_schema = ?";
+      "SELECT sequence_name AS SEQUENCE_NAME, sequence_kind AS SEQUENCE_KIND, skip_range_max AS SKIP_RANGE_MAX, skip_range_min AS SKIP_RANGE_MIN, counter_start_value AS START_VALUE FROM information_schema.sequences WHERE sequence_catalog = ? AND sequence_schema = ?";
   static final String GET_COLUMN_DEFAULT_VALUE =
       convertPositionalParametersToNamedParameters(
           "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS "

@@ -1,0 +1,1 @@
+CREATE TABLE createTableDataTypeText (id bigint NOT NULL, textCol varchar, PRIMARY KEY (id))

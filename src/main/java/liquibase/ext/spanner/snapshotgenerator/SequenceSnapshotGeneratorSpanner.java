@@ -53,7 +53,7 @@ public class SequenceSnapshotGeneratorSpanner extends SequenceSnapshotGenerator 
                   .append("sequence_kind AS SEQUENCE_KIND, ")
                   .append("skip_range_max AS SKIP_RANGE_MAX, ")
                   .append("skip_range_min AS SKIP_RANGE_MIN, ")
-                  .append("start_value AS START_VALUE ")
+                  .append("counter_start_value AS START_VALUE ")
                   .append("FROM information_schema.sequences ")
                   .append("WHERE sequence_catalog = ? AND sequence_schema = ?")
               : new StringBuilder("SELECT seq.NAME AS SEQUENCE_NAME, ")

@@ -1,0 +1,15 @@
+{
+  "snapshot": {
+    "objects": {
+      "liquibase.structure.core.Column": [
+        {
+          "column": {
+            "defaultValue": "'100000'::numeric\\!\\{liquibase.statement.DatabaseFunction\\}",
+            "name": "numericColumn",
+            "nullable": true
+          }
+        }
+      ]
+    }
+  }
+}

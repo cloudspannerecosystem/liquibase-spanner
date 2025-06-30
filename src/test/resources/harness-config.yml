@@ -5,3 +5,6 @@ databasesUnderTest:
   - name: cloudspanner
     version: 1.0
     url: jdbc:cloudspanner://localhost:9010/projects/my-project/instances/my-instance/databases/my-database?usePlainText=true;autoConfigEmulator=true
+  - name: cloudspanner-pg
+    version: 1.0
+    url: jdbc:cloudspanner://localhost:9010/projects/my-project/instances/my-instance/databases/my-database-pg?usePlainText=true;autoConfigEmulator=true;dialect=POSTGRESQL

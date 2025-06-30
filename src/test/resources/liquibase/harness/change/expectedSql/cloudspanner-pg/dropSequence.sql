@@ -1,0 +1,2 @@
+CREATE SEQUENCE test_sequence bit_reversed_positive START COUNTER WITH 1
+DROP SEQUENCE test_sequence
