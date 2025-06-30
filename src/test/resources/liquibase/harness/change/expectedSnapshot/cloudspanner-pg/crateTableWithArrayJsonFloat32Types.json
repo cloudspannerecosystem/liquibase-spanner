@@ -1,0 +1,96 @@
+{
+  "snapshot": {
+    "objects": {
+      "liquibase.structure.core.Column": [
+        {
+          "column": {
+            "name": "col_json",
+            "type": {
+              "typeName": "jsonb"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_float32",
+            "type": {
+              "typeName": "real"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_array_bool",
+            "type": {
+              "typeName": "boolean\\[\\]"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_array_string",
+            "type": {
+              "typeName": "varchar\\(100\\)\\[\\]"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_array_byte",
+            "type": {
+              "typeName": "bytea\\[\\]"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_array_date",
+            "type": {
+              "typeName": "date\\[\\]"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_array_timestamp",
+            "type": {
+              "typeName": "timestamptz\\[\\]"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_array_float64",
+            "type": {
+              "typeName": "float8\\[\\]"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_array_float32",
+            "type": {
+              "typeName": "real\\[\\]"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_array_int",
+            "type": {
+              "typeName": "bigint\\[\\]"
+            }
+          }
+        },
+        {
+          "column": {
+            "name": "col_array_json",
+            "type": {
+              "typeName": "jsonb\\[\\]"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

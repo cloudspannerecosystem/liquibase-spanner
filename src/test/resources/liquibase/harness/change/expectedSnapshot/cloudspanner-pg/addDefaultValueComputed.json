@@ -1,0 +1,15 @@
+{
+  "snapshot": {
+    "objects": {
+      "liquibase.structure.core.Column": [
+        {
+          "column": {
+            "defaultValue": "spanner.generate_uuid\\(\\)\\!\\{liquibase.statement.DatabaseFunction\\}",
+            "name": "default_uuid",
+            "nullable": true
+          }
+        }
+      ]
+    }
+  }
+}

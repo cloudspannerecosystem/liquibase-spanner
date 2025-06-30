@@ -1,0 +1,28 @@
+{
+  "insert": [
+    {
+      "description": "voluptates",
+      "id": 2,
+      "inserted_date": "1982-02-25",
+      "author_id": 2,
+      "title": "rerum",
+      "content": "Consequuntur assumenda adipisci vel repellendus."
+    },
+    {
+      "description": "perspiciatis",
+      "id": 1,
+      "inserted_date": "2020-07-14",
+      "author_id": 1,
+      "title": "libero",
+      "content": "Saepe laboriosam cupiditate consequatur distinctio."
+    },
+    {
+      "description": "value",
+      "id": 100,
+      "inserted_date": "2006-10-09",
+      "author_id": 6,
+      "title": "value",
+      "content": "value"
+    }
+  ]
+}

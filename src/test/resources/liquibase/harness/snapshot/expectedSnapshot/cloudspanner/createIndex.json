@@ -1,0 +1,21 @@
+{
+  "snapshot": {
+    "objects": {
+      "liquibase.structure.core.Table": [
+        {
+          "table": {
+            "name": "test_table"
+          }
+        }
+      ],
+      "liquibase.structure.core.Index": [
+        {
+          "index": {
+            "name": "idx_first_name",
+            "unique": false
+          }
+        }
+      ]
+    }
+  }
+}

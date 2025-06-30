@@ -421,7 +421,9 @@
             <configuration>
               <excludedGroups>integration</excludedGroups>
               <excludes>
-                <exclude>**/CloudSpannerHarnessTest.java</exclude>
+                <exclude>**/CloudSpannerAdvancedHarnessSuiteTest*</exclude>
+                <exclude>**/CloudSpannerBaseHarnessSuiteTest*</exclude>
+                <exclude>**/CloudSpannerFoundationalHarnessSuiteTest*</exclude>
               </excludes>
             </configuration>
           </plugin>
@@ -466,6 +468,18 @@
                 </goals>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludedGroups>integration</excludedGroups>
+              <excludes>
+                <exclude>**/CloudSpannerAdvancedHarnessSuiteTest*</exclude>
+                <exclude>**/CloudSpannerBaseHarnessSuiteTest*</exclude>
+                <exclude>**/CloudSpannerFoundationalHarnessSuiteTest*</exclude>
+              </excludes>
+            </configuration>
           </plugin>
         </plugins>
       </build>

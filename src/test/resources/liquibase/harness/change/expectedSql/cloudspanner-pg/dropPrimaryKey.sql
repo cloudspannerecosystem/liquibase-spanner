@@ -1,0 +1,1 @@
+INVALID TEST Cloud Spanner does not support dropping a primary key

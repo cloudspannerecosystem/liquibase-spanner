@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="spanner-liquibase-tests" id="1">
+        <addColumn tableName="posts">
+            <column name="default_uuid"
+                    type="uuid"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="spanner-liquibase-tests" id="2">
+        <addDefaultValue  tableName="posts"
+                          columnName="default_uuid"
+                          defaultValueComputed="spanner.generate_uuid()"/>
+    </changeSet>
+</databaseChangeLog>

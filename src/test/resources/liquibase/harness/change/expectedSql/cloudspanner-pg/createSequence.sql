@@ -1,0 +1,1 @@
+CREATE SEQUENCE test_sequence bit_reversed_positive START COUNTER WITH 100

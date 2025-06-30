@@ -1,0 +1,1 @@
+ALTER TABLE authors ADD title_default varchar(255) NOT NULL DEFAULT ('title_test')

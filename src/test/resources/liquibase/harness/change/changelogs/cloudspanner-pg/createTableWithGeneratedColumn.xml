@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="1" author="spanner-liquibase-tests">
+        <createTable tableName="table_test_generated_column">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="FirstName" type="varchar(200)"/>
+            <column name="LastName" type="varchar(200)"/>
+            <column name="FullName varchar(400) GENERATED ALWAYS AS (FirstName || ' ' || LastName) STORED"
+                    computed="true"/>
+        </createTable>
+
+    </changeSet>
+</databaseChangeLog>

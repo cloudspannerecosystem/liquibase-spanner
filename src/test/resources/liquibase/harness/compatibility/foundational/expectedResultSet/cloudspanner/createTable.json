@@ -1,0 +1,57 @@
+{
+  "createTable": [
+    {
+      "comments": "test_comment",
+      "author": "as",
+      "orderExecuted": 1,
+      "description": "sql",
+      "contexts": "test_context",
+      "execType": "EXECUTED",
+      "labels": "test_label",
+      "filename": "liquibase\/harness\/compatibility\/foundational\/changelogs\/cloudspanner\/createTable.xml",
+      "md5sum": "9:728f610c4fe96cbe4f1ddb8603e5b683",
+      "id": "1",
+      "tag": ""
+    },
+    {
+      "comments": "test_comment",
+      "author": "as",
+      "orderExecuted": 2,
+      "description": "createTable tableName=test_table_json",
+      "contexts": "test_context",
+      "execType": "EXECUTED",
+      "labels": "test_label",
+      "filename": "liquibase\/harness\/compatibility\/foundational\/changelogs\/cloudspanner\/createTable.json",
+      "md5sum": "9:88deea5154167330adf5f42113f615e2",
+      "id": "2",
+      "tag": ""
+    },
+    {
+      "comments": "test_comment",
+      "author": "as",
+      "orderExecuted": 3,
+      "description": "createTable tableName=test_table_yaml",
+      "contexts": "test_context",
+      "execType": "EXECUTED",
+      "labels": "test_label",
+      "filename": "liquibase\/harness\/compatibility\/foundational\/changelogs\/cloudspanner\/createTable.yml",
+      "md5sum": "9:2809a9f773a4a955d4f336fd27b455da",
+      "id": "3",
+      "tag": ""
+    },
+
+    {
+      "comments": "test_comment",
+      "author": "as",
+      "orderExecuted": 4,
+      "description": "sql",
+      "contexts": "test_context",
+      "execType": "EXECUTED",
+      "labels": "test_label",
+      "filename": "liquibase\/harness\/compatibility\/foundational\/changelogs\/cloudspanner\/createTable.sql",
+      "md5sum": "9:0550fb9ef3a03fe841335b150f2a7fca",
+      "id": "4",
+      "tag": "test_tag"
+    }
+  ]
+}
