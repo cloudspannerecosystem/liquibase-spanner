@@ -1,0 +1,1 @@
+CREATE TABLE lms_create_table_test (lms_test_id bigint NOT NULL, lms_test_timestamp timestamptz, PRIMARY KEY (lms_test_id))

@@ -15,14 +15,16 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class AddForeignKeyTest extends AbstractMockServerTest {
@@ -33,14 +35,15 @@ public class AddForeignKeyTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testAddFKAlbumsSingersFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddFKAlbumsSingersFromYaml(Dialect dialect) throws Exception {
     String expectedSql =
         "ALTER TABLE Albums ADD CONSTRAINT FK_Albums_Singers FOREIGN KEY (SingerId) REFERENCES Singers (SingerId)";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"add-foreign-key-albums-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -53,14 +56,15 @@ public class AddForeignKeyTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testAddFKSongsAlbumsFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddFKSongsAlbumsFromYaml(Dialect dialect) throws Exception {
     String expectedSql =
         "ALTER TABLE Songs ADD CONSTRAINT FK_Songs_Albums FOREIGN KEY (SingerId, AlbumId) REFERENCES Albums (SingerId, AlbumId)";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"add-foreign-key-songs-albums.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }

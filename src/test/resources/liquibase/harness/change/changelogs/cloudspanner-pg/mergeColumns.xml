@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="1" author="spanner-liquibase-tests">
+        <createTable tableName="full_name_table">
+            <column name="id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name"
+                    type="varchar(50)"/>
+            <column name="last_name"
+                    type="varchar(50)"/>
+        </createTable>
+        <rollback/>
+    </changeSet>
+    <changeSet id="2" author="spanner-liquibase-tests">
+        <insert tableName="full_name_table">
+            <column name="id"
+                    valueNumeric="1"/>
+            <column name="first_name"
+                    value="John"/>
+        </insert>
+        <update tableName="full_name_table">
+            <column name="last_name"
+                    value="Doe"/>
+            <where>first_name='John'</where>
+        </update>
+        <insert tableName="full_name_table">
+            <column name="id"
+                    valueNumeric="2"/>
+            <column name="first_name"
+                    value="Jane"/>
+        </insert>
+        <update tableName="full_name_table">
+            <column name="last_name"
+                    value="Doe"/>
+            <where>first_name='Jane'</where>
+        </update>
+        <rollback/>
+    </changeSet>
+    <changeSet id="3" author="spanner-liquibase-tests">
+        <mergeColumns  column1Name="first_name"
+                       column2Name="last_name"
+                       finalColumnName="full_name"
+                       finalColumnType="varchar(255)"
+                       joinString=" "
+                       tableName="full_name_table"/>
+        <rollback>
+            <dropTable tableName="full_name_table"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

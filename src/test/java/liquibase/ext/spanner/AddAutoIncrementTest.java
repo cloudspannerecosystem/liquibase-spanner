@@ -16,15 +16,17 @@ package liquibase.ext.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.cloud.spanner.Dialect;
 import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.exception.CommandExecutionException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class AddAutoIncrementTest extends AbstractMockServerTest {
@@ -35,10 +37,11 @@ public class AddAutoIncrementTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testAddAutoIncrementSingersFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testAddAutoIncrementSingersFromYaml(Dialect dialect) throws Exception {
     for (String file : new String[] {"add-auto-increment-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         CommandExecutionException exception =
             assertThrows(

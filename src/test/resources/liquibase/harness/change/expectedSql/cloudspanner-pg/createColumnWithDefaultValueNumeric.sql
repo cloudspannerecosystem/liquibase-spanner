@@ -1,0 +1,1 @@
+ALTER TABLE authors ADD numericColumn NUMERIC DEFAULT (numeric '100000')

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="1" author="spanner-liquibase-tests">
+        <createTable tableName="modify_data_type_test">
+            <column name="id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="stringColumn" type="varchar(50)"/>
+            <column name="dateColumn" type="date"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="modify_data_type_test"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="2" author="as">
+        <sql>
+            ALTER TABLE modify_data_type_test ALTER COLUMN stringColumn TYPE bytea
+        </sql>
+        <rollback/>
+    </changeSet>
+</databaseChangeLog>

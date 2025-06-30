@@ -16,6 +16,7 @@ package liquibase.ext.spanner.sqlgenerator;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import com.google.cloud.spanner.Dialect;
 import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import liquibase.Contexts;
@@ -23,9 +24,10 @@ import liquibase.Liquibase;
 import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class CreateDropProcedureTest extends AbstractMockServerTest {
@@ -36,10 +38,11 @@ public class CreateDropProcedureTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testCreateProcedureFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateProcedureFromYaml(Dialect dialect) throws Exception {
     for (String file : new String[] {"create-procedure.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         CommandExecutionException exception =
             assertThrows(
@@ -52,10 +55,11 @@ public class CreateDropProcedureTest extends AbstractMockServerTest {
     assertThat(mockAdmin.getRequests()).isEmpty();
   }
 
-  @Test
-  void testDropProcedureFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testDropProcedureFromYaml(Dialect dialect) throws Exception {
     for (String file : new String[] {"drop-procedure.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         CommandExecutionException exception =
             assertThrows(

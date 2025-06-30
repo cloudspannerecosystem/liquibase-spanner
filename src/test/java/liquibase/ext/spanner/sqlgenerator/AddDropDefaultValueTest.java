@@ -15,15 +15,17 @@ package liquibase.ext.spanner.sqlgenerator;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class AddDropDefaultValueTest extends AbstractMockServerTest {
@@ -34,18 +36,19 @@ public class AddDropDefaultValueTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testDropDefaultValueSingersFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testDropDefaultValueSingersFromYaml(Dialect dialect) throws Exception {
     String[] expectedSql =
         new String[] {
           "ALTER TABLE Singers ALTER COLUMN LastName DROP DEFAULT",
         };
     for (String sql : expectedSql) {
-      addUpdateDdlStatementsResponse(sql);
+      addUpdateDdlStatementsResponse(dialect, sql);
     }
 
     for (String file : new String[] {"drop-default-value-singers.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }

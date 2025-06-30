@@ -1,0 +1,17 @@
+{
+  "snapshot": {
+    "objects": {
+      "liquibase.structure.core.Column": [
+        {
+          "column": {
+            "name": "title",
+            "nullable": true,
+            "type": {
+              "typeName": "varchar(1024)"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

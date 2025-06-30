@@ -1,0 +1,2 @@
+CREATE SEQUENCE test_sequence bit_reversed_positive START COUNTER WITH 10
+ALTER SEQUENCE test_sequence SKIP RANGE 1000 5000000

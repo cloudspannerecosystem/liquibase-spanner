@@ -1,0 +1,1 @@
+CREATE TABLE table_test_generated_column (id bigint NOT NULL, FirstName varchar(200), LastName varchar(200), FullName varchar(400) GENERATED ALWAYS AS (FirstName || ' ' || LastName) STORED, PRIMARY KEY (id))

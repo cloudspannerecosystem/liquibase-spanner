@@ -1,0 +1,1 @@
+INVALID TEST Cloud Spanner does not support unique constraints. Use unique index instead.

@@ -1,0 +1,1 @@
+INVALID TEST Cloud Spanner does not support adding primary keys, because it does not support creating a table without a primary key
