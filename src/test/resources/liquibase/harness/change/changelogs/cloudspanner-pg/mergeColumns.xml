@@ -10,9 +10,9 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="first_name"
-                    type="string(50)"/>
+                    type="varchar(50)"/>
             <column name="last_name"
-                    type="string(50)"/>
+                    type="varchar(50)"/>
         </createTable>
         <rollback/>
     </changeSet>
@@ -45,7 +45,7 @@
         <mergeColumns  column1Name="first_name"
                        column2Name="last_name"
                        finalColumnName="full_name"
-                       finalColumnType="string(255)"
+                       finalColumnType="varchar(255)"
                        joinString=" "
                        tableName="full_name_table"/>
         <rollback>

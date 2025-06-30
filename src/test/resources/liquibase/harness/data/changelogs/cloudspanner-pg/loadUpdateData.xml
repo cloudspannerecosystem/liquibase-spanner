@@ -19,7 +19,6 @@
                         primaryKey="id">
 
             <column name="id" type="numeric"/>
-<!--            <column name="added" type="TIMESTAMP"/>-->
         </loadUpdateData>
         <rollback>
             <sql splitStatements="true">

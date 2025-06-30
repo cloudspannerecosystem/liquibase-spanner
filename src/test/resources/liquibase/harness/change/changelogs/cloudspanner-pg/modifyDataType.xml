@@ -9,7 +9,7 @@
             <column name="id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="stringColumn" type="string(50)"/>
+            <column name="stringColumn" type="varchar(50)"/>
             <column name="dateColumn" type="date"/>
         </createTable>
         <rollback>
@@ -20,9 +20,6 @@
         <sql>
             ALTER TABLE modify_data_type_test ALTER COLUMN stringColumn TYPE bytea
         </sql>
-<!--        <modifyDataType  columnName="stringColumn"-->
-<!--                         newDataType="binary"-->
-<!--                         tableName="modify_data_type_test"/>-->
         <rollback/>
     </changeSet>
 </databaseChangeLog>

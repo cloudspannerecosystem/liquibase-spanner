@@ -10,16 +10,16 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="col_json" type="JSON"/>
-            <column name="col_float32" type="FLOAT32"/>
-            <column name="col_array_bool" type="ARRAY&lt;BOOL&gt;"/>
-            <column name="col_array_string" type="ARRAY&lt;STRING(100)&gt;"/>
-            <column name="col_array_byte" type="ARRAY&lt;BYTES(100)&gt;"/>
-            <column name="col_array_date" type="ARRAY&lt;DATE&gt;"/>
-            <column name="col_array_timestamp" type="ARRAY&lt;TIMESTAMP&gt;"/>
-            <column name="col_array_float64" type="ARRAY&lt;FLOAT64&gt;"/>
-            <column name="col_array_float32" type="ARRAY&lt;FLOAT32&gt;"/>
-            <column name="col_array_int" type="ARRAY&lt;INT64&gt;"/>
-            <column name="col_array_json" type="ARRAY&lt;JSON&gt;"/>
+            <column name="col_float32" type="real"/>
+            <column name="col_array_bool" type="boolean[]"/>
+            <column name="col_array_string" type="varchar(100)[]"/>
+            <column name="col_array_byte" type="bytea[]"/>
+            <column name="col_array_date" type="date[]"/>
+            <column name="col_array_timestamp" type="timestamptz[]"/>
+            <column name="col_array_float64" type="float8[]"/>
+            <column name="col_array_float32" type="real[]"/>
+            <column name="col_array_int" type="bigint[]"/>
+            <column name="col_array_json" type="jsonb[]"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>
