@@ -49,7 +49,7 @@ public class UniqueConstraintSnapshotGeneratorSpanner extends UniqueConstraintSn
   @Override
   public Class<? extends SnapshotGenerator>[] replaces() {
     return new Class[] {UniqueConstraintSnapshotGenerator.class};
-  };
+  }
 
   /*
    * Override the normal UniqueConstraint behaviour to return no rows from the database --
