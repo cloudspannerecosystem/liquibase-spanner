@@ -87,7 +87,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.17.0")
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
     testImplementation("org.testcontainers:testcontainers:1.21.3")
     testImplementation("net.java.dev.jna:jna:5.17.0")
     testImplementation("com.google.truth:truth:1.4.4") {
@@ -106,7 +106,7 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
 
     // For testing runtime
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.13.4")
     
     // For Spanner mock server testing
     testImplementation(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
