@@ -90,7 +90,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
     testImplementation("org.testcontainers:testcontainers:1.21.3")
     testImplementation("net.java.dev.jna:jna:5.17.0")
-    testImplementation("com.google.truth:truth:1.4.4") {
+    testImplementation("com.google.truth:truth:1.4.5") {
         exclude group: 'com.google.guava', module: 'guava'
     }
 
