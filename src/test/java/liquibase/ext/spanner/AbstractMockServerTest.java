@@ -455,10 +455,19 @@ public abstract class AbstractMockServerTest {
     return DriverManager.getConnection(createConnectionUrl());
   }
 
+  protected static Connection createConnection(String database) throws SQLException {
+    return DriverManager.getConnection(createConnectionUrl(database));
+  }
+
   protected static String createConnectionUrl() {
+    return createConnectionUrl("/projects/p/instances/i/databases/d");
+  }
+
+  protected static String createConnectionUrl(String database) {
     return new StringBuilder("jdbc:cloudspanner://localhost:")
         .append(server.getPort())
-        .append("/projects/p/instances/i/databases/d;usePlainText=true;minSessions=0")
+        .append(database)
+        .append(";usePlainText=true;minSessions=0")
         .toString();
   }
 }
