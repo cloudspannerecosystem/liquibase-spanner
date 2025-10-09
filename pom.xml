@@ -52,7 +52,7 @@
     <gax-grpc.version>2.69.0</gax-grpc.version>
     <jupiter.version>5.13.4</jupiter.version>
     <testcontainers.version>1.21.3</testcontainers.version>
-    <truth.version>1.4.4</truth.version>
+    <truth.version>1.4.5</truth.version>
     <mockito.version>1.10.19</mockito.version>
     <groovy.version>2.5.23</groovy.version>
     <dependency.spock.version>1.3-groovy-2.4</dependency.spock.version>
