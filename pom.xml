@@ -47,7 +47,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <liquibase.version>4.33.0</liquibase.version>
-    <snakeyaml.version>2.4</snakeyaml.version>
+    <snakeyaml.version>2.5</snakeyaml.version>
 
     <gax-grpc.version>2.71.0</gax-grpc.version>
     <jupiter.version>5.13.4</jupiter.version>
