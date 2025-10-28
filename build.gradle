@@ -100,7 +100,7 @@ dependencies {
     testImplementation ('org.liquibase:liquibase-test-harness:1.0.11'){
         exclude group: 'org.firebirdsql.jdbc', module: 'jaybird'
     }
-    testImplementation('org.apache.groovy:groovy-all:4.0.29') {
+    testImplementation('org.apache.groovy:groovy-all:5.0.2') {
         exclude module: 'org.codehaus.groovy:groovy-testng'
         exclude module: 'org.codehaus.groovy:groovy-swing'
     }
