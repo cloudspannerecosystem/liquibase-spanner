@@ -78,8 +78,8 @@ dependencies {
         }
     }
     // Cloud Spanner related
+    implementation("com.google.cloud:google-cloud-spanner-jdbc:2.33.3")
     implementation platform('com.google.cloud:libraries-bom:26.71.0')
-    implementation("com.google.cloud:google-cloud-spanner-jdbc")
 
     // Liquibase Core - needed for testing and docker container
     implementation("org.liquibase:liquibase-core:4.33.0")
@@ -88,6 +88,7 @@ dependencies {
 
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.4")
     testImplementation("org.testcontainers:testcontainers:1.21.3")
     testImplementation("net.java.dev.jna:jna:5.17.0")
     testImplementation("com.google.truth:truth:1.4.4") {
@@ -96,7 +97,7 @@ dependencies {
 
     // For using the Liquibase test harness
     testImplementation 'junit:junit:4.13.2'
-    testImplementation ('org.liquibase:liquibase-test-harness:1.0.10'){
+    testImplementation ('org.liquibase:liquibase-test-harness:1.0.11'){
         exclude group: 'org.firebirdsql.jdbc', module: 'jaybird'
     }
     testImplementation('org.apache.groovy:groovy-all:4.0.28') {
@@ -127,6 +128,12 @@ test {
     excludeTags "integration"
     exclude '**/CloudSpannerBaseHarnessSuiteTest*'
     exclude '**/CloudSpannerAdvancedHarnessSuiteTest*'
+    exclude '**/CloudSpannerFoundationalHarnessSuiteTest*'
+  }
+
+  testLogging {
+    events "failed"
+    exceptionFormat "full"
   }
 }
 
@@ -157,6 +164,7 @@ tasks.register('integrationTest', Test) {
     includeTags "integration"
     exclude '**/CloudSpannerBaseHarnessSuiteTest*'
     exclude '**/CloudSpannerAdvancedHarnessSuiteTest*'
+    exclude '**/CloudSpannerFoundationalHarnessSuiteTest*'
   }
 }
 

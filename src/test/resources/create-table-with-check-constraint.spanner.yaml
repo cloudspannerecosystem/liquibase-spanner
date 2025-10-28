@@ -17,14 +17,30 @@ databaseChangeLog:
   - preConditions:
       onFail: HALT
       onError: HALT
+
   - changeSet:
-      id:     v0.1-create-table-with-constraint
+      id: v0.1-create-table
+      author: spanner-liquibase-tests
+      changes:
+        - createTable:
+            tableName: Concerts
+            columns:
+              - column:
+                  name: ConcertId
+                  type: INT64
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: StartTime
+                  type: Timestamp
+              - column:
+                  name: EndTime
+                  type: Timestamp
+
+  - changeSet:
+      id: v0.2-add-check-constraint
       author: spanner-liquibase-tests
       changes:
         - sql: |
-            CREATE TABLE Concerts (
-            ConcertId INT64,
-            StartTime Timestamp,
-            EndTime Timestamp,
-            CONSTRAINT start_before_end CHECK(StartTime < EndTime),
-            ) PRIMARY KEY (ConcertId)
+            ALTER TABLE Concerts ADD CONSTRAINT start_before_end CHECK (StartTime < EndTime);

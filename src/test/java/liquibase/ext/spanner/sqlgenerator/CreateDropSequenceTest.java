@@ -17,6 +17,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.io.OutputStreamWriter;
@@ -26,9 +27,10 @@ import liquibase.Liquibase;
 import liquibase.exception.CommandExecutionException;
 import liquibase.ext.spanner.AbstractMockServerTest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class CreateDropSequenceTest extends AbstractMockServerTest {
@@ -39,21 +41,26 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testCreateSequenceFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateSequenceFromYaml(Dialect dialect) throws Exception {
     ImmutableList<String> expectedSql =
-        ImmutableList.of(
-            "CREATE SEQUENCE IdSequence "
-                + "OPTIONS (sequence_kind='bit_reversed_positive', "
-                + "skip_range_min = 900000, "
-                + "skip_range_max = 999999, "
-                + "start_with_counter = 100000)",
-            "CREATE SEQUENCE MinimalSequence OPTIONS (sequence_kind='bit_reversed_positive')");
-    addUpdateDdlStatementsResponse(expectedSql.get(0));
-    addUpdateDdlStatementsResponse(expectedSql.get(1));
+        dialect == Dialect.POSTGRESQL
+            ? ImmutableList.of(
+                "CREATE SEQUENCE IdSequence bit_reversed_positive SKIP RANGE 900000 999999 START COUNTER WITH 100000",
+                "CREATE SEQUENCE MinimalSequence bit_reversed_positive")
+            : ImmutableList.of(
+                "CREATE SEQUENCE IdSequence "
+                    + "OPTIONS (sequence_kind='bit_reversed_positive', "
+                    + "skip_range_min = 900000, "
+                    + "skip_range_max = 999999, "
+                    + "start_with_counter = 100000)",
+                "CREATE SEQUENCE MinimalSequence OPTIONS (sequence_kind='bit_reversed_positive')");
+    addUpdateDdlStatementsResponse(dialect, expectedSql.get(0));
+    addUpdateDdlStatementsResponse(dialect, expectedSql.get(1));
 
     for (String file : new String[] {"create-sequence.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -72,13 +79,14 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
     assertEquals(expectedSql.get(1), request.getStatementsList().get(0));
   }
 
-  @Test
-  void testDropSequenceFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testDropSequenceFromYaml(Dialect dialect) throws Exception {
     String expectedSql = "DROP SEQUENCE IdSequence";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"drop-sequence.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -90,10 +98,11 @@ public class CreateDropSequenceTest extends AbstractMockServerTest {
     assertEquals(expectedSql, request.getStatementsList().get(0));
   }
 
-  @Test
-  void testRenameSequenceFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testRenameSequenceFromYaml(Dialect dialect) throws Exception {
     for (String file : new String[] {"rename-sequence.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         CommandExecutionException exception =
             assertThrows(

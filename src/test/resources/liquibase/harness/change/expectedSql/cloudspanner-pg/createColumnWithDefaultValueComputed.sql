@@ -1,0 +1,1 @@
+ALTER TABLE posts ADD new_default_uuid varchar(36) DEFAULT (spanner.generate_uuid())

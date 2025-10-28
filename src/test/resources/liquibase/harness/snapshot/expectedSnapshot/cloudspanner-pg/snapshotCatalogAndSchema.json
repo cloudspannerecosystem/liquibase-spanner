@@ -1,0 +1,22 @@
+{
+  "snapshot": {
+    "objects": {
+      "liquibase.structure.core.Catalog": [
+        {
+          "catalog": {
+            "default": true,
+            "name": "my-database-pg"
+          }
+        }
+      ],
+      "liquibase.structure.core.Schema": [
+        {
+          "schema": {
+            "default": true,
+            "name": "public"
+          }
+        }
+      ]
+    }
+  }
+}

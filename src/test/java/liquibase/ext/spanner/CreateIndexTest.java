@@ -15,14 +15,16 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import java.sql.Connection;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class CreateIndexTest extends AbstractMockServerTest {
@@ -33,13 +35,14 @@ public class CreateIndexTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testCreateSingersLastNameIndexFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateSingersLastNameIndexFromYaml(Dialect dialect) throws Exception {
     String expectedSql = "CREATE INDEX Idx_Singers_LastName ON Singers(LastName)";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"create-index-singers-last-name.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -52,13 +55,14 @@ public class CreateIndexTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testCreateSingersFirstNameIndexFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateSingersFirstNameIndexFromYaml(Dialect dialect) throws Exception {
     String expectedSql = "CREATE INDEX Idx_Singers_FirstName ON Singers(FirstName DESC)";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"create-index-singers-first-name.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -71,14 +75,15 @@ public class CreateIndexTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testCreateSingersFirstAndLastNameIndexFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateSingersFirstAndLastNameIndexFromYaml(Dialect dialect) throws Exception {
     String expectedSql =
         "CREATE UNIQUE INDEX Idx_Singers_FirstAndLastName ON Singers(FirstName DESC, LastName)";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file : new String[] {"create-index-singers-first-and-last-name.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }
@@ -91,14 +96,15 @@ public class CreateIndexTest extends AbstractMockServerTest {
     assertThat(request.getStatementsList().get(0)).isEqualTo(expectedSql);
   }
 
-  @Test
-  void testCreateNullFilteredIndexFromYaml() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void testCreateNullFilteredIndexFromYaml(Dialect dialect) throws Exception {
     String expectedSql = "CREATE NULL_FILTERED INDEX Idx_Singers_FirstName ON Singers(FirstName)";
-    addUpdateDdlStatementsResponse(expectedSql);
+    addUpdateDdlStatementsResponse(dialect, expectedSql);
 
     for (String file :
         new String[] {"create-null-filtered-index-singers-first-name.spanner.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.update(new Contexts("test"));
       }

@@ -13,6 +13,7 @@
  */
 package liquibase.ext.spanner.change;
 
+import com.google.cloud.spanner.Dialect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,8 @@ import liquibase.change.DatabaseChange;
 import liquibase.change.core.AddForeignKeyConstraintChange;
 import liquibase.change.core.AddLookupTableChange;
 import liquibase.database.Database;
+import liquibase.datatype.DataTypeFactory;
+import liquibase.datatype.LiquibaseDataType;
 import liquibase.ext.spanner.ICloudSpanner;
 import liquibase.statement.SqlStatement;
 import liquibase.statement.core.RawSqlStatement;
@@ -48,6 +51,11 @@ public class AddLookupTableChangeSpanner extends AddLookupTableChange {
     String existingTableCatalogName = getExistingTableCatalogName();
     String existingTableSchemaName = getExistingTableSchemaName();
 
+    Dialect dialect = ((ICloudSpanner) database).getDialect();
+    String rawType = getNewColumnDataType();
+    LiquibaseDataType liquibaseType =
+        DataTypeFactory.getInstance().fromDescription(rawType, database);
+    String actualType = liquibaseType.toDatabaseDataType(database).toString();
     SqlStatement[] createTablesSQL =
         new SqlStatement[] {
           new RawSqlStatement(
@@ -57,10 +65,12 @@ public class AddLookupTableChangeSpanner extends AddLookupTableChange {
                   + " ("
                   + database.escapeObjectName(getNewColumnName(), Column.class)
                   + " "
-                  + getNewColumnDataType()
-                  + " NOT NULL) PRIMARY KEY ("
+                  + actualType
+                  + (dialect == Dialect.POSTGRESQL
+                      ? " NOT NULL, PRIMARY KEY ("
+                      : " NOT NULL) PRIMARY KEY (")
                   + database.escapeObjectName(getNewColumnName(), Column.class)
-                  + ")"),
+                  + (dialect == Dialect.POSTGRESQL ? "))" : ")")),
           new RawSqlStatement(
               "INSERT INTO "
                   + database.escapeTableName(

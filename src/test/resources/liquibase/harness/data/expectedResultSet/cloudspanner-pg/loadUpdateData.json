@@ -1,0 +1,36 @@
+{
+  "loadUpdateData": [
+    {
+      "birthdate": "1000-02-27",
+      "added": "2000-02-04 13:45:01.001",
+      "last_name": "Gods",
+      "id": 1,
+      "first_name": "Adam",
+      "email": "test1@example.com"
+    },
+    {
+      "birthdate": "2010-05-21",
+      "added": "2015-06-08 10:32:15.001002",
+      "last_name": "Laurel",
+      "id": 2,
+      "first_name": "Nik",
+      "email": "niklaurel@example.com"
+    },
+    {
+      "birthdate": "2000-02-27",
+      "added": "1994-12-10 14:10:01.050001",
+      "last_name": "Lamekhs",
+      "id": 7,
+      "first_name": "Noah",
+      "email": "test2@example.com"
+    },
+    {
+      "birthdate": "3000-02-27",
+      "added": "2000-12-10 01:03:05.0",
+      "last_name": "Ibn Abdullah",
+      "id": 8,
+      "first_name": "Muhammad",
+      "email": "test3@example.com"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "2",
+        "author": "as",
+        "labels": "test_label",
+        "context": "test_context",
+        "comment": "test_comment",
+        "changes": [
+          {
+            "createTable": {
+              "tableName": "test_table_json",
+              "columns": [
+                {
+                  "column": {
+                    "name": "test_column",
+                    "type": "INT",
+                    "constraints": {
+                      "primaryKey": true,
+                      "nullable": false
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rollback": [
+          {
+            "sql": "DROP TABLE test_table_json"
+          }
+        ]
+      }
+    }
+  ]
+}

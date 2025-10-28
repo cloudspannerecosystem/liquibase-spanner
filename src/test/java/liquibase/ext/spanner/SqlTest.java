@@ -15,6 +15,7 @@ package liquibase.ext.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -25,9 +26,10 @@ import liquibase.Contexts;
 import liquibase.Liquibase;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class SqlTest extends AbstractMockServerTest {
@@ -57,10 +59,11 @@ public class SqlTest extends AbstractMockServerTest {
     mockAdmin.reset();
   }
 
-  @Test
-  void testExecuteSql() throws Exception {
+  @ParameterizedTest
+  @EnumSource(Dialect.class)
+  void estExecuteSql(Dialect dialect) throws Exception {
     for (String file : new String[] {"sql.yaml"}) {
-      try (Connection con = createConnection();
+      try (Connection con = createConnection(dialect);
           Liquibase liquibase = getLiquibase(con, file)) {
         liquibase.clearCheckSums();
         liquibase.update(new Contexts("test"));

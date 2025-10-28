@@ -1,7 +1,6 @@
 package liquibase.ext.spanner;
 
 import com.google.cloud.spanner.Dialect;
-import com.google.cloud.spanner.connection.AbstractStatementParser;
 import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
@@ -19,48 +18,31 @@ import java.sql.DatabaseMetaData;
 import java.util.Scanner;
 
 class JdbcMetadataQueries {
-  private static final AbstractStatementParser PARSER =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL);
-
-  static final String GET_SCHEMAS =
-      convertPositionalParametersToNamedParameters(
-          PARSER.removeCommentsAndTrim(readMetaDataSqlFromFile("DatabaseMetaData_GetSchemas.sql")));
-  static final String GET_TABLES =
-      convertPositionalParametersToNamedParameters(
-          PARSER.removeCommentsAndTrim(readMetaDataSqlFromFile("DatabaseMetaData_GetTables.sql")));
-  static final String GET_COLUMNS =
-      convertPositionalParametersToNamedParameters(
-          PARSER.removeCommentsAndTrim(readMetaDataSqlFromFile("DatabaseMetaData_GetColumns.sql")));
-  static final String GET_INDEX_INFO =
-      convertPositionalParametersToNamedParameters(
-          PARSER.removeCommentsAndTrim(
-              readMetaDataSqlFromFile("DatabaseMetaData_GetIndexInfo.sql")));
-  static final String GET_PRIMARY_KEYS =
-      convertPositionalParametersToNamedParameters(
-          PARSER.removeCommentsAndTrim(
-              readMetaDataSqlFromFile("DatabaseMetaData_GetPrimaryKeys.sql")));
-  static final String GET_IMPORTED_KEYS =
-      convertPositionalParametersToNamedParameters(
-          PARSER.removeCommentsAndTrim(
-              readMetaDataSqlFromFile("DatabaseMetaData_GetImportedKeys.sql")));
+  static final String GET_SCHEMAS = "DatabaseMetaData_GetSchemas.sql";
+  static final String GET_TABLES = "DatabaseMetaData_GetTables.sql";
+  static final String GET_COLUMNS = "DatabaseMetaData_GetColumns.sql";
+  static final String GET_INDEX_INFO = "DatabaseMetaData_GetIndexInfo.sql";
+  static final String GET_PRIMARY_KEYS = "DatabaseMetaData_GetPrimaryKeys.sql";
+  static final String GET_IMPORTED_KEYS = "DatabaseMetaData_GetImportedKeys.sql";
   static final String GET_SEQUENCES =
-      convertPositionalParametersToNamedParameters(
-          "SELECT "
-              + "seq.NAME AS SEQUENCE_NAME, "
-              + "seq_kind.OPTION_VALUE AS SEQUENCE_KIND, "
-              + "skip_max.OPTION_VALUE AS SKIP_RANGE_MAX, "
-              + "skip_min.OPTION_VALUE AS SKIP_RANGE_MIN, "
-              + "start_counter.OPTION_VALUE AS START_VALUE "
-              + "FROM INFORMATION_SCHEMA.SEQUENCES AS seq "
-              + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS seq_kind "
-              + "ON seq.CATALOG = seq_kind.CATALOG AND seq.SCHEMA = seq_kind.SCHEMA AND seq.NAME = seq_kind.NAME AND seq_kind.OPTION_NAME = 'sequence_kind' "
-              + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_max "
-              + "ON seq.CATALOG = skip_max.CATALOG AND seq.SCHEMA = skip_max.SCHEMA AND seq.NAME = skip_max.NAME AND skip_max.OPTION_NAME = 'skip_range_max' "
-              + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_min "
-              + "ON seq.CATALOG = skip_min.CATALOG AND seq.SCHEMA = skip_min.SCHEMA AND seq.NAME = skip_min.NAME AND skip_min.OPTION_NAME = 'skip_range_min' "
-              + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS start_counter "
-              + "ON seq.CATALOG = start_counter.CATALOG AND seq.SCHEMA = start_counter.SCHEMA AND seq.NAME = start_counter.NAME AND start_counter.OPTION_NAME = 'start_with_counter' "
-              + "WHERE seq.CATALOG = ? AND seq.SCHEMA = ?");
+      "SELECT "
+          + "seq.NAME AS SEQUENCE_NAME, "
+          + "seq_kind.OPTION_VALUE AS SEQUENCE_KIND, "
+          + "skip_max.OPTION_VALUE AS SKIP_RANGE_MAX, "
+          + "skip_min.OPTION_VALUE AS SKIP_RANGE_MIN, "
+          + "start_counter.OPTION_VALUE AS START_VALUE "
+          + "FROM INFORMATION_SCHEMA.SEQUENCES AS seq "
+          + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS seq_kind "
+          + "ON seq.CATALOG = seq_kind.CATALOG AND seq.SCHEMA = seq_kind.SCHEMA AND seq.NAME = seq_kind.NAME AND seq_kind.OPTION_NAME = 'sequence_kind' "
+          + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_max "
+          + "ON seq.CATALOG = skip_max.CATALOG AND seq.SCHEMA = skip_max.SCHEMA AND seq.NAME = skip_max.NAME AND skip_max.OPTION_NAME = 'skip_range_max' "
+          + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS skip_min "
+          + "ON seq.CATALOG = skip_min.CATALOG AND seq.SCHEMA = skip_min.SCHEMA AND seq.NAME = skip_min.NAME AND skip_min.OPTION_NAME = 'skip_range_min' "
+          + "LEFT JOIN INFORMATION_SCHEMA.SEQUENCE_OPTIONS AS start_counter "
+          + "ON seq.CATALOG = start_counter.CATALOG AND seq.SCHEMA = start_counter.SCHEMA AND seq.NAME = start_counter.NAME AND start_counter.OPTION_NAME = 'start_with_counter' "
+          + "WHERE seq.CATALOG = ? AND seq.SCHEMA = ?";
+  static final String GET_SEQUENCES_PG =
+      "SELECT sequence_name AS SEQUENCE_NAME, sequence_kind AS SEQUENCE_KIND, skip_range_max AS SKIP_RANGE_MAX, skip_range_min AS SKIP_RANGE_MIN, counter_start_value AS START_VALUE FROM information_schema.sequences WHERE sequence_catalog = ? AND sequence_schema = ?";
   static final String GET_COLUMN_DEFAULT_VALUE =
       convertPositionalParametersToNamedParameters(
           "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS "
@@ -138,6 +120,21 @@ class JdbcMetadataQueries {
               .addValues(Value.newBuilder().setStringValue("")));
     }
     return builder.build();
+  }
+
+  public static ResultSet createGetSchemasResultSet(String schema) {
+    ResultSet.Builder result = ResultSet.newBuilder();
+    ResultSetMetadata.Builder metadata = ResultSetMetadata.newBuilder();
+    StructType.Builder type = StructType.newBuilder();
+    type.addFields(
+        Field.newBuilder()
+            .setName("TABLE_SCHEM")
+            .setType(Type.newBuilder().setCode(TypeCode.STRING).build()));
+    metadata.setRowType(type.build());
+    result.setMetadata(metadata.build());
+    result.addRows(
+        ListValue.newBuilder().addValues(Value.newBuilder().setStringValue(schema)).build());
+    return result.build();
   }
 
   static ResultSet createGetTablesResultSet(Iterable<String> names) {
@@ -699,8 +696,16 @@ class JdbcMetadataQueries {
     }
   }
 
-  static String readMetaDataSqlFromFile(String filename) {
-    InputStream in = CloudSpannerJdbcConnection.class.getResourceAsStream(filename);
+  static String readSqlFromFile(String filename, Dialect dialect) {
+    InputStream in;
+    switch (dialect) {
+      case POSTGRESQL:
+        in = CloudSpannerJdbcConnection.class.getResourceAsStream("postgresql/" + filename);
+        break;
+      case GOOGLE_STANDARD_SQL:
+      default:
+        in = CloudSpannerJdbcConnection.class.getResourceAsStream(filename);
+    }
     BufferedReader reader = new BufferedReader(new InputStreamReader(in));
     StringBuilder builder = new StringBuilder();
     try (Scanner scanner = new Scanner(reader)) {
@@ -708,7 +713,6 @@ class JdbcMetadataQueries {
         String line = scanner.nextLine();
         builder.append(line).append("\n");
       }
-      scanner.close();
     }
     return builder.toString();
   }
