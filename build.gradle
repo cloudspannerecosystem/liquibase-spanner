@@ -78,8 +78,8 @@ dependencies {
         }
     }
     // Cloud Spanner related
+    implementation("com.google.cloud:google-cloud-spanner-jdbc:2.33.3")
     implementation platform('com.google.cloud:libraries-bom:26.71.0')
-    implementation("com.google.cloud:google-cloud-spanner-jdbc")
 
     // Liquibase Core - needed for testing and docker container
     implementation("org.liquibase:liquibase-core:4.33.0")
@@ -129,6 +129,11 @@ test {
     exclude '**/CloudSpannerBaseHarnessSuiteTest*'
     exclude '**/CloudSpannerAdvancedHarnessSuiteTest*'
     exclude '**/CloudSpannerFoundationalHarnessSuiteTest*'
+  }
+
+  testLogging {
+    events "failed"
+    exceptionFormat "full"
   }
 }
 
