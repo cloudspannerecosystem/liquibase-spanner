@@ -19,6 +19,13 @@ an example.
 
 ## Release Notes
 
+#### 4.33.0.1
+* Requires Liquibase 4.33.0
+* Updated Google Cloud dependencies to latest version (26.71.0)
+
+#### 4.33.0
+* Requires Liquibase 4.33.0
+
 #### 4.32.0
 * Requires Liquibase 4.32.0
 

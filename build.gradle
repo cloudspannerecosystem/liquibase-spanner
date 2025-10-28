@@ -78,18 +78,18 @@ dependencies {
         }
     }
     // Cloud Spanner related
-    implementation platform('com.google.cloud:libraries-bom:26.61.0')
+    implementation platform('com.google.cloud:libraries-bom:26.71.0')
     implementation("com.google.cloud:google-cloud-spanner-jdbc")
 
     // Liquibase Core - needed for testing and docker container
-    implementation("org.liquibase:liquibase-core:4.32.0")
-    implementation("org.yaml:snakeyaml:2.4")
-    implementation("org.apache.commons:commons-lang3:3.17.0")
+    implementation("org.liquibase:liquibase-core:4.33.0")
+    implementation("org.yaml:snakeyaml:2.5")
+    implementation("org.apache.commons:commons-lang3:3.18.0")
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.12.2")
-    testImplementation("org.testcontainers:testcontainers:1.21.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.13.4")
+    testImplementation("org.testcontainers:testcontainers:1.21.3")
     testImplementation("net.java.dev.jna:jna:5.17.0")
     testImplementation("com.google.truth:truth:1.4.4") {
         exclude group: 'com.google.guava', module: 'guava'
@@ -100,18 +100,18 @@ dependencies {
     testImplementation ('org.liquibase:liquibase-test-harness:1.0.11'){
         exclude group: 'org.firebirdsql.jdbc', module: 'jaybird'
     }
-    testImplementation('org.apache.groovy:groovy-all:4.0.27') {
+    testImplementation('org.apache.groovy:groovy-all:4.0.28') {
         exclude module: 'org.codehaus.groovy:groovy-testng'
         exclude module: 'org.codehaus.groovy:groovy-swing'
     }
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
 
     // For testing runtime
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.13.4")
     
     // For Spanner mock server testing
     testImplementation(group: 'com.google.cloud', name: 'google-cloud-spanner', classifier: 'tests')
-    testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '2.66.0', classifier: 'testlib')
+    testImplementation(group: 'com.google.api', name: 'gax-grpc', version: '2.71.0', classifier: 'testlib')
 
     // For Liquibase to work without throwing NoClassDefFound/NoSuchMethodError
     testRuntimeOnly("info.picocli:picocli:4.7.7")
@@ -177,7 +177,7 @@ tasks.named('liquibaseHarnessTest', Test).configure {
       languageVersion = JavaLanguageVersion.of(11)
   }
   dependencies {
-      testImplementation("org.mockito:mockito-core:5.18.0")
+      testImplementation("org.mockito:mockito-core:5.19.0")
   }
 }
 

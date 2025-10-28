@@ -175,7 +175,10 @@ public abstract class AbstractMockServerTest {
                             .equals("google.spanner.v1.Spanner/ExecuteStreamingSql")
                         || call.getMethodDescriptor()
                             .getFullMethodName()
-                            .equals("google.spanner.v1.Spanner/DeleteSession"))) {
+                            .equals("google.spanner.v1.Spanner/DeleteSession")
+                        || call.getMethodDescriptor()
+                            .getFullMethodName()
+                            .equals("google.spanner.v1.Spanner/BeginTransaction"))) {
                       String clientLibToken =
                           headers.get(
                               Key.of("x-goog-api-client", Metadata.ASCII_STRING_MARSHALLER));

@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloudspannerecosystem</groupId>
   <artifactId>liquibase-spanner</artifactId>
-  <version>${liquibase.version}</version>
+  <version>${liquibase.version}.1</version>
   <packaging>jar</packaging>
   <name>Google Cloud Spanner Liquibase Integeration</name>
   <description>Liquibase extension for Google Cloud Spanner</description>
@@ -24,12 +24,6 @@
       <organizationUrl>https://github.com/olavloite</organizationUrl>
     </developer>
   </developers>
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://google.oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
   <scm>
     <connection>scm:git:git@github.com:cloudspannerecosystem/liquibase-spanner.git</connection>
     <developerConnection>scm:git:git@github.com:cloudspannerecosystem/liquibase-spanner.git</developerConnection>
@@ -52,18 +46,18 @@
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <liquibase.version>4.32.0</liquibase.version>
-    <snakeyaml.version>2.4</snakeyaml.version>
+    <liquibase.version>4.33.0</liquibase.version>
+    <snakeyaml.version>2.5</snakeyaml.version>
 
-    <gax-grpc.version>2.66.0</gax-grpc.version>
-    <jupiter.version>5.12.2</jupiter.version>
-    <testcontainers.version>1.21.0</testcontainers.version>
-    <truth.version>1.4.4</truth.version>
+    <gax-grpc.version>2.71.0</gax-grpc.version>
+    <jupiter.version>5.13.4</jupiter.version>
+    <testcontainers.version>1.21.3</testcontainers.version>
+    <truth.version>1.4.5</truth.version>
     <mockito.version>1.10.19</mockito.version>
     <groovy.version>2.5.23</groovy.version>
     <dependency.spock.version>1.3-groovy-2.4</dependency.spock.version>
     <picocli.version>4.7.7</picocli.version>
-    <junit-platform.version>1.12.2</junit-platform.version>
+    <junit-platform.version>1.13.4</junit-platform.version>
   </properties>
 
   <dependencyManagement>
@@ -71,7 +65,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>26.61.0</version>
+        <version>26.71.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -222,20 +216,19 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.7.0</version>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.8.0</version>
           <extensions>true</extensions>
           <configuration>
-            <serverId>ossrh</serverId>
-            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            <publishingServerId>central</publishingServerId>
+            <autoPublish>true</autoPublish>
           </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.3</version>
+          <version>3.5.4</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -249,12 +242,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.11.2</version>
+          <version>3.11.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
-          <version>3.2.7</version>
+          <version>3.2.8</version>
         </plugin>
         <plugin>
           <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
@@ -340,8 +333,8 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
           </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -394,21 +387,6 @@
       </build>
     </profile>
     <profile>
-      <id>allow-snapshots</id>
-      <repositories>
-        <repository>
-          <id>sonatype-snapshots</id>
-          <url>https://google.oss.sonatype.org/content/repositories/snapshots</url>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
-      </repositories>
-    </profile>
-    <profile>
       <id>surefire-java8</id>
       <activation>
         <jdk>1.8</jdk>
@@ -455,7 +433,7 @@
           <plugin>
             <groupId>org.codehaus.gmavenplus</groupId>
             <artifactId>gmavenplus-plugin</artifactId>
-            <version>4.2.0</version>
+            <version>4.2.1</version>
             <executions>
               <execution>
                 <goals>
