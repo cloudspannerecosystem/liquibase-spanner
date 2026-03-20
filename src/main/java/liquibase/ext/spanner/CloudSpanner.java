@@ -235,7 +235,11 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public boolean getOutputDefaultSchema() {
-    return !Objects.equals(lower(getDefaultSchemaName()), lower(getConnectionSchemaName()));
+    String defaultSchema = getDefaultSchemaName();
+    if (defaultSchema == null || defaultSchema.isEmpty()) {
+      return false;
+    }
+    return !Objects.equals(lower(defaultSchema), lower(getConnectionSchemaName()));
   }
 
   private static String lower(@Nullable String s) {
