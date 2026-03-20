@@ -138,12 +138,16 @@ class JdbcMetadataQueries {
   }
 
   static ResultSet createGetTablesResultSet(Iterable<String> names) {
+    return createGetTablesResultSet("", names);
+  }
+
+  static ResultSet createGetTablesResultSet(String schema, Iterable<String> names) {
     ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_TABLES_METADATA);
     for (String name : names) {
       builder.addRows(
           ListValue.newBuilder()
               .addValues(Value.newBuilder().setStringValue(""))
-              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(schema))
               .addValues(Value.newBuilder().setStringValue(name))
               .addValues(Value.newBuilder().setStringValue("TABLE"))
               .addValues(Value.newBuilder().setNullValue(NullValue.NULL_VALUE))
@@ -435,13 +439,17 @@ class JdbcMetadataQueries {
   }
 
   static ResultSet createGetColumnsResultSet(Iterable<ColumnMetaData> cols) {
+    return createGetColumnsResultSet("", cols);
+  }
+
+  static ResultSet createGetColumnsResultSet(String schema, Iterable<ColumnMetaData> cols) {
     ResultSet.Builder builder = ResultSet.newBuilder().setMetadata(GET_COLUMNS_METADATA);
     int position = 1;
     for (ColumnMetaData col : cols) {
       builder.addRows(
           ListValue.newBuilder()
               .addValues(Value.newBuilder().setStringValue(""))
-              .addValues(Value.newBuilder().setStringValue(""))
+              .addValues(Value.newBuilder().setStringValue(schema))
               .addValues(Value.newBuilder().setStringValue(col.table))
               .addValues(Value.newBuilder().setStringValue(col.name))
               .addValues(Value.newBuilder().setStringValue(String.valueOf(col.type)))

@@ -222,3 +222,4 @@ jib {
     }
 }
 
+test { testLogging.showStandardStreams = true }

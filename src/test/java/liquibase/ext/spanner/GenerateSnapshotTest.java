@@ -406,9 +406,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                   .bind("p2")
                   .to(schema.toLowerCase())
                   .bind("p3")
-                  .to("Singers")
+                  .to("Singers".toLowerCase())
                   .bind("p4")
-                  .to(column)
+                  .to(column.toLowerCase())
                   .build(),
               ResultSet.newBuilder()
                   .setMetadata(
@@ -437,9 +437,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                   .bind("p2")
                   .to(schema)
                   .bind("p3")
-                  .to("Singers")
+                  .to("Singers".toLowerCase())
                   .bind("p4")
-                  .to(column)
+                  .to(column.toLowerCase())
                   .build(),
               ResultSet.newBuilder()
                   .setMetadata(
@@ -467,9 +467,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                   .bind("p1")
                   .to(schema.toLowerCase())
                   .bind("p2")
-                  .to("Singers")
+                  .to("Singers".toLowerCase())
                   .bind("p3")
-                  .to(column)
+                  .to(column.toLowerCase())
                   .build(),
               ResultSet.newBuilder()
                   .setMetadata(
@@ -495,9 +495,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                   .bind("p1")
                   .to(schema)
                   .bind("p2")
-                  .to("Singers")
+                  .to("Singers".toLowerCase())
                   .bind("p3")
-                  .to(column)
+                  .to(column.toLowerCase())
                   .build(),
               ResultSet.newBuilder()
                   .setMetadata(
@@ -535,9 +535,9 @@ public class GenerateSnapshotTest extends AbstractMockServerTest {
                   .bind("p1")
                   .to(schema.toLowerCase())
                   .bind("p2")
-                  .to("Singers")
+                  .to("Singers".toLowerCase())
                   .bind("p3")
-                  .to(column)
+                  .to(column.toLowerCase())
                   .build(),
               ResultSet.newBuilder()
                   .setMetadata(
