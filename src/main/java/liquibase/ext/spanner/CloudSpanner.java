@@ -28,6 +28,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import liquibase.Scope;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
@@ -234,7 +235,15 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public boolean getOutputDefaultSchema() {
-    return false;
+    String defaultSchema = getDefaultSchemaName();
+    if (defaultSchema == null || defaultSchema.isEmpty()) {
+      return false;
+    }
+    return !Objects.equals(lower(defaultSchema), lower(getConnectionSchemaName()));
+  }
+
+  private static String lower(@Nullable String s) {
+    return s == null ? null : s.toLowerCase();
   }
 
   @Override

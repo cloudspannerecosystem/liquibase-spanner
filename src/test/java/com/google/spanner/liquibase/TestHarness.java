@@ -153,9 +153,11 @@ public class TestHarness {
       // Start the container
       testContainer.start();
     }
-    // JDBC Connection
-    spannerEmulatorHost =
-        String.format("%s:%d", testContainer.getHost(), testContainer.getMappedPort(9010));
+    if (testContainer != null) {
+      // JDBC Connection
+      spannerEmulatorHost =
+          String.format("%s:%d", testContainer.getHost(), testContainer.getMappedPort(9010));
+    }
 
     if (spanner == null) {
       // Create the Spanner service

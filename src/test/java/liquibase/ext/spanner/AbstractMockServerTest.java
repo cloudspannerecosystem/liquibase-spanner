@@ -46,6 +46,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 import liquibase.Liquibase;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
@@ -89,13 +90,13 @@ public abstract class AbstractMockServerTest {
           "INSERT INTO DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, CONTEXTS, LABELS, LIQUIBASE, DEPLOYMENT_ID)");
 
   static final String GET_COLUMN_DEFAULT_STATEMENT =
-      "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_CATALOG = ? AND TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?";
+      "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS WHERE LOWER(TABLE_CATALOG) = ? AND LOWER(TABLE_SCHEMA) = ? AND LOWER(TABLE_NAME) = ? AND LOWER(COLUMN_NAME) = ?";
 
   static final String GET_SPANNER_TYPE_STATEMENT =
       "SELECT SPANNER_TYPE FROM INFORMATION_SCHEMA.COLUMNS "
-          + "WHERE TABLE_SCHEMA = ? "
-          + "AND TABLE_NAME = ? "
-          + "AND COLUMN_NAME = ?";
+          + "WHERE LOWER(TABLE_SCHEMA) = ? "
+          + "AND LOWER(TABLE_NAME) = ? "
+          + "AND LOWER(COLUMN_NAME) = ?";
 
   private static final ResultSetMetadata SINGLE_COL_INT64_METADATA =
       ResultSetMetadata.newBuilder()
@@ -143,6 +144,11 @@ public abstract class AbstractMockServerTest {
 
   @BeforeAll
   static void startStaticServer() throws IOException {
+    startStaticServer(null, null);
+  }
+
+  static void startStaticServer(@Nullable String liquibaseSchema, @Nullable String defaultSchema)
+      throws IOException {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D);
     mockAdmin = new MockDatabaseAdminImpl();
@@ -194,7 +200,7 @@ public abstract class AbstractMockServerTest {
             .build()
             .start();
 
-    registerDefaultResults();
+    registerDefaultResults(liquibaseSchema, defaultSchema);
   }
 
   private static final ResultSetMetadata RESULTSET_METADATA =
@@ -218,8 +224,16 @@ public abstract class AbstractMockServerTest {
           .setMetadata(RESULTSET_METADATA)
           .build();
 
-  private static void registerDefaultResults() {
+  static Statement applySchema(Statement stmt, String schema) {
+    if (schema == null || schema.isEmpty() || schema.equalsIgnoreCase("public")) {
+      return stmt;
+    }
+    return Statement.of(
+        stmt.getSql().replace(" DATABASECHANGELOG", " " + schema + ".DATABASECHANGELOG"));
+  }
 
+  private static void registerDefaultResults(
+      @Nullable String liquibaseSchema, @Nullable String defaultSchema) {
     Map<String, String> databaseChangeLogColumnTypes =
         ImmutableMap.<String, String>builder()
             .put("ID", "character varying")
@@ -240,7 +254,13 @@ public abstract class AbstractMockServerTest {
 
     for (Dialect dialect : Dialect.values()) {
       String catalog = dialect == Dialect.POSTGRESQL ? "DB_PG" : "";
-      String schema = dialect == Dialect.POSTGRESQL ? "PUBLIC" : "";
+      String schema = defaultSchema;
+      if (schema == null) {
+        schema = dialect == Dialect.POSTGRESQL ? "PUBLIC" : "";
+      }
+      if (liquibaseSchema == null) {
+        liquibaseSchema = schema;
+      }
 
       AbstractStatementParser parser = dialect == Dialect.POSTGRESQL ? PARSER_PG : PARSER;
       AbstractStatementParser.ParametersInfo params;
@@ -267,162 +287,243 @@ public abstract class AbstractMockServerTest {
                   .build(),
               RESULTSET));
 
-      // Register metadata results for Liquibase tables.
-      mockSpanner.putStatementResult(
-          StatementResult.query(
-              Statement.newBuilder(params.sqlWithNamedParameters)
-                  .bind("p1")
-                  .to(catalog) // Catalog
-                  .bind("p2")
-                  .to(schema) // Schema
-                  .bind("p3")
-                  .to("DATABASECHANGELOG")
-                  .bind("p4")
-                  .to("TABLE") // Liquibase searches for tables
-                  .bind("p5")
-                  .to("NON_EXISTENT_TYPE")
-                  .build(),
-              JdbcMetadataQueries.createGetTablesResultSet(ImmutableList.of("DATABASECHANGELOG"))));
-
       sql =
           dialect == Dialect.POSTGRESQL
-              ? readSqlFromFile(GET_COLUMNS, dialect)
-              : parser.removeCommentsAndTrim(readSqlFromFile(GET_COLUMNS, dialect));
+              ? readSqlFromFile(GET_SCHEMAS, dialect)
+              : parser.removeCommentsAndTrim(readSqlFromFile(GET_SCHEMAS, dialect));
       params = parser.convertPositionalParametersToNamedParameters('?', sql);
-
       mockSpanner.putStatementResult(
           StatementResult.query(
               Statement.newBuilder(params.sqlWithNamedParameters)
                   .bind("p1")
-                  .to(catalog) // Catalog
+                  .to("%")
                   .bind("p2")
-                  .to(schema) // Schema
-                  .bind("p3")
-                  .to("DATABASECHANGELOG")
-                  .bind("p4")
-                  .to("%") // All column names
+                  .to("%")
                   .build(),
-              JdbcMetadataQueries.createGetColumnsResultSet(
-                  ImmutableList.of(
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "ID",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "AUTHOR",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "FILENAME",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "DATEEXECUTED",
-                          Types.TIMESTAMP,
-                          "TIMESTAMP",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "ORDEREXECUTED",
-                          Types.BIGINT,
-                          "INT64",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "EXECTYPE",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "MD5SUM",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "DESCRIPTION",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "COMMENTS",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "TAG",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "LIQUIBASE",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "CONTEXTS",
-                          Types.NVARCHAR,
-                          "STRING",
-                          255,
-                          DatabaseMetaData.columnNullable),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "LABELS",
-                          Types.NVARCHAR,
-                          "STRING",
-                          255,
-                          DatabaseMetaData.columnNullable),
-                      new JdbcMetadataQueries.ColumnMetaData(
-                          "DATABASECHANGELOG",
-                          "DEPLOYMENT_ID",
-                          Types.NVARCHAR,
-                          "STRING",
-                          0,
-                          DatabaseMetaData.columnNoNulls)))));
+              JdbcMetadataQueries.createGetSchemasResultSet("")));
+      for (String schemaName : new String[] {schema, liquibaseSchema}) {
+        sql =
+            dialect == Dialect.POSTGRESQL
+                ? readSqlFromFile(GET_TABLES, dialect)
+                : parser.removeCommentsAndTrim(readSqlFromFile(GET_TABLES, dialect));
+        params = parser.convertPositionalParametersToNamedParameters('?', sql);
 
-      AbstractStatementParser.ParametersInfo paramsSpannerType =
-          parser.convertPositionalParametersToNamedParameters('?', GET_SPANNER_TYPE_STATEMENT);
+        // Register metadata results for Liquibase tables.
+        Statement stmt =
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to(catalog) // Catalog
+                .bind("p2")
+                .to(schemaName.toUpperCase()) // Schema
+                .bind("p3")
+                .to("DATABASECHANGELOG")
+                .bind("p4")
+                .to("TABLE") // Liquibase searches for tables
+                .bind("p5")
+                .to("NON_EXISTENT_TYPE")
+                .build();
 
-      AbstractStatementParser.ParametersInfo paramsSpannerDefault =
-          parser.convertPositionalParametersToNamedParameters('?', GET_COLUMN_DEFAULT_STATEMENT);
+        mockSpanner.putStatementResult(
+            StatementResult.query(
+                stmt,
+                JdbcMetadataQueries.createGetTablesResultSet(
+                    schemaName, ImmutableList.of("DATABASECHANGELOG"))));
 
-      for (Map.Entry<String, String> entry : databaseChangeLogColumnTypes.entrySet()) {
-        String column = entry.getKey();
-        String type = entry.getValue();
+        Statement stmtLock =
+            Statement.newBuilder(params.sqlWithNamedParameters)
+                .bind("p1")
+                .to(catalog) // Catalog
+                .bind("p2")
+                .to(schemaName.toUpperCase()) // Schema
+                .bind("p3")
+                .to("DATABASECHANGELOGLOCK")
+                .bind("p4")
+                .to("TABLE") // Liquibase searches for tables
+                .bind("p5")
+                .to("NON_EXISTENT_TYPE")
+                .build();
 
-        if (dialect == Dialect.POSTGRESQL) {
+        mockSpanner.putStatementResult(
+            StatementResult.query(
+                stmtLock,
+                JdbcMetadataQueries.createGetTablesResultSet(
+                    schemaName, ImmutableList.of("DATABASECHANGELOGLOCK"))));
+
+        sql =
+            dialect == Dialect.POSTGRESQL
+                ? readSqlFromFile(GET_COLUMNS, dialect)
+                : parser.removeCommentsAndTrim(readSqlFromFile(GET_COLUMNS, dialect));
+        params = parser.convertPositionalParametersToNamedParameters('?', sql);
+
+        mockSpanner.putStatementResult(
+            StatementResult.query(
+                Statement.newBuilder(params.sqlWithNamedParameters)
+                    .bind("p1")
+                    .to(catalog) // Catalog
+                    .bind("p2")
+                    .to(schemaName.toUpperCase()) // Schema
+                    .bind("p3")
+                    .to("DATABASECHANGELOG")
+                    .bind("p4")
+                    .to("%") // All column names
+                    .build(),
+                JdbcMetadataQueries.createGetColumnsResultSet(
+                    schemaName,
+                    ImmutableList.of(
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "ID",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "AUTHOR",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "FILENAME",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "DATEEXECUTED",
+                            Types.TIMESTAMP,
+                            "TIMESTAMP",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "ORDEREXECUTED",
+                            Types.BIGINT,
+                            "INT64",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "EXECTYPE",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "MD5SUM",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "DESCRIPTION",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "COMMENTS",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "TAG",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "LIQUIBASE",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "CONTEXTS",
+                            Types.NVARCHAR,
+                            "STRING",
+                            255,
+                            DatabaseMetaData.columnNullable),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "LABELS",
+                            Types.NVARCHAR,
+                            "STRING",
+                            255,
+                            DatabaseMetaData.columnNullable),
+                        new JdbcMetadataQueries.ColumnMetaData(
+                            "DATABASECHANGELOG",
+                            "DEPLOYMENT_ID",
+                            Types.NVARCHAR,
+                            "STRING",
+                            0,
+                            DatabaseMetaData.columnNoNulls)))));
+
+        AbstractStatementParser.ParametersInfo paramsSpannerType =
+            parser.convertPositionalParametersToNamedParameters('?', GET_SPANNER_TYPE_STATEMENT);
+
+        AbstractStatementParser.ParametersInfo paramsSpannerDefault =
+            parser.convertPositionalParametersToNamedParameters('?', GET_COLUMN_DEFAULT_STATEMENT);
+
+        for (Map.Entry<String, String> entry : databaseChangeLogColumnTypes.entrySet()) {
+          String column = entry.getKey();
+          String type = entry.getValue();
+
+          if (dialect == Dialect.POSTGRESQL) {
+            mockSpanner.putStatementResult(
+                StatementResult.query(
+                    Statement.newBuilder(paramsSpannerType.sqlWithNamedParameters)
+                        .bind("p1")
+                        .to(schemaName.toLowerCase())
+                        .bind("p2")
+                        .to("databasechangelog")
+                        .bind("p3")
+                        .to(column.toLowerCase())
+                        .build(),
+                    ResultSet.newBuilder()
+                        .setMetadata(
+                            ResultSetMetadata.newBuilder()
+                                .setRowType(
+                                    StructType.newBuilder()
+                                        .addFields(
+                                            Field.newBuilder()
+                                                .setName("SPANNER_TYPE")
+                                                .setType(
+                                                    Type.newBuilder()
+                                                        .setCode(TypeCode.STRING)
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .addRows(
+                            ListValue.newBuilder()
+                                .addValues(Value.newBuilder().setStringValue(type).build())
+                                .build())
+                        .build()));
+          }
+
+          // TODO: Remove when the JDBC driver includes the column default in getColumns
           mockSpanner.putStatementResult(
               StatementResult.query(
-                  Statement.newBuilder(paramsSpannerType.sqlWithNamedParameters)
+                  Statement.newBuilder(paramsSpannerDefault.sqlWithNamedParameters)
                       .bind("p1")
-                      .to("public")
+                      .to(catalog.toLowerCase())
                       .bind("p2")
-                      .to("DATABASECHANGELOG")
+                      .to(schemaName.toLowerCase())
                       .bind("p3")
-                      .to(column)
+                      .to("databasechangelog")
+                      .bind("p4")
+                      .to(column.toLowerCase())
                       .build(),
                   ResultSet.newBuilder()
                       .setMetadata(
@@ -431,7 +532,7 @@ public abstract class AbstractMockServerTest {
                                   StructType.newBuilder()
                                       .addFields(
                                           Field.newBuilder()
-                                              .setName("SPANNER_TYPE")
+                                              .setName("COLUMN_DEF")
                                               .setType(
                                                   Type.newBuilder()
                                                       .setCode(TypeCode.STRING)
@@ -441,65 +542,47 @@ public abstract class AbstractMockServerTest {
                               .build())
                       .addRows(
                           ListValue.newBuilder()
-                              .addValues(Value.newBuilder().setStringValue(type).build())
+                              .addValues(
+                                  Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build())
                               .build())
                       .build()));
         }
-
-        // TODO: Remove when the JDBC driver includes the column default in getColumns
-        mockSpanner.putStatementResult(
-            StatementResult.query(
-                Statement.newBuilder(paramsSpannerDefault.sqlWithNamedParameters)
-                    .bind("p1")
-                    .to(catalog.toLowerCase())
-                    .bind("p2")
-                    .to(schema.toLowerCase())
-                    .bind("p3")
-                    .to("DATABASECHANGELOG")
-                    .bind("p4")
-                    .to(column)
-                    .build(),
-                ResultSet.newBuilder()
-                    .setMetadata(
-                        ResultSetMetadata.newBuilder()
-                            .setRowType(
-                                StructType.newBuilder()
-                                    .addFields(
-                                        Field.newBuilder()
-                                            .setName("COLUMN_DEF")
-                                            .setType(
-                                                Type.newBuilder().setCode(TypeCode.STRING).build())
-                                            .build())
-                                    .build())
-                            .build())
-                    .addRows(
-                        ListValue.newBuilder()
-                            .addValues(
-                                Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build())
-                            .build())
-                    .build()));
       }
 
       // Register results for an empty Liquibase database.
       mockSpanner.putStatementResult(
-          StatementResult.query(SELECT_COUNT_FROM_DATABASECHANGELOG, createInt64ResultSet(0L)));
+          StatementResult.query(
+              applySchema(SELECT_COUNT_FROM_DATABASECHANGELOG, liquibaseSchema),
+              createInt64ResultSet(0L)));
       mockSpanner.putStatementResult(
           StatementResult.query(
-              SELECT_FROM_DATABASECHANGELOG,
+              applySchema(SELECT_FROM_DATABASECHANGELOG, liquibaseSchema),
               DatabaseChangeLog.createChangeSetResultSet(ImmutableList.of())));
       mockSpanner.putStatementResult(
-          StatementResult.query(SELECT_COUNT_FROM_DATABASECHANGELOGLOCK, createInt64ResultSet(0L)));
-      mockSpanner.putStatementResult(StatementResult.update(DELETE_FROM_DATABASECHANGELOGLOCK, 0L));
-      mockSpanner.putStatementResult(StatementResult.update(INSERT_DATABASECHANGELOGLOCK, 1L));
+          StatementResult.query(
+              applySchema(SELECT_COUNT_FROM_DATABASECHANGELOGLOCK, liquibaseSchema),
+              createInt64ResultSet(0L)));
       mockSpanner.putStatementResult(
-          StatementResult.query(SELECT_LOCKED, createLockedResultSet(false)));
-      mockSpanner.putPartialStatementResult(StatementResult.update(ACQUIRE_LOCK, 1L));
-      mockSpanner.putStatementResult(StatementResult.update(RELEASE_LOCK, 1L));
+          StatementResult.update(
+              applySchema(DELETE_FROM_DATABASECHANGELOGLOCK, liquibaseSchema), 0L));
       mockSpanner.putStatementResult(
-          StatementResult.query(SELECT_MD5SUM, createMd5SumResultSet(ImmutableList.of())));
+          StatementResult.update(applySchema(INSERT_DATABASECHANGELOGLOCK, liquibaseSchema), 1L));
       mockSpanner.putStatementResult(
-          StatementResult.query(SELECT_MAX_ORDER_EXEC, createInt64ResultSet(0L)));
-      mockSpanner.putPartialStatementResult(StatementResult.update(INSERT_DATABASECHANGELOG, 1L));
+          StatementResult.query(
+              applySchema(SELECT_LOCKED, liquibaseSchema), createLockedResultSet(false)));
+      mockSpanner.putPartialStatementResult(
+          StatementResult.update(applySchema(ACQUIRE_LOCK, liquibaseSchema), 1L));
+      mockSpanner.putStatementResult(
+          StatementResult.update(applySchema(RELEASE_LOCK, liquibaseSchema), 1L));
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              applySchema(SELECT_MD5SUM, liquibaseSchema),
+              createMd5SumResultSet(ImmutableList.of())));
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              applySchema(SELECT_MAX_ORDER_EXEC, liquibaseSchema), createInt64ResultSet(0L)));
+      mockSpanner.putPartialStatementResult(
+          StatementResult.update(applySchema(INSERT_DATABASECHANGELOG, liquibaseSchema), 1L));
     }
   }
 

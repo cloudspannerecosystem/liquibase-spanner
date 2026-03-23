@@ -14,6 +14,7 @@
 package liquibase.ext.spanner.snapshotgenerator;
 
 import com.google.cloud.spanner.Dialect;
+import javax.annotation.Nullable;
 import liquibase.Scope;
 import liquibase.database.Database;
 import liquibase.exception.DatabaseException;
@@ -45,10 +46,10 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
         // TODO: Remove when COLUMN_DEF is included in the results for getColumns
         String selectQuery =
             "SELECT DISTINCT COLUMN_DEFAULT AS COLUMN_DEF FROM INFORMATION_SCHEMA.COLUMNS "
-                + "WHERE TABLE_CATALOG = ? "
-                + "AND TABLE_SCHEMA = ? "
-                + "AND TABLE_NAME = ? "
-                + "AND COLUMN_NAME = ?";
+                + "WHERE LOWER(TABLE_CATALOG) = ? "
+                + "AND LOWER(TABLE_SCHEMA) = ? "
+                + "AND LOWER(TABLE_NAME) = ? "
+                + "AND LOWER(COLUMN_NAME) = ?";
         String schemaName =
             columnInfo.getRelation().getSchema().getName() == null
                 ? database.getDefaultSchemaName()
@@ -61,10 +62,10 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
                     new RawParameterizedSqlStatement(
                         selectQuery,
                         new Object[] {
-                          columnInfo.getRelation().getSchema().getCatalog().getName(),
-                          schemaName,
-                          columnInfo.getRelation().getName(),
-                          columnInfo.getName()
+                          lower(columnInfo.getRelation().getSchema().getCatalog().getName()),
+                          lower(schemaName),
+                          lower(columnInfo.getRelation().getName()),
+                          lower(columnInfo.getName())
                         }),
                     String.class);
         if (defaultValue != null) {
@@ -83,6 +84,10 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
     return super.readDefaultValue(columnMetadataResultSet, columnInfo, database);
   }
 
+  private String lower(@Nullable String value) {
+    return value == null ? null : value.toLowerCase();
+  }
+
   @Override
   protected DataType readDataType(
       CachedRow columnMetadataResultSet, Column column, Database database)
@@ -93,9 +98,9 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
         try {
           String sql =
               "SELECT SPANNER_TYPE FROM INFORMATION_SCHEMA.COLUMNS "
-                  + "WHERE TABLE_SCHEMA = ? "
-                  + "AND TABLE_NAME = ? "
-                  + "AND COLUMN_NAME = ?";
+                  + "WHERE LOWER(TABLE_SCHEMA) = ? "
+                  + "AND LOWER(TABLE_NAME) = ? "
+                  + "AND LOWER(COLUMN_NAME) = ?";
 
           String dataType =
               Scope.getCurrentScope()
@@ -104,9 +109,9 @@ public class ColumnSnapshotGeneratorSpanner extends ColumnSnapshotGenerator {
                   .queryForObject(
                       new RawParameterizedSqlStatement(
                           sql,
-                          column.getSchema().getName(),
-                          column.getRelation().getName(),
-                          column.getName()),
+                          lower(column.getSchema().getName()),
+                          lower(column.getRelation().getName()),
+                          lower(column.getName())),
                       String.class);
 
           dataType = dataType.replace("character varying", "varchar");
