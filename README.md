@@ -19,6 +19,12 @@ an example.
 
 ## Release Notes
 
+#### 4.33.0.3
+* Requires Liquibase 4.33.0
+* Fixes multiple issues with working with named schemas:
+  * `defaultSchemaName` was previously not respected.
+  * `liquibaseSchemaName` was previously not respected.
+
 #### 4.33.0.2
 * Requires Liquibase 4.33.0
 * Liquibase Spanner now also supports Spanner PostgreSQL-dialect databases.
