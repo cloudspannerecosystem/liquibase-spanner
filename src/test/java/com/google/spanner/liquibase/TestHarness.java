@@ -18,6 +18,7 @@ package com.google.spanner.liquibase;
 
 import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.connection.ConnectionOptions;
+import com.google.common.base.Strings;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -45,7 +46,7 @@ public class TestHarness {
 
   private static void createInstance(Spanner service, String instanceId) throws SQLException {
 
-    if (hasInstance(service, instanceId)) {
+    if (hasInstance(service, instanceId) || isRunningOnExperimentalHost()) {
       logger.info(String.format("Reusing existing instance %s", instanceId));
       return;
     }
@@ -201,14 +202,21 @@ public class TestHarness {
     };
   }
 
+  public static boolean isRunningOnExperimentalHost() {
+    return !Strings.isNullOrEmpty(System.getenv("SPANNER_EXPERIMENTAL_HOST"));
+  }
+
   //
   // Create a normal Spanner connection.
   //
   // Automatically creates and drops a temporary liquibase database
   //
   public static Connection useSpannerConnection(Dialect dialect) throws SQLException {
-    final String projectId = System.getenv("SPANNER_PROJECT");
-    final String instanceId = System.getenv("SPANNER_INSTANCE");
+    final String experimentalHost = System.getenv("SPANNER_EXPERIMENTAL_HOST");
+    final String projectId =
+        experimentalHost == null ? System.getenv("SPANNER_PROJECT") : "default";
+    final String instanceId =
+        experimentalHost == null ? System.getenv("SPANNER_INSTANCE") : "default";
     final String DATABASE_ID =
         dialect == Dialect.POSTGRESQL ? "test-database-id-pg" : "test-database-id-gsql";
     final String databaseId = String.format("%s_%d", DATABASE_ID, new Random().nextInt(1_000_000));
@@ -220,15 +228,33 @@ public class TestHarness {
     }
 
     if (spanner == null) {
-      spannerReal = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+      if (experimentalHost != null) {
+        spannerReal =
+            SpannerOptions.newBuilder()
+                .setExperimentalHost(experimentalHost)
+                .usePlainText()
+                .build()
+                .getService();
+      } else {
+        spannerReal = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+      }
     }
 
     createDatabase(spannerReal, instanceId, databaseId, dialect);
 
-    final String connectionUrl =
-        String.format(
-            "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s?autocommit=true",
-            projectId, instanceId, databaseId);
+    final String connectionUrl;
+
+    if (experimentalHost == null) {
+      connectionUrl =
+          String.format(
+              "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s?autocommit=true",
+              projectId, instanceId, databaseId);
+    } else {
+      connectionUrl =
+          String.format(
+              "jdbc:spanner://%s/databases/%s;usePlainText=true;isExperimentalHost=true",
+              experimentalHost, databaseId);
+    }
     // JDBC connection initialize
     java.sql.Connection conn = DriverManager.getConnection(connectionUrl);
 
