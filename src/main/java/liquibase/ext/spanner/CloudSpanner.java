@@ -114,7 +114,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public String getDefaultDriver(String url) {
-    if (url != null && url.startsWith("jdbc:cloudspanner:")) {
+    if (url != null && (url.startsWith("jdbc:cloudspanner:") || url.startsWith("jdbc:spanner:"))) {
       return "com.google.cloud.spanner.jdbc.JdbcDriver";
     }
     return null;
@@ -200,7 +200,7 @@ public class CloudSpanner extends AbstractJdbcDatabase implements ICloudSpanner 
 
   @Override
   public boolean isCorrectDatabaseImplementation(DatabaseConnection conn) {
-    return conn.getURL().contains("cloudspanner");
+    return conn.getURL().contains("spanner");
   }
 
   @Override

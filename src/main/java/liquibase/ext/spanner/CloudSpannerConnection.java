@@ -59,7 +59,8 @@ public class CloudSpannerConnection extends JdbcConnection {
     // This method is called by Liquibase when a new connection is needed. The connection URL is
     // part of the configuration that a user specifies for Liquibase. We append a user-agent string
     // to the connection URL so we can track the usage of Liquibase.
-    if (url.startsWith("jdbc:cloudspanner") && !url.contains("userAgent=")) {
+    if ((url.startsWith("jdbc:cloudspanner") || url.startsWith("jdbc:spanner"))
+        && !url.contains("userAgent=")) {
       if (driverObject instanceof JdbcDriver) {
         JdbcDriver driver = (JdbcDriver) driverObject;
         // Only version 2 and higher support the Liquibase user-agent string.

@@ -16,6 +16,7 @@ package com.google.spanner.liquibase;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -92,6 +93,9 @@ public class LiquibaseTests {
   private static TestHarness.Connection spannerEmulator;
 
   static TestHarness.Connection getSpannerEmulator(Dialect dialect) throws SQLException {
+    assumeFalse(
+        TestHarness.isRunningOnExperimentalHost(),
+        "Skipping emulator tests when SPANNER_EXPERIMENTAL_HOST is set");
     spannerEmulator = TestHarness.useSpannerEmulator(dialect);
     return spannerEmulator;
   }
@@ -147,6 +151,9 @@ public class LiquibaseTests {
       Assert.assertTrue(rss.size() == 1);
       Assert.assertTrue(rss.get(0).get("test").equals("3"));
 
+      if (TestHarness.isRunningOnExperimentalHost()) {
+        return;
+      }
       // Ensure SELECT COUNT(*) FROM DATABASECHANGELOGLOCK works
       rss = testQuery(connection, "SELECT COUNT(*) FROM DATABASECHANGELOGLOCK");
 
