@@ -19,6 +19,10 @@ an example.
 
 ## Release Notes
 
+#### 4.33.0.4
+* Requires Liquibase 4.33.0
+* Supports setting an experimental host name
+
 #### 4.33.0.3
 * Requires Liquibase 4.33.0
 * Fixes multiple issues with working with named schemas:
