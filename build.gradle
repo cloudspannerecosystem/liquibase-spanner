@@ -79,7 +79,7 @@ dependencies {
     }
     // Cloud Spanner related
     implementation("com.google.cloud:google-cloud-spanner-jdbc:2.35.4")
-    implementation platform('com.google.cloud:libraries-bom:26.78.0')
+    implementation platform('com.google.cloud:libraries-bom:26.79.0')
 
     // Liquibase Core - needed for testing and docker container
     implementation("org.liquibase:liquibase-core:4.33.0")
